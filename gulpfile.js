@@ -4,6 +4,8 @@ const typescript  = require('rollup-plugin-typescript')
 const source      = require('vinyl-source-stream')
 const concat      = require('gulp-concat')
 const compressJS  = require('gulp-uglify')
+const sass        = require('gulp-sass')
+const compressCSS = require('gulp-clean-css')
 const del         = require('del')
 
 // Compile Typescript files to ES6 and combine modules with Rollup.
@@ -52,8 +54,41 @@ gulp.task('compress:js', ['compile:js', 'bundle:js'], () => {
     .pipe(gulp.dest('./dist'))
 })
 
+// Compile SCSS files to CSS.
+gulp.task('compile:css', () => {
+  return gulp.src('src/sass/*.scss')
+    .pipe(sass().on('error', sass.logError))
+    .pipe(gulp.dest('./dist'))
+})
+
+// Concatenate CSS stylesheets used by libraries.
+gulp.task('bundle:css', () => {
+  // Paths to stylesheets used by the frontend. Each file in this list is
+  // concatenated into ./dist/libs.css and will be concatenated in this order:
+  const libs = [
+    './node_modules/codemirror/lib/codemirror.css'
+  ]
+
+  return gulp.src(libs)
+    .pipe(concat('libs.css'))
+    .pipe(gulp.dest('./dist'))
+})
+
+// Compress app & library stylesheets.
+gulp.task('compress:css', ['compile:css', 'bundle:css'], () => {
+  return gulp.src('./dist/*.css')
+    .pipe(compressCSS())
+    .pipe(gulp.dest('./dist'))
+})
+
+gulp.task('build:all', ['compress:css', 'compress:js'])
+
 gulp.task('watch:js', () => {
   gulp.watch('src/*.ts', ['compile:js'])
+})
+
+gulp.task('watch:css', () => {
+  gulp.watch('src/sass/*.scss', ['compile:css'])
 })
 
 // Delete everything inside the ./dist directory including the directory itself.
