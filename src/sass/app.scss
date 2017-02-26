@@ -1,3 +1,10 @@
+.grabbing-cursor,
+.grabbing-cursor * {
+  cursor: -webkit-grabbing !important;
+  cursor: -moz-grabbing !important;
+  cursor: grabbing !important;
+}
+
 .app {
   $color--editable-type: #444444;
   $color--lightweight-type: lighten($color--editable-type, 50%);
