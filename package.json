@@ -2,7 +2,7 @@
   "name": "regex-frontend",
   "version": "1.0.0",
   "description": "a RegEx playground with editable matching regions",
-  "main": "dist/frontend.js",
+  "main": "server.js",
   "dependencies": {
     "codemirror": "^5.23.0",
     "codemirror-no-newlines": "^1.0.2",
