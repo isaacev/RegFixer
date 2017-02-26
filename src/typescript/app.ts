@@ -70,6 +70,7 @@ export class App {
         this.corpus.setValue(val)
       } else {
         console.log('missing regex-corpus')
+        this.corpus.setValue('foo bar\nbaz')
       }
 
       localforage.getItem<string>('regex-query', (err, val) => {
@@ -77,6 +78,7 @@ export class App {
           this.query.setValue(val)
         } else {
           console.log('missing regex-query')
+          this.query.setValue('[a-z]+')
         }
       })
     })
