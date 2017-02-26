@@ -12,13 +12,11 @@ export default {
   ],
 
   external: [
-    'jquery',
     'codemirror',
     'codemirror-no-newlines'
   ],
 
   globals: {
-    jquery: 'jQuery',
     codemirror: 'CodeMirror'
   }
 }
