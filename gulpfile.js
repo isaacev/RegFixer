@@ -11,7 +11,7 @@ const del         = require('del')
 // Compile Typescript files to ES6 and combine modules with Rollup.
 gulp.task('compile:js', () => {
   return rollup({
-      entry: './src/app.ts',
+      entry: './src/typescript/app.ts',
       moduleName: 'frontend',
       format: 'iife',
       plugins: [
@@ -84,7 +84,7 @@ gulp.task('compress:css', ['compile:css', 'bundle:css'], () => {
 gulp.task('build:all', ['compress:css', 'compress:js'])
 
 gulp.task('watch:js', () => {
-  gulp.watch('src/*.ts', ['compile:js'])
+  gulp.watch('src/typescript/*.ts', ['compile:js'])
 })
 
 gulp.task('watch:css', () => {

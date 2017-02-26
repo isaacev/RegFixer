@@ -1,5 +1,5 @@
 //
-// src/region-list.ts
+// src/typescript/region-list.ts
 // RegEx Frontend
 //
 // Created on 2/20/17

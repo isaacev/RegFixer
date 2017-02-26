@@ -1,5 +1,5 @@
 //
-// src/point.ts
+// src/typescript/point.ts
 // RegEx Frontend
 //
 // Created on 2/25/17
