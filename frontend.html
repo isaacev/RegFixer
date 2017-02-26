@@ -1,17 +1,14 @@
 <html>
   <head>
-    <link rel="stylesheet" href="node_modules/codemirror/lib/codemirror.css">
-    <link rel="stylesheet" href="styles.css">
     <title>RegFixer</title>
+    <link rel="stylesheet" href="/css/libs.css">
+    <link rel="stylesheet" href="/css/app.css">
   </head>
   <body>
     <div class="app"></div>
-    <script src="node_modules/localforage/dist/localforage.nopromises.min.js"></script>
 
-    <script src="node_modules/codemirror/lib/codemirror.js"></script>
-    <script src="node_modules/codemirror/addon/display/placeholder.js"></script>
-    <script src="node_modules/codemirror-no-newlines/no-newlines.js"></script>
-    <script src="dist/frontend.js"></script>
+    <script src="/js/libs.js"></script>
+    <script src="/js/app.js"></script>
 
     <script>
       const app = new frontend.App(document.querySelector('.app'), [
