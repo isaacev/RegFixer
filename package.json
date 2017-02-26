@@ -10,6 +10,7 @@
   },
   "scripts": {
     "postinstall": "gulp clean && gulp build:all",
+    "start": "node server.js"
   },
   "author": "Isaac Evavold <isaacevavold@gmail.com>",
   "license": "ISC",
