@@ -69,12 +69,12 @@ export class CorpusEditor {
     this.regions.forEach((reg) => {
       this.context.fillStyle = reg.color
       let nw = {
-        x: reg.start.ch * util.charWidth,
-        y: reg.start.line * util.charHeight
+        x: Math.round(reg.start.ch * util.charWidth),
+        y: Math.round(reg.start.line * util.charHeight)
       }
       let se = {
-        x: (reg.end.ch + 1) * util.charWidth,
-        y: (reg.end.line + 1) * util.charHeight
+        x: Math.round((reg.end.ch + 1) * util.charWidth),
+        y: Math.round((reg.end.line + 1) * util.charHeight)
       }
 
       if (reg.start.line === reg.end.line) {
