@@ -46,7 +46,7 @@ export class CorpusEditor {
     util.addClass(editorElem, 'editable-font')
 
     // Create a CodeMirror instance.
-    this.cm = CodeMirror(editorElem, { value: 'foo bar baz' })
+    this.cm = CodeMirror(editorElem)
     this.doc = this.cm.getDoc()
 
     // Store a list of alternating colors used to differentiate adjacent
@@ -56,6 +56,10 @@ export class CorpusEditor {
     // Cache editor position on the page.
     let boundingRect = this.canvas.getBoundingClientRect()
     this.offset = { top: boundingRect.top, left: boundingRect.left }
+  }
+
+  getValue (): string {
+    return this.doc.getValue()
   }
 
   setValue (value: string) {

@@ -5,7 +5,8 @@
   "main": "dist/frontend.js",
   "dependencies": {
     "codemirror": "^5.23.0",
-    "codemirror-no-newlines": "^1.0.2"
+    "codemirror-no-newlines": "^1.0.2",
+    "localforage": "^1.5.0"
   },
   "scripts": {
     "postinstall": "rollup -c"
@@ -16,5 +17,6 @@
     "@types/codemirror": "0.0.38",
     "rollup": "^0.41.4",
     "rollup-plugin-typescript": "^0.8.1"
+    "@types/localforage": "0.0.33",
   }
 }

@@ -34,25 +34,7 @@ export class QueryEditor {
     this.cm.setOption('noNewlines', true)
     this.doc = this.cm.getDoc()
 
-    // Add a decorator to the beginning of the regular expression.
-    this.doc.markText(
-    {line: 0, ch: 0},
-    {line: 0, ch: firstDecorator.length}, {
-      className: 'regex-decorator',
-      atomic: true,
-      readOnly: true,
-      inclusiveLeft: true
-    })
-
-    // Add a decorator to the end of the regular expression.
-    this.doc.markText(
-    {line: 0, ch: firstDecorator.length},
-    {line: 0, ch: firstDecorator.length + lastDecorator.length}, {
-      className: 'regex-decorator',
-      atomic: true,
-      readOnly: true,
-      inclusiveRight: true
-    })
+    this.setValue('')
 
     // Listen for changes to the regular expression contents.
     this.cm.on('change', () => {
@@ -71,12 +53,42 @@ export class QueryEditor {
     this.hideBubble()
   }
 
-  getRegex (): RegExp {
+  getValue (): string {
     let raw = this.doc.getValue()
     let trimmed = raw.slice(
       firstDecorator.length,
       raw.length - lastDecorator.length
     )
+
+    return trimmed
+  }
+
+  setValue (val: string) {
+    // Add a decorator to the beginning of the regular expression.
+    let firstDecStart = {line: 0, ch: 0}
+    let firstDecEnd = {line: 0, ch: firstDecorator.length}
+    this.doc.markText(firstDecStart, firstDecEnd, {
+      className: 'regex-decorator',
+      atomic: true,
+      readOnly: true,
+      inclusiveLeft: true
+    })
+
+    // Add a decorator to the end of the regular expression.
+    let lastDecStart = {line: 0, ch: firstDecEnd.ch}
+    let lastDecEnd = {line: 0, ch: lastDecStart.ch + lastDecorator.length}
+    this.doc.markText(lastDecStart, lastDecEnd, {
+      className: 'regex-decorator',
+      atomic: true,
+      readOnly: true,
+      inclusiveRight: true
+    })
+
+    this.doc.replaceRange(val, firstDecEnd, lastDecStart)
+  }
+
+  getRegex (): RegExp {
+    let trimmed = this.getValue()
 
     if (trimmed.length === 0) {
       return null
