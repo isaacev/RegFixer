@@ -115,3 +115,21 @@ export function onceEvent (elem: HTMLElement, eventName: string, cb: (MouseEvent
 export function offEvent (elem: HTMLElement, eventName: string, cb: (MouseEvent) => void) {
   elem.removeEventListener(eventName, cb)
 }
+
+/**
+ * Other util functions.
+ */
+
+export function debounce (fn: () => void, wait: number): () => void {
+  let timeout: number
+
+  return () => {
+    let later = () => {
+      timeout = null
+      fn.apply(fn)
+    }
+
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
+}
