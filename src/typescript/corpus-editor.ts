@@ -6,7 +6,6 @@
 //
 
 import CodeMirror from 'codemirror'
-import { InfiniteMatchesError } from './errors'
 import { RegionList } from './region-list'
 import { Region } from './region'
 import { Point } from './point'
@@ -19,10 +18,14 @@ export class CorpusEditor {
   context: CanvasRenderingContext2D
   cm: CodeMirror.Editor
   doc: CodeMirror.Doc
+  regex: RegExp
   regions: RegionList = new RegionList()
   palette: string[] = []
   nextColor: number = 0
   offset: { top: number, left: number }
+
+  onInfiniteMatches: () => void = util.noop
+  onMatches: (totalMatches: number) => void = util.noop
 
   constructor (wrapper: HTMLElement, palette: string[] = []) {
     this.wrapper = wrapper
@@ -122,7 +125,16 @@ export class CorpusEditor {
     let color = this.getNextColor()
     let reg = new Region(this, start, end, color)
     this.regions.insert(reg)
-    this.drawCanvas()
+  }
+
+  setRegex (regex: RegExp) {
+    this.regex = regex
+    this.clearRegions()
+    this.findMatches()
+  }
+
+  clearRegex () {
+    this.regex = null
   }
 
   clearRegions () {
@@ -131,33 +143,36 @@ export class CorpusEditor {
     this.resetColor()
   }
 
-  findMatches (regex: RegExp): number {
+  findMatches () {
     let corpus = this.doc.getValue()
     let error = null
     let index = null
     let totalMatches = 0
 
     while (!error) {
-      let match = regex.exec(corpus)
+      let match = this.regex.exec(corpus)
 
       if (!match) {
         break
       }
 
-      if (regex.global && index === regex.lastIndex) {
-        throw new InfiniteMatchesError()
+      if (this.regex.global && index === this.regex.lastIndex) {
+        this.clearRegions()
+        this.onInfiniteMatches()
+        return
       }
 
       index = match.index
       this.addRegion(match.index, match.index + match[0].length)
       totalMatches++
 
-      if (!regex.global) {
+      if (!this.regex.global) {
         break
       }
     }
 
-    return totalMatches
+    this.drawCanvas()
+    this.onMatches(totalMatches)
   }
 
   resetColor () {

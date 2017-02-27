@@ -16,8 +16,10 @@ export class QueryEditor {
   wrapper: HTMLElement
   cm: CodeMirror.Editor
   doc: CodeMirror.Doc
-  onChange: (boolean, RegExp) => void = function () {}
   bubble: HTMLElement
+
+  onEmpty: () => void = util.noop
+  onChange: (regex: RegExp) => void = util.noop
 
   constructor (wrapper: HTMLElement) {
     this.wrapper = wrapper
@@ -40,8 +42,10 @@ export class QueryEditor {
     this.cm.on('change', () => {
       let regex = this.getRegex()
 
-      if (typeof this.onChange === 'function') {
-        this.onChange(regex === null, regex)
+      if (regex === null) {
+        this.onEmpty()
+      } else {
+        this.onChange(regex)
       }
     })
 

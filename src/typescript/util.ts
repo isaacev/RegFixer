@@ -133,3 +133,7 @@ export function debounce (fn: () => void, wait: number): () => void {
     timeout = setTimeout(later, wait)
   }
 }
+
+export function noop () {
+  // Do nothing.
+}

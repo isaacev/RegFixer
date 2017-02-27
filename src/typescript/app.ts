@@ -8,7 +8,6 @@
 import localforage from 'localforage'
 import { QueryEditor, BubbleStatus } from './query-editor'
 import { CorpusEditor } from './corpus-editor'
-import { InfiniteMatchesError } from './errors'
 import * as util from './util'
 
 export class App {
@@ -33,34 +32,24 @@ export class App {
     // query editor.
     let queryChangeDebounce = util.debounce(this.updateCache.bind(this), 1000)
 
-    this.query.onChange = (isEmpty: boolean, regex: RegExp) => {
+    this.query.onEmpty = () => {
       this.query.hideBubble()
+      this.corpus.clearRegex()
       this.corpus.clearRegions()
-
-      if (isEmpty === false && regex !== null) {
-        let totalMatches = -1
-
-        try {
-          totalMatches = this.corpus.findMatches(regex)
-        } catch (err) {
-          this.query.hideBubble()
-          this.corpus.clearRegions()
-
-          switch (true) {
-            case (err instanceof InfiniteMatchesError):
-              this.query.setBubble('infinite regex', BubbleStatus.red)
-              break
-            default:
-              throw err
-          }
-        }
-
-        if (totalMatches > -1) {
-          this.query.setBubble(`${totalMatches} matches`)
-        }
-      }
-
       queryChangeDebounce()
+    }
+
+    this.query.onChange = (regex) => {
+      this.corpus.setRegex(regex)
+      queryChangeDebounce()
+    }
+
+    this.corpus.onInfiniteMatches = () => {
+      this.query.setBubble('infinite')
+    }
+
+    this.corpus.onMatches = (totalMatches: number) => {
+      this.query.setBubble(`${totalMatches} matches`)
     }
 
     // When the page is loaded, check if there are any locally stored values
