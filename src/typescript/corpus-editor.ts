@@ -52,6 +52,16 @@ export class CorpusEditor {
     this.cm = CodeMirror(editorElem)
     this.doc = this.cm.getDoc()
 
+    // Listen for changes to the CodeMirror contents so that matches can be
+    // updated to reflect the changes.
+    this.cm.on('change', () => {
+      this.clearRegions()
+
+      if (this.regex instanceof RegExp) {
+        this.findMatches()
+      }
+    })
+
     // Store a list of alternating colors used to differentiate adjacent
     // matches. If no colors are provided, gray will be used for every match.
     this.palette = palette
