@@ -1,7 +1,9 @@
 const gulp        = require('gulp')
 const rollup      = require('rollup-stream')
+const sourcemaps  = require('gulp-sourcemaps')
 const typescript  = require('rollup-plugin-typescript')
 const source      = require('vinyl-source-stream')
+const buffer      = require('vinyl-buffer')
 const concat      = require('gulp-concat')
 const compressJS  = require('gulp-uglify')
 const sass        = require('gulp-sass')
@@ -14,6 +16,7 @@ gulp.task('compile:js', () => {
       entry: './src/typescript/app.ts',
       moduleName: 'frontend',
       format: 'iife',
+      sourceMap: true,
       plugins: [
         typescript()
       ],
@@ -28,6 +31,9 @@ gulp.task('compile:js', () => {
       }
     })
     .pipe(source('app.js'))
+    .pipe(buffer())
+    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('./dist'))
 })
 

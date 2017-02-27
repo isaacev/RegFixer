@@ -1,6 +1,6 @@
 {
   "name": "regex-frontend",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "a RegEx playground with editable matching regions",
   "main": "server.js",
   "dependencies": {
@@ -23,9 +23,11 @@
     "gulp-clean-css": "^3.0.3",
     "gulp-concat": "^2.6.1",
     "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.4.1",
     "gulp-uglify": "^2.0.1",
     "rollup-plugin-typescript": "^0.8.1",
     "rollup-stream": "^1.19.0",
+    "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
   }
 }
