@@ -75,12 +75,11 @@ export class RegionList {
     let str = ''
 
     this.forEach((reg, index) => {
-      console.log(reg.toString())
       str += (index > 0) ? ' -> ' : ''
       str += reg.toString()
     })
 
-    return str
+    return (str === '' ? '(empty)' : str)
   }
 }
 
