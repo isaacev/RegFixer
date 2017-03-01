@@ -46,20 +46,6 @@ export function getLastPoint (doc: CodeMirror.Doc): Point {
   return { line: lastLine, ch: lastCh }
 }
 
-export function prevChPoint (p: Point): Point {
-  return {
-    line: p.line,
-    ch: p.ch - 1
-  }
-}
-
-export function nextChPoint (p: Point): Point {
-  return {
-    line: p.line,
-    ch: p.ch + 1
-  }
-}
-
 /**
  * DOM manipulation functions. Requires IE 11 or newer.
  */
@@ -136,4 +122,35 @@ export function debounce (fn: () => void, wait: number): () => void {
 
 export function noop () {
   // Do nothing.
+}
+
+type CharCoords = { left: number, right: number, top: number, bottom: number }
+export function charCoordsShowNewlines (cm: CodeMirror.Editor, point: Point): CharCoords {
+  let naiveCoords = cm.charCoords(point, 'local')
+
+  // If CodeMirror describes a character coordinate as having a width of 0,
+  // check if the character coordinate represents the position of a newline
+  // character.
+  if (naiveCoords.right - naiveCoords.left === 0) {
+    let doc = cm.getDoc()
+    let lastLineNum = doc.lastLine()
+
+    // If the point is from the last line of the document then it can't end in
+    // a newline so further checks can be skipped.
+    if (point.line >= lastLineNum) {
+      return naiveCoords
+    }
+
+    let lineLength = doc.getLine(point.line).length
+    if (point.ch === lineLength) {
+      // Point corresponds to a newline.
+      let charWidth = cm.defaultCharWidth()
+      let newlineCoords = naiveCoords
+      newlineCoords.right = naiveCoords.left + charWidth
+
+      return newlineCoords
+    }
+  }
+
+  return naiveCoords
 }

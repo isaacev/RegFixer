@@ -13,6 +13,8 @@ import * as util from './util'
 class Grip {
   parent: Region
   index: Point
+  x: number
+  y: number
   elem: HTMLElement
 
   constructor (parent: Region, index: Point, topOffset: number, color: string) {
@@ -65,10 +67,9 @@ class Grip {
   }
 
   updatePosition () {
-    let left = (this.index.ch * util.charWidth) - 4
-    let top = (this.index.line * util.charHeight) - 4
-    util.setCSS(this.elem, 'left', left)
-    util.setCSS(this.elem, 'top', top)
+    let coord = util.charCoordsShowNewlines(this.parent.editor.cm, this.index)
+    util.setCSS(this.elem, 'left', this.x = coord.left - 4)
+    util.setCSS(this.elem, 'top', this.y = coord.top - 4)
   }
 
   onMouseMove (docLimits: [Point, Point], event: MouseEvent) {
@@ -96,7 +97,7 @@ export class LeftGrip extends Grip {
     // The lowest index in the document as limited by either an earlier matched
     // region or by the start of the document.
     let leftmostBound = this.parent.link.prev
-      ? util.nextChPoint(this.parent.link.prev.value.end)
+      ? nextLegalPoint(this.parent.editor.doc, this.parent.link.prev.value.end)
       : docLimits[0]
 
     // The highest index in the document as limited by the end of this region.
@@ -106,7 +107,7 @@ export class LeftGrip extends Grip {
     // and that satisfies limits on the length of the lines and restrictions
     // on how far the grip can be moved forward and backward in the document.
     let gripPoint = pxToLegalPoint(
-      this.parent.editor.doc,
+      this.parent.editor.cm,
       gripX, gripY,
       leftmostBound, rightmostBound)
 
@@ -125,10 +126,9 @@ export class RightGrip extends Grip {
   // side of its respective character column instead of on the left side as is
   // the case with LeftGrips (and is the default position defined by Grip)
   updatePosition () {
-    let left = ((this.index.ch + 1) * util.charWidth) - 4
-    let top = ((this.index.line + 1) * util.charHeight) - 4
-    util.setCSS(this.elem, 'left', left)
-    util.setCSS(this.elem, 'top', top)
+    let coord = util.charCoordsShowNewlines(this.parent.editor.cm, this.index)
+    util.setCSS(this.elem, 'left', this.x = coord.right - 4)
+    util.setCSS(this.elem, 'top', this.y = coord.bottom - 4)
   }
 
   onMouseMove (docLimits: [Point, Point], event: MouseEvent) {
@@ -137,12 +137,12 @@ export class RightGrip extends Grip {
     let editorX = this.parent.editor.offset.left
     let editorY = this.parent.editor.offset.top
     let gripX = event.clientX - editorX - util.charWidth
-    let gripY = event.clientY - editorY - util.charHeight
+    let gripY = event.clientY - editorY
 
     // The highest index in the document as limited by either a later matched
     // region or by the end of the document.
     let rightmostBound = this.parent.link.next
-      ? util.prevChPoint(this.parent.link.next.value.start)
+      ? prevLegalPoint(this.parent.editor.doc, this.parent.link.next.value.start)
       : docLimits[1]
 
     // The lowest index as limited by the start of this region
@@ -152,7 +152,7 @@ export class RightGrip extends Grip {
     // and that satisfies limits on the length of the lines and restrictions
     // on how far the grip can be moved forward and backward in the document.
     let gripPoint = pxToLegalPoint(
-      this.parent.editor.doc,
+      this.parent.editor.cm,
       gripX, gripY,
       leftmostBound, rightmostBound)
 
@@ -162,22 +162,62 @@ export class RightGrip extends Grip {
   }
 }
 
-function pxToLegalPoint (doc: CodeMirror.Doc, x: number, y: number, left: Point, right: Point): Point {
+function prevLegalPoint (doc: CodeMirror.Doc, point: Point): Point {
+  if (point.ch === 0) {
+    if (point.line === 0) {
+      throw new Error(`no points exist after ${point.toString()}`)
+    }
+
+    let lineLength = doc.getLine(point.line - 1).length
+    return {
+      line: point.line - 1,
+      ch: lineLength
+    }
+  }
+
+  return {
+    line: point.line,
+    ch: point.ch - 1
+  }
+}
+
+function nextLegalPoint (doc: CodeMirror.Doc, point: Point): Point {
+  let lineLength = doc.getLine(point.line).length
+
+  if (point.ch >= lineLength) {
+    if (point.line >= doc.lastLine()) {
+      throw new Error(`no points exist after ${point.toString()}`)
+    }
+
+    return {
+      line: point.line + 1,
+      ch: 0
+    }
+  }
+
+  return {
+    line: point.line,
+    ch: point.ch + 1
+  }
+}
+
+// Important note: the `left` and `right` points must both represent points that
+// can be legally inhabited. In other words, if there exists some other region
+// to the left of the moving region, the `left` point should correspond to the
+// first legal point *after* the left-ward region.
+function pxToLegalPoint (cm: CodeMirror.Editor, x: number, y: number, left: Point, right: Point): Point {
   // Set x and y to 0 if negaive.
   x = (x < 0) ? 0 : x
   y = (y < 0) ? 0 : y
 
   // The line/column point assuming the editing grid is infinite and without
   // constraints from line endings or other matching regions.
-  let naivePoint = {
-    line: Math.round(y / util.charHeight),
-    ch: Math.round(x / util.charWidth)
-  }
+  let naivePoint = cm.coordsChar({ left: x, top: y }, 'local')
 
   // Limit point so that it cant extend past the length of the line it is on.
-  let lastLine = doc.lastLine()
+  let lastLine = cm.getDoc().lastLine()
   let lineNum = Math.min(naivePoint.line, lastLine)
-  let lineLength = doc.getLine(lineNum).length
+  let lineLength = cm.getDoc().getLine(lineNum).length
   let lineRestrictedPoint = {
     line: (lastLine < naivePoint.line) ? lastLine : naivePoint.line,
     ch: (lineLength < naivePoint.ch) ? lineLength : naivePoint.ch

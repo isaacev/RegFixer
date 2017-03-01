@@ -11,6 +11,8 @@ import { Region } from './region'
 import { Point } from './point'
 import * as util from './util'
 
+const EDITOR_PADDING = 4
+
 export class CorpusEditor {
   wrapper: HTMLElement
   grips: HTMLElement
@@ -49,7 +51,9 @@ export class CorpusEditor {
     util.addClass(editorElem, 'editable-font')
 
     // Create a CodeMirror instance.
-    this.cm = CodeMirror(editorElem)
+    this.cm = CodeMirror(editorElem, {
+      lineWrapping: true
+    })
     this.doc = this.cm.getDoc()
 
     // Listen for changes to the CodeMirror contents so that matches can be
@@ -81,55 +85,55 @@ export class CorpusEditor {
   }
 
   drawCanvas () {
-    this.context.clearRect(0, 0, this.canvas.offsetWidth, this.canvas.offsetHeight)
+    let canvasSize = this.canvas.getBoundingClientRect()
+    this.context.clearRect(0, 0, canvasSize.width, canvasSize.height)
 
     this.regions.forEach((reg) => {
       this.context.fillStyle = reg.color
-      let nw = {
-        x: Math.round(reg.start.ch * util.charWidth),
-        y: Math.round(reg.start.line * util.charHeight)
-      }
-      let se = {
-        x: Math.round((reg.end.ch + 1) * util.charWidth),
-        y: Math.round((reg.end.line + 1) * util.charHeight)
-      }
+      let nw = util.charCoordsShowNewlines(this.cm, reg.start)
+      let se = util.charCoordsShowNewlines(this.cm, reg.end)
 
-      if (reg.start.line === reg.end.line) {
-        // Convert indices to (x,y) coordinates.
-        let width = se.x - nw.x
-        let height = util.charHeight
-
-        // Draw region rectangle on the canvas.
-        this.context.fillRect(nw.x, nw.y, width, height)
+      let x: number, y: number, w: number, h: number
+      if (nw.top === se.top) {
+        // Start and end of region are horizontally aligned. (Does not wrap).
+        x = nw.left
+        y = nw.top
+        w = se.right - nw.left
+        h = se.bottom - se.top
+        this.context.fillRect(x, y, w, h)
       } else {
-        // 1. Draw from left grip to end of line
-        let lineLength = this.doc.getLine(reg.start.line).length
-        let width = (lineLength - reg.start.ch + 1) * util.charWidth
-        this.context.fillRect(nw.x, nw.y, width, util.charHeight)
+        // 1. Draw from left grip to the end line or to line wrap.
+        x = nw.left
+        y = nw.top
+        w = canvasSize.width - nw.left
+        h = nw.bottom - nw.top
+        this.context.fillRect(x, y, w, h)
 
-        // 2. Draw fully convered middle lines
-        for (let i = 1, l = reg.end.line - reg.start.line; i < l; i++) {
-          let y = nw.y + (util.charHeight * i)
-          let lineLength = this.doc.getLine(reg.start.line + i).length
-          let width = (lineLength + 1) * util.charWidth
-          this.context.fillRect(0, y, width, util.charHeight)
-        }
+        // 2. Draw full covered lines
+        let middleLines = Math.round((se.top - nw.bottom) / util.charHeight)
+        x = EDITOR_PADDING
+        y = nw.bottom
+        w = canvasSize.width - EDITOR_PADDING
+        h = util.charHeight * middleLines
+        this.context.fillRect(x, y, w, h)
 
-        // 3. Draw from start of line to right grip
-        let y = (reg.end.line) * util.charHeight
-        width = (reg.end.ch + 1) * util.charWidth
-        this.context.fillRect(0, y, width, util.charHeight)
+        // 3. Draw from start of line to right grip.
+        x = EDITOR_PADDING
+        y = se.top
+        w = se.left + util.charWidth - EDITOR_PADDING
+        h = se.bottom - se.top
+        this.context.fillRect(x, y, w, h)
       }
     })
   }
 
   addRegion (start: Point | number, end: Point | number) {
     if (typeof start === 'number') {
-      start = this.doc.posFromIndex(start)
+      start = this.doc.posFromIndex(start) as Point
     }
 
     if (typeof end === 'number') {
-      end = this.doc.posFromIndex(end - 1)
+      end = this.doc.posFromIndex(end - 1) as Point
     }
 
     let color = this.getNextColor()
