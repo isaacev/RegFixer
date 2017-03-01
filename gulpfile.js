@@ -89,11 +89,11 @@ gulp.task('compress:css', ['compile:css', 'bundle:css'], () => {
 
 gulp.task('build:all', ['compress:css', 'compress:js'])
 
-gulp.task('watch:js', () => {
+gulp.task('watch:js', ['compile:js'], () => {
   gulp.watch('src/typescript/*.ts', ['compile:js'])
 })
 
-gulp.task('watch:css', () => {
+gulp.task('watch:css', ['compile:css'], () => {
   gulp.watch('src/sass/*.scss', ['compile:css'])
 })
 
