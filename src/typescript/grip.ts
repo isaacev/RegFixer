@@ -38,7 +38,7 @@ class Grip {
       // Compute last point once at the start of each drag so that it doesn't
       // need to be re-calculated each mouse movement.
       let firstPoint = util.getFirstPoint(this.parent.editor.doc)
-      let lastPoint = util.prevChPoint(util.getLastPoint(this.parent.editor.doc))
+      let lastPoint = util.getLastPoint(this.parent.editor.doc)
 
       // Store mouse move function in its own variable so that it can be
       // easily attached and detached from the window's mouse events.
