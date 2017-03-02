@@ -9,6 +9,7 @@ import { CorpusEditor } from './corpus-editor'
 import { RegionLink } from './region-list'
 import { LeftGrip, RightGrip } from './grip'
 import { Point }  from './point'
+import * as util from './util'
 
 function pointToString (pt: Point): string {
   return `(${pt.line}:${pt.ch})`
@@ -20,6 +21,8 @@ export class Region {
   right: RightGrip
   link: RegionLink
   color: string
+
+  onMove: (left: Point, right: Point) => void = util.noop
 
   constructor (editor: CorpusEditor, start: Point, end: Point, color: string) {
     this.editor = editor
@@ -35,7 +38,7 @@ export class Region {
   set start (index: Point) {
     this.left.index = index
     this.left.updatePosition()
-    this.editor.drawCanvas()
+    this.onMove(this.start, this.end)
   }
 
   get end (): Point {
@@ -45,7 +48,7 @@ export class Region {
   set end (index: Point) {
     this.right.index = index
     this.right.updatePosition()
-    this.editor.drawCanvas()
+    this.onMove(this.start, this.end)
   }
 
   remove () {

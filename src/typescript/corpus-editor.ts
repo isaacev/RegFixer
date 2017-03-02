@@ -25,6 +25,7 @@ export class CorpusEditor {
   palette: string[] = []
   nextColor: number = 0
   offset: { top: number, left: number }
+  isRegionCleared: boolean = true
 
   onInfiniteMatches: () => void = util.noop
   onMatches: (totalMatches: number) => void = util.noop
@@ -139,6 +140,12 @@ export class CorpusEditor {
     let color = this.getNextColor()
     let reg = new Region(this, start, end, color)
     this.regions.insert(reg)
+
+    reg.onMove = (left: Point, right: Point) => {
+      this.drawCanvas()
+    }
+
+    this.isRegionCleared = false
   }
 
   setRegex (regex: RegExp) {
@@ -152,9 +159,11 @@ export class CorpusEditor {
   }
 
   clearRegions () {
-    this.regions.forEach((reg) => reg.remove())
-    this.drawCanvas()
-    this.resetColor()
+    if (this.isRegionCleared === false) {
+      this.isRegionCleared = true
+      this.regions.forEach((reg) => reg.remove())
+      this.resetColor()
+    }
   }
 
   findMatches () {
