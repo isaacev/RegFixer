@@ -10,6 +10,8 @@ import { Region } from './region'
 import { Point } from './point'
 import * as util from './util'
 
+const GRIP_WIDTH = 8
+
 class Grip {
   parent: Region
   index: Point
@@ -68,8 +70,8 @@ class Grip {
 
   updatePosition () {
     let coord = util.charCoordsShowNewlines(this.parent.editor.cm, this.index)
-    util.setCSS(this.elem, 'left', this.x = coord.left - 4)
-    util.setCSS(this.elem, 'top', this.y = coord.top - 4)
+    util.setCSS(this.elem, 'left', this.x = coord.left - (GRIP_WIDTH / 2))
+    util.setCSS(this.elem, 'top', this.y = coord.top - (GRIP_WIDTH / 2))
   }
 
   onMouseMove (docLimits: [Point, Point], event: MouseEvent) {
@@ -83,7 +85,7 @@ class Grip {
 
 export class LeftGrip extends Grip {
   constructor (parent: Region, index: Point, color: string) {
-    super(parent, index, -4, color)
+    super(parent, index, -(GRIP_WIDTH / 2), color)
   }
 
   onMouseMove (docLimits: [Point, Point], event: MouseEvent) {
@@ -119,7 +121,7 @@ export class LeftGrip extends Grip {
 
 export class RightGrip extends Grip {
   constructor (parent: Region, index: Point, color: string) {
-    super(parent, index, util.charHeight - 4, color)
+    super(parent, index, util.charHeight - (GRIP_WIDTH / 2), color)
   }
 
   // updatePosition is different for RightGrip because the grip is on the right
@@ -127,8 +129,8 @@ export class RightGrip extends Grip {
   // the case with LeftGrips (and is the default position defined by Grip)
   updatePosition () {
     let coord = util.charCoordsShowNewlines(this.parent.editor.cm, this.index)
-    util.setCSS(this.elem, 'left', this.x = coord.right - 4)
-    util.setCSS(this.elem, 'top', this.y = coord.bottom - 4)
+    util.setCSS(this.elem, 'left', this.x = coord.right - (GRIP_WIDTH / 2))
+    util.setCSS(this.elem, 'top', this.y = coord.bottom - (GRIP_WIDTH / 2))
   }
 
   onMouseMove (docLimits: [Point, Point], event: MouseEvent) {
