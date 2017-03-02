@@ -5,13 +5,13 @@
 // Created on 2/20/17
 //
 
+import { Position } from 'codemirror'
 import { CorpusEditor } from './corpus-editor'
 import { RegionLink } from './region-list'
 import { LeftGrip, RightGrip } from './grip'
-import { Point }  from './point'
 import * as util from './util'
 
-function pointToString (pt: Point): string {
+function positionToString (pt: Position): string {
   return `(${pt.line}:${pt.ch})`
 }
 
@@ -22,30 +22,30 @@ export class Region {
   link: RegionLink
   color: string
 
-  onMove: (left: Point, right: Point) => void = util.noop
+  onMove: (left: Position, right: Position) => void = util.noop
 
-  constructor (editor: CorpusEditor, start: Point, end: Point, color: string) {
+  constructor (editor: CorpusEditor, start: Position, end: Position, color: string) {
     this.editor = editor
     this.left = new LeftGrip(this, start, color)
     this.right = new RightGrip(this, end, color)
     this.color = color
   }
 
-  get start (): Point {
+  get start (): Position {
     return this.left.index
   }
 
-  set start (index: Point) {
+  set start (index: Position) {
     this.left.index = index
     this.left.updatePosition()
     this.onMove(this.start, this.end)
   }
 
-  get end (): Point {
+  get end (): Position {
     return this.right.index
   }
 
-  set end (index: Point) {
+  set end (index: Position) {
     this.right.index = index
     this.right.updatePosition()
     this.onMove(this.start, this.end)
@@ -59,8 +59,8 @@ export class Region {
   }
 
   toString (): string {
-    let start = pointToString(this.start)
-    let end = pointToString(this.end)
+    let start = positionToString(this.start)
+    let end = positionToString(this.end)
     return `(${start}:${end})`
   }
 }

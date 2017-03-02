@@ -5,6 +5,7 @@
 // Created on 2/20/17
 //
 
+import { Position } from 'codemirror'
 import { Region } from './region'
 import * as util from './util'
 
@@ -24,7 +25,7 @@ export class RegionList {
   insert (reg: Region) {
     // Link is small enough to be at the start of the list. Or the list is
     // empty and this is the first link.
-    if (this.head === null || util.lessThanPoint(reg.start, this.head.value.start)) {
+    if (this.head === null || util.lessThanPosition(reg.start, this.head.value.start)) {
       this.head = new RegionLink(this, reg, null, this.head)
 
       // Set tail pointer if this is the only link.
@@ -36,7 +37,7 @@ export class RegionList {
     }
 
     // Link is large enough to be at the end of the list.
-    if (util.greaterThanPoint(reg.end, this.tail.value.start)) {
+    if (util.greaterThanPosition(reg.end, this.tail.value.start)) {
       this.tail.next = new RegionLink(this, reg, this.tail, null)
       this.tail = this.tail.next
       return

@@ -5,21 +5,20 @@
 // Created on 2/20/17
 //
 
-import CodeMirror from 'codemirror'
+import CodeMirror, { Position } from 'codemirror'
 import { Region } from './region'
-import { Point } from './point'
 import * as util from './util'
 
 const GRIP_WIDTH = 8
 
 class Grip {
   parent: Region
-  index: Point
+  index: Position
   x: number
   y: number
   elem: HTMLElement
 
-  constructor (parent: Region, index: Point, topOffset: number, color: string) {
+  constructor (parent: Region, index: Position, topOffset: number, color: string) {
     this.parent = parent
     this.index = index
 
@@ -39,12 +38,12 @@ class Grip {
 
       // Compute last point once at the start of each drag so that it doesn't
       // need to be re-calculated each mouse movement.
-      let firstPoint = util.getFirstPoint(this.parent.editor.doc)
-      let lastPoint = util.getLastPoint(this.parent.editor.doc)
+      let firstPosition = util.getFirstPosition(this.parent.editor.doc)
+      let lastPosition = util.getLastPosition(this.parent.editor.doc)
 
       // Store mouse move function in its own variable so that it can be
       // easily attached and detached from the window's mouse events.
-      let onMouseMove = this.onMouseMove.bind(this, [firstPoint, lastPoint])
+      let onMouseMove = this.onMouseMove.bind(this, [firstPosition, lastPosition])
 
       let onWindowMouseUp = () => {
         // Return editing control to editor once the drag has completed.
@@ -74,7 +73,7 @@ class Grip {
     util.setCSS(this.elem, 'top', this.y = coord.top - (GRIP_WIDTH / 2))
   }
 
-  onMouseMove (docLimits: [Point, Point], event: MouseEvent) {
+  onMouseMove (docLimits: [Position, Position], event: MouseEvent) {
     throw new Error('unsupported mouse movement event')
   }
 
@@ -84,11 +83,11 @@ class Grip {
 }
 
 export class LeftGrip extends Grip {
-  constructor (parent: Region, index: Point, color: string) {
+  constructor (parent: Region, index: Position, color: string) {
     super(parent, index, -(GRIP_WIDTH / 2), color)
   }
 
-  onMouseMove (docLimits: [Point, Point], event: MouseEvent) {
+  onMouseMove (docLimits: [Position, Position], event: MouseEvent) {
     // Calculate the mouse position on screen relative to the upper left-hand
     // corner of the editing element.
     let editorX = this.parent.editor.offset.left
@@ -99,7 +98,7 @@ export class LeftGrip extends Grip {
     // The lowest index in the document as limited by either an earlier matched
     // region or by the start of the document.
     let leftmostBound = this.parent.link.prev
-      ? nextLegalPoint(this.parent.editor.doc, this.parent.link.prev.value.end)
+      ? nextLegalPosition(this.parent.editor.doc, this.parent.link.prev.value.end)
       : docLimits[0]
 
     // The highest index in the document as limited by the end of this region.
@@ -108,19 +107,19 @@ export class LeftGrip extends Grip {
     // A legal point in the document that is closest to the mouse's position
     // and that satisfies limits on the length of the lines and restrictions
     // on how far the grip can be moved forward and backward in the document.
-    let gripPoint = pxToLegalPoint(
+    let gripPosition = pxToLegalPosition(
       this.parent.editor.cm,
       gripX, gripY,
       leftmostBound, rightmostBound)
 
-    if (util.samePoint(gripPoint, this.index) === false) {
-      this.parent.start = gripPoint
+    if (util.samePosition(gripPosition, this.index) === false) {
+      this.parent.start = gripPosition
     }
   }
 }
 
 export class RightGrip extends Grip {
-  constructor (parent: Region, index: Point, color: string) {
+  constructor (parent: Region, index: Position, color: string) {
     super(parent, index, util.charHeight - (GRIP_WIDTH / 2), color)
   }
 
@@ -133,7 +132,7 @@ export class RightGrip extends Grip {
     util.setCSS(this.elem, 'top', this.y = coord.bottom - (GRIP_WIDTH / 2))
   }
 
-  onMouseMove (docLimits: [Point, Point], event: MouseEvent) {
+  onMouseMove (docLimits: [Position, Position], event: MouseEvent) {
     // Calculate the mouse position on screen relative to the upper left-hand
     // corner of the editing element.
     let editorX = this.parent.editor.offset.left
@@ -144,7 +143,7 @@ export class RightGrip extends Grip {
     // The highest index in the document as limited by either a later matched
     // region or by the end of the document.
     let rightmostBound = this.parent.link.next
-      ? prevLegalPoint(this.parent.editor.doc, this.parent.link.next.value.start)
+      ? prevLegalPosition(this.parent.editor.doc, this.parent.link.next.value.start)
       : docLimits[1]
 
     // The lowest index as limited by the start of this region
@@ -153,18 +152,18 @@ export class RightGrip extends Grip {
     // A legal point in the document that is closest to the mouse's position
     // and that satisfies limits on the length of the lines and restrictions
     // on how far the grip can be moved forward and backward in the document.
-    let gripPoint = pxToLegalPoint(
+    let gripPosition = pxToLegalPosition(
       this.parent.editor.cm,
       gripX, gripY,
       leftmostBound, rightmostBound)
 
-    if (util.samePoint(gripPoint, this.index) === false) {
-      this.parent.end = gripPoint
+    if (util.samePosition(gripPosition, this.index) === false) {
+      this.parent.end = gripPosition
     }
   }
 }
 
-function prevLegalPoint (doc: CodeMirror.Doc, point: Point): Point {
+function prevLegalPosition (doc: CodeMirror.Doc, point: Position): Position {
   if (point.ch === 0) {
     if (point.line === 0) {
       throw new Error(`no points exist after ${point.toString()}`)
@@ -183,7 +182,7 @@ function prevLegalPoint (doc: CodeMirror.Doc, point: Point): Point {
   }
 }
 
-function nextLegalPoint (doc: CodeMirror.Doc, point: Point): Point {
+function nextLegalPosition (doc: CodeMirror.Doc, point: Position): Position {
   let lineLength = doc.getLine(point.line).length
 
   if (point.ch >= lineLength) {
@@ -207,32 +206,32 @@ function nextLegalPoint (doc: CodeMirror.Doc, point: Point): Point {
 // can be legally inhabited. In other words, if there exists some other region
 // to the left of the moving region, the `left` point should correspond to the
 // first legal point *after* the left-ward region.
-function pxToLegalPoint (cm: CodeMirror.Editor, x: number, y: number, left: Point, right: Point): Point {
+function pxToLegalPosition (cm: CodeMirror.Editor, x: number, y: number, left: Position, right: Position): Position {
   // Set x and y to 0 if negaive.
   x = (x < 0) ? 0 : x
   y = (y < 0) ? 0 : y
 
   // The line/column point assuming the editing grid is infinite and without
   // constraints from line endings or other matching regions.
-  let naivePoint = cm.coordsChar({ left: x, top: y }, 'local')
+  let naivePosition = cm.coordsChar({ left: x, top: y }, 'local')
 
   // Limit point so that it cant extend past the length of the line it is on.
   let lastLine = cm.getDoc().lastLine()
-  let lineNum = Math.min(naivePoint.line, lastLine)
+  let lineNum = Math.min(naivePosition.line, lastLine)
   let lineLength = cm.getDoc().getLine(lineNum).length
-  let lineRestrictedPoint = {
-    line: (lastLine < naivePoint.line) ? lastLine : naivePoint.line,
-    ch: (lineLength < naivePoint.ch) ? lineLength : naivePoint.ch
+  let lineRestrictedPosition = {
+    line: (lastLine < naivePosition.line) ? lastLine : naivePosition.line,
+    ch: (lineLength < naivePosition.ch) ? lineLength : naivePosition.ch
   }
 
   // Limit point so that it cant extend into another matching region that
   // comes before or after.
-  let neighborRestrictedPoint = lineRestrictedPoint
-  if (util.lessThanPoint(lineRestrictedPoint, left)) {
-    neighborRestrictedPoint = left
-  } else if (util.greaterThanPoint(lineRestrictedPoint, right)) {
-    neighborRestrictedPoint = right
+  let neighborRestrictedPosition = lineRestrictedPosition
+  if (util.lessThanPosition(lineRestrictedPosition, left)) {
+    neighborRestrictedPosition = left
+  } else if (util.greaterThanPosition(lineRestrictedPosition, right)) {
+    neighborRestrictedPosition = right
   }
 
-  return neighborRestrictedPoint
+  return neighborRestrictedPosition
 }

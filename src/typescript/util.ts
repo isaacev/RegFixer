@@ -5,27 +5,26 @@
 // Created on 2/20/17
 //
 
-import CodeMirror from 'codemirror'
-import { Point } from './point'
+import CodeMirror, { Position } from 'codemirror'
 
 export const charWidth = 14.4
 export const charHeight = 28
 
-export function samePoint (a: Point, b: Point): boolean {
+export function samePosition (a: Position, b: Position): boolean {
   return (a.line === b.line && a.ch === b.ch)
 }
 
-export function lessThanPoint (a: Point, b: Point): boolean {
+export function lessThanPosition (a: Position, b: Position): boolean {
   if (a.line === b.line) { return a.ch < b.ch }
   return a.line < b.line
 }
 
-export function greaterThanPoint (a: Point, b: Point): boolean {
+export function greaterThanPosition (a: Position, b: Position): boolean {
   if (a.line === b.line) { return a.ch > b.ch }
   return a.line > b.line
 }
 
-export function clampPoint (val: Point, min: Point, max: Point): Point {
+export function clampPosition (val: Position, min: Position, max: Position): Position {
   if (val.line === min.line && val.ch < min.ch) { return min }
   if (val.line === max.line && val.ch > max.ch) { return max }
   if (val.line < min.line) { return min }
@@ -33,13 +32,13 @@ export function clampPoint (val: Point, min: Point, max: Point): Point {
   return val
 }
 
-export function getFirstPoint (doc: CodeMirror.Doc): Point {
+export function getFirstPosition (doc: CodeMirror.Doc): Position {
   let firstLine = doc.firstLine()
 
   return { line: firstLine, ch: 0 }
 }
 
-export function getLastPoint (doc: CodeMirror.Doc): Point {
+export function getLastPosition (doc: CodeMirror.Doc): Position {
   let lastLine = doc.lastLine()
   let lastCh = doc.getLine(lastLine).length
 
@@ -125,8 +124,8 @@ export function noop () {
 }
 
 type CharCoords = { left: number, right: number, top: number, bottom: number }
-export function charCoordsShowNewlines (cm: CodeMirror.Editor, point: Point): CharCoords {
-  let naiveCoords = cm.charCoords(point, 'local')
+export function charCoordsShowNewlines (cm: CodeMirror.Editor, position: Position): CharCoords {
+  let naiveCoords = cm.charCoords(position, 'local')
 
   // If CodeMirror describes a character coordinate as having a width of 0,
   // check if the character coordinate represents the position of a newline
@@ -135,15 +134,15 @@ export function charCoordsShowNewlines (cm: CodeMirror.Editor, point: Point): Ch
     let doc = cm.getDoc()
     let lastLineNum = doc.lastLine()
 
-    // If the point is from the last line of the document then it can't end in
+    // If the position is from the last line of the document then it can't end in
     // a newline so further checks can be skipped.
-    if (point.line >= lastLineNum) {
+    if (position.line >= lastLineNum) {
       return naiveCoords
     }
 
-    let lineLength = doc.getLine(point.line).length
-    if (point.ch === lineLength) {
-      // Point corresponds to a newline.
+    let lineLength = doc.getLine(position.line).length
+    if (position.ch === lineLength) {
+      // Position corresponds to a newline.
       let charWidth = cm.defaultCharWidth()
       let newlineCoords = naiveCoords
       newlineCoords.right = naiveCoords.left + charWidth

@@ -5,10 +5,9 @@
 // Created on 2/20/17
 //
 
-import CodeMirror from 'codemirror'
+import CodeMirror, { Position } from 'codemirror'
 import { RegionList } from './region-list'
 import { Region } from './region'
-import { Point } from './point'
 import * as util from './util'
 
 const EDITOR_PADDING = 4
@@ -128,20 +127,20 @@ export class CorpusEditor {
     })
   }
 
-  addRegion (start: Point | number, end: Point | number) {
+  addRegion (start: Position | number, end: Position | number) {
     if (typeof start === 'number') {
-      start = this.doc.posFromIndex(start) as Point
+      start = this.doc.posFromIndex(start) as Position
     }
 
     if (typeof end === 'number') {
-      end = this.doc.posFromIndex(end - 1) as Point
+      end = this.doc.posFromIndex(end - 1) as Position
     }
 
     let color = this.getNextColor()
     let reg = new Region(this, start, end, color)
     this.regions.insert(reg)
 
-    reg.onMove = (left: Point, right: Point) => {
+    reg.onMove = (left: Position, right: Position) => {
       this.drawCanvas()
     }
 
