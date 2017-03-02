@@ -84,9 +84,14 @@ export class CorpusEditor {
     this.doc.setValue(value)
   }
 
-  drawCanvas () {
+  clearCanvas () {
     let canvasSize = this.canvas.getBoundingClientRect()
     this.context.clearRect(0, 0, canvasSize.width, canvasSize.height)
+  }
+
+  drawCanvas () {
+    let canvasSize = this.canvas.getBoundingClientRect()
+    this.clearCanvas()
 
     this.regions.forEach((reg) => {
       this.context.fillStyle = reg.color
@@ -161,6 +166,7 @@ export class CorpusEditor {
     if (this.isRegionCleared === false) {
       this.isRegionCleared = true
       this.regions.forEach((reg) => reg.remove())
+      this.clearCanvas()
       this.resetColor()
     }
   }
