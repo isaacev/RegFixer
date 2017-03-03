@@ -159,7 +159,7 @@ export class RightGrip extends Grip {
     let editorX = this.parent.editor.offset.left
     let editorY = this.parent.editor.offset.top
     let mouseX = event.clientX - editorX - util.charWidth
-    let mouseY = event.clientY - editorY - (util.charHeight / 2)
+    let mouseY = event.clientY - editorY
     let gripY = mouseY
 
     // Given the following layout:
