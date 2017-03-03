@@ -11,6 +11,11 @@ import * as util from './util'
 
 const GRIP_WIDTH = 8
 
+// Represents the distance (measured in line-height units) a grip must be moved
+// from its current line's horizontal centerline before the grip is considered
+// to have been dragged to a different line.
+const STICKY_FACTOR = 1
+
 class Grip {
   parent: Region
   index: Position
@@ -92,8 +97,24 @@ export class LeftGrip extends Grip {
     // corner of the editing element.
     let editorX = this.parent.editor.offset.left
     let editorY = this.parent.editor.offset.top
-    let gripX = event.clientX - editorX
-    let gripY = event.clientY - editorY
+    let mouseX = event.clientX - editorX
+    let mouseY = event.clientY - editorY
+    let gripY = mouseY
+
+    // Given the following layout:
+    //
+    // O---+  <- mouse y (or really wherever the mouse is)
+    // |   |  <- center y (horizontal center of the line of text)
+    // +---+
+    //
+    // Snap the vertical position of the grip (`O` in the diagram) to its
+    // current line of text as long as the grip is less than the `STICKY_FACTOR`
+    // distance away from the current line's center line.
+    let lineY = this.parent.editor.cm.charCoords(this.index, 'local').top
+    let centerY = lineY + (util.charHeight / 2)
+    if (Math.abs(mouseY - centerY) < (STICKY_FACTOR * util.charHeight)) {
+      gripY = centerY
+    }
 
     // The lowest index in the document as limited by either an earlier matched
     // region or by the start of the document.
@@ -109,7 +130,7 @@ export class LeftGrip extends Grip {
     // on how far the grip can be moved forward and backward in the document.
     let gripPosition = pxToLegalPosition(
       this.parent.editor.cm,
-      gripX, gripY,
+      mouseX, gripY,
       leftmostBound, rightmostBound)
 
     if (util.samePosition(gripPosition, this.index) === false) {
@@ -137,8 +158,24 @@ export class RightGrip extends Grip {
     // corner of the editing element.
     let editorX = this.parent.editor.offset.left
     let editorY = this.parent.editor.offset.top
-    let gripX = event.clientX - editorX - util.charWidth
-    let gripY = event.clientY - editorY
+    let mouseX = event.clientX - editorX - util.charWidth
+    let mouseY = event.clientY - editorY - (util.charHeight / 2)
+    let gripY = mouseY
+
+    // Given the following layout:
+    //
+    // +---+
+    // |   |  <- center y (horizontal center of the line of text)
+    // +---O  <- mouse y (or really wherever the mouse is)
+    //
+    // Snap the vertical position of the grip (`O` in the diagram) to its
+    // current line of text as long as the grip is less than the `STICKY_FACTOR`
+    // distance away from the current line's center line.
+    let lineY = this.parent.editor.cm.charCoords(this.index, 'local').top
+    let centerY = lineY + (util.charHeight / 2)
+    if (Math.abs(mouseY - centerY) < (STICKY_FACTOR * util.charHeight)) {
+      gripY = centerY
+    }
 
     // The highest index in the document as limited by either a later matched
     // region or by the end of the document.
@@ -154,7 +191,7 @@ export class RightGrip extends Grip {
     // on how far the grip can be moved forward and backward in the document.
     let gripPosition = pxToLegalPosition(
       this.parent.editor.cm,
-      gripX, gripY,
+      mouseX, gripY,
       leftmostBound, rightmostBound)
 
     if (util.samePosition(gripPosition, this.index) === false) {
