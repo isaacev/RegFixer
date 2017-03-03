@@ -40,7 +40,7 @@ export function getFirstPosition (doc: CodeMirror.Doc): Position {
 
 export function getLastPosition (doc: CodeMirror.Doc): Position {
   let lastLine = doc.lastLine()
-  let lastCh = doc.getLine(lastLine).length
+  let lastCh = doc.getLine(lastLine).length - 1
 
   return { line: lastLine, ch: lastCh }
 }
