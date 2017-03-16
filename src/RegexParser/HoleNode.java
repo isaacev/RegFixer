@@ -55,7 +55,7 @@ public class HoleNode extends RegexNode{
 
 	@Override
 	public String toString () {
-		// render as 🐱 (an emoji cat)
-		return "\uD83D\uDC31 ";
+		// render as 🔮 (a crystal ball cat)
+		return "\uD83D\uDD2E ";
 	}
 }
