@@ -29,6 +29,12 @@ import RegexParser.HoleNode;
  *   made more generic and reusable between similarily structured nodes.
  */
 
+/**
+ * Termite is responsible for taking regular expression abstract syntax trees
+ * and finding all the sub-expressions that can be replaced with a hole. The
+ * `Termite.digest` method will return a list of ASTs where each AST has a
+ * different sub-expression replaced with a hole.
+ */
 public class Termite {
   static List<RegexNode> digest (RegexNode expr) {
          if (expr instanceof ConcatNode)   { return digestConcat((ConcatNode) expr); }
