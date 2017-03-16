@@ -7,10 +7,10 @@ app:
 all: parser app
 	echo "all built"
 
-parser: lexer
+parser: clean-parser lexer
 	java -cp $(cp) java_cup.Main -expect 300 -destdir src/RegexParser src/RegexParser/Regex.cup
 
-lexer:
+lexer: clean-lexer
 	jflex -d src/RegexParser src/RegexParser/Regex.jlex
 
 run:
