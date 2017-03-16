@@ -64,10 +64,10 @@ public class Termite {
         suffixExprs = new LinkedList<RegexNode>(subExprs.subList(i + n, subExprs.size()));
 
         if (midfixExprs.size() == 1) {
-          for (RegexNode subExprDigested : digest(midfixExprs.get(0))) {
+          for (RegexNode midfixExprDigested : digest(midfixExprs.get(0))) {
             List<RegexNode> tmp = new LinkedList<RegexNode>();
             tmp.addAll(prefixExprs);
-            tmp.add(subExprDigested);
+            tmp.add(midfixExprDigested);
             tmp.addAll(suffixExprs);
 
             digestedExprs.add(new ConcatNode(tmp));
