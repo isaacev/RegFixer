@@ -1,0 +1,212 @@
+/**
+* @author Fang Wang, UW-Madison student, updated 06/02/2016
+* the rule of the grammar is derived from http://web.archive.org/web/20090129224504/http://faqts.com/knowledge_base/view.phtml/aid/25718/fid/200
+* and http://regexr.com/
+**/
+
+
+// detailed info of each node will be updated in FormulaNode.java
+
+//I'm not using all regexNode instead of using regexNode, simpleRegex and basicRegex 
+//because I have to use the conventional way to add precedence to concatenation
+
+/* Nonterminals */
+non terminal RegexNode program;
+non terminal LinkedList regexList;
+non terminal RegexNode unionRegex;
+non terminal RegexNode regexNode;
+non terminal RegexNode simpleRegex;
+non terminal RegexNode basicRegex;
+non terminal Integer integer;
+non terminal LinkedList intervals;
+non terminal IntervalNode interval;
+non terminal CharNode insideChar;
+non terminal CharNode outsideChar;
+non terminal CharNode metaChar;
+non terminal CharacterClassNode characterClass;
+non terminal NotCharacterClassNode notcharacterClass;
+
+
+/* precedence and associativity declarations */
+precedence left UNION;
+precedence left MINUS;
+precedence left STAR, PLUS, OPTIONAL, CARET, LPAREN, RPAREN,DIGIT;
+precedence right LCURLY, RBRACKET;
+precedence left RCURLY, LBRACKET;
+precedence left DOLLAR, CARET;
+
+
+/* Grammar with comments */
+start with program;
+
+program ::= regexNode
+       
+regexNode	::= "^" unionRegex 
+            
+            | "^" unionRegex "$"
+            
+            | unionRegex "$"
+            
+            | unionRegex
+           
+
+unionRegex ::=	unionRegex "|" simpleRegex
+            
+            | simpleRegex  
+            
+
+
+simpleRegex ::= concateList:l  
+            
+            
+concateList	::=	concateList basicRegex
+            
+            | /* epsilon */
+            
+
+basicRegex	::= "(" regexNode ")" 
+               
+                | basicRegex "*" 
+                
+                | basicRegex "+" 
+                
+                | basicRegex "?" 
+                
+                | "."           // meta character, all characters except line breaker
+                   
+                | outsideChar   //chacters that can be outside of characterClass
+                
+                | characterClass
+                
+                | notcharacterClass
+
+                | "(" regexNode ")" "{" integer "}"
+                                     
+                | "(" regexNode ")" "{" integer ","  "}"
+                
+                | "(" regexNode ")" "{" integer "," integer "}"
+                
+                | outsideChar "{" integer "}"
+                                    
+                | outsideChar "{" integer ","  "}"
+               
+                | outsideChar "{" integer "," integer "}"
+                
+                | characterClass "{" integer "}"
+                                     
+                | characterClass "{" integer ","  "}"
+                
+                | characterClass "{" integer "," integer "}"
+                
+                | notcharacterClass "{" integer "}"
+                                     
+                | notcharacterClass "{" integer ","  "}"
+                
+                | notcharacterClass "{" integer "," integer "}"
+                
+ 
+characterClass ::= "[" intervals "]"  //chacterClass     
+
+                | "[" intervals insideChar "-" "]"  //chacterClass special case, end with minus
+
+notcharacterClass ::= | "[" "^" intervals "]" //notCharacterClass
+                      
+                      | "[" "^" intervals insideChar "-" "]" //notCharacterClass special case, end with minus       
+                
+integer ::= integer DIGIT // compute min and max of repetition
+          
+          | DIGIT
+          
+    
+intervals   ::=	 intervals interval // linedList of intervals
+            
+            | /* epsilon */
+            
+
+interval    ::=	insideChar //characters that can be inside characterClass
+            
+            | insideChar MINUS insideChar // range
+            
+        
+insideChar ::=  DIGIT
+                
+                | ESCAPEDCHAR  //characters of format \X where X can be character except metacharacters
+                
+                | metaChar
+                
+                | NOTDIGIT //single character that exclude digits and special characters such as +.*{}[] etc.
+                
+                | "-" //below special characters lose their meaning inside character class
+                
+                | "." 
+                
+                | "+"  
+                
+                | "*" 
+                
+                | "?" 
+                
+                | "^" 
+                
+                | "$" 
+                
+                | "[" 
+                
+                | "]" 
+                
+                | "(" 
+                
+                | ")" 
+                
+                | "{" 
+               
+                | "}" 
+                
+                | "|" 
+                
+                | ","
+                
+                
+outsideChar ::=  DIGIT
+                
+                | ESCAPEDCHAR   
+                
+                | metaChar
+                
+                | NOTDIGIT
+                
+                | "-" 
+                
+                | "{" 
+                
+                | "}" 
+                
+                | ","
+               
+
+metaChar ::=    \t {tab character}
+
+                \n {newline character}
+
+                \r {carriage return character}
+
+                \f {form feed character}
+
+                \b {match a 'word' boundary}
+
+                \B {match not a 'word' boundary}
+
+                \d {a digit, [0-9]}
+
+                \D {not a digit, [^0-9]}
+
+                \s {whitespace, [ \t\n\r\f]}
+
+                \S {not a whitespace, [^ \t\n\r\f]}
+
+                \v {matches a vertical tab character}
+                
+                \w {'word' character, [a-zA-Z0-9_]}
+
+                \W {not a 'word' character, [^a-zA-Z0-9_]}
+                

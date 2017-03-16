@@ -1,0 +1,368 @@
+package RegexParser;
+
+import java_cup.runtime.*;
+import java.util.*;
+
+/* The code below redefines method syntax_error to give better error messages
+ * than just "Syntax error"
+ */
+parser code {:
+
+public void syntax_error(Symbol currToken) {
+    if (currToken.value == null) {
+        ErrMsg.fatal(0,0, "Syntax error at end of file");
+    }
+    else {
+        ErrMsg.fatal(((TokenVal)currToken.value).linenum,
+                     ((TokenVal)currToken.value).charnum,
+                     "Syntax error");
+    }
+    //System.exit(-1);
+}
+:};
+
+/* Terminals */
+terminal TokenVal METATAB;
+terminal TokenVal METANEWLINE;
+terminal TokenVal METARETURN;
+terminal TokenVal METAFEED;
+terminal TokenVal METABOUNDARY;
+terminal TokenVal METANOTBOUNDARY;
+terminal TokenVal METADIGIT;
+terminal TokenVal METANOTDIGIT;
+terminal TokenVal METASPACE;
+terminal TokenVal METANOTSPACE;
+terminal TokenVal METAVERTICALTAB;
+terminal TokenVal METAWORD;
+terminal TokenVal METANOTWORD;
+terminal CharTokenVal ESCAPEDCHAR;
+terminal CharTokenVal DIGIT;
+terminal CharTokenVal NOTDIGIT;
+
+terminal  TokenVal MINUS;
+terminal  TokenVal DOT;
+terminal  TokenVal PLUS;
+terminal  TokenVal STAR;
+terminal  TokenVal OPTIONAL;
+terminal  TokenVal CARET;
+terminal  TokenVal DOLLAR;
+terminal  TokenVal LBRACKET;
+terminal  TokenVal RBRACKET;
+terminal  TokenVal LPAREN;
+terminal  TokenVal RPAREN;
+terminal  TokenVal LCURLY;
+terminal  TokenVal RCURLY;
+terminal  TokenVal UNION;
+terminal  TokenVal COMMA;
+
+
+/* Nonterminals */
+non terminal RegexNode program;
+non terminal LinkedList concateList;
+non terminal RegexNode unionRegex;
+non terminal RegexNode regexNode;
+non terminal RegexNode simpleRegex;
+non terminal RegexNode basicRegex;
+non terminal Integer integer;
+non terminal LinkedList intervals;
+non terminal IntervalNode interval;
+non terminal CharNode insideChar;
+non terminal CharNode outsideChar;
+non terminal CharNode metaChar;
+non terminal CharacterClassNode characterClass;
+non terminal NotCharacterClassNode notcharacterClass;
+
+/* precedence and associativity declarations */
+precedence left UNION;
+precedence left MINUS;
+precedence left STAR, PLUS, OPTIONAL, CARET, LPAREN, RPAREN,DIGIT;
+precedence right LCURLY, RBRACKET;
+precedence left RCURLY, LBRACKET;
+precedence left DOLLAR, CARET;
+
+
+
+/* Grammar with actions */
+
+start with program;
+
+
+
+program ::= regexNode: r
+        {: RESULT = r;
+        :}
+        ;
+
+regexNode	::= CARET unionRegex:r 
+            {: RESULT = new AnchorNode(r,true,false); 
+            :}
+            | CARET unionRegex:r DOLLAR
+            {: RESULT = new AnchorNode(r,true,true); 
+            :}
+            | unionRegex:r DOLLAR
+            {: RESULT = new AnchorNode(r,false,true); 
+            :}
+            | unionRegex:r
+            {: RESULT = r;
+            :}
+            ;
+
+unionRegex ::=	unionRegex:r1 UNION simpleRegex:r2 
+            {: RESULT = new UnionNode(r1,r2); 
+            :}
+            | simpleRegex:r    
+            {: RESULT = r; 
+            :}
+            ;
+
+
+simpleRegex ::= concateList:l
+            {: RESULT = new ConcatNode(l);
+            :}
+            ;
+            
+concateList	::=	concateList:rlist basicRegex:r
+            {: rlist.addLast(r);
+               RESULT = rlist;
+            :}
+            | /* epsilon */
+            {: RESULT = new LinkedList<RegexNode>(); 
+            :}
+            ; 
+
+basicRegex	    ::=	 LPAREN regexNode:r RPAREN 
+                {: RESULT = r; 
+                :}
+                | basicRegex:r STAR 
+                {: RESULT = new StarNode(r); 
+                :}
+                | basicRegex:r PLUS 
+                {: RESULT = new PlusNode(r); 
+                :}
+                | basicRegex:r OPTIONAL 
+                {: RESULT = new OptionalNode(r); 
+                :}
+                | DOT
+                {: RESULT = new DotNode('.'); 
+                :}  
+                | outsideChar: c 
+                {: RESULT = c; 
+                :}
+                | characterClass:c
+                {: RESULT = c; 
+                :}
+                | notcharacterClass:c
+                {: RESULT = c; 
+                :}
+                | LPAREN regexNode:r RPAREN LCURLY integer:i RCURLY
+                {: RESULT = new RepetitionNode(1,r,i); 
+                :}                      
+                | LPAREN regexNode:r RPAREN LCURLY integer:i COMMA  RCURLY
+                {: RESULT = new RepetitionNode(2,r,i); 
+                :}
+                | LPAREN regexNode:r RPAREN LCURLY integer:i1 COMMA integer:i2 RCURLY
+                {: RESULT = new RepetitionNode(3,r, i1, i2); 
+                :}
+                | outsideChar:r LCURLY integer:i RCURLY
+                {: RESULT = new RepetitionNode(1,r,i); 
+                :}                      
+                | outsideChar:r LCURLY integer:i COMMA  RCURLY
+                {: RESULT = new RepetitionNode(2,r,i); 
+                :}
+                | outsideChar:r LCURLY integer:i1 COMMA integer:i2 RCURLY
+                {: RESULT = new RepetitionNode(3,r, i1, i2); 
+                :}
+                | characterClass:r LCURLY integer:i RCURLY
+                {: RESULT = new RepetitionNode(1,r,i); 
+                :}                      
+                | characterClass:r LCURLY integer:i COMMA  RCURLY
+                {: RESULT = new RepetitionNode(2,r,i); 
+                :}
+                | characterClass:r LCURLY integer:i1 COMMA integer:i2 RCURLY
+                {: RESULT = new RepetitionNode(3,r, i1, i2); 
+                :}
+                | notcharacterClass:r LCURLY integer:i RCURLY
+                {: RESULT = new RepetitionNode(1,r,i); 
+                :}                      
+                | notcharacterClass:r LCURLY integer:i COMMA  RCURLY
+                {: RESULT = new RepetitionNode(2,r,i); 
+                :}
+                | notcharacterClass:r LCURLY integer:i1 COMMA integer:i2 RCURLY
+                {: RESULT = new RepetitionNode(3,r, i1, i2); 
+                :}
+                ;
+                
+characterClass ::= LBRACKET intervals:i RBRACKET  
+                   {: RESULT = new CharacterClassNode(i); 
+                   :}    
+                   | LBRACKET intervals:i insideChar:c MINUS RBRACKET  
+                   {: 
+                    CharacterClassNode node = new CharacterClassNode(i);
+                    node.addInterval(new IntervalNode(c));
+                    node.addInterval(new IntervalNode(new NormalCharNode('-')));
+                    RESULT = node;
+                    :}  
+                   ;
+                    
+notcharacterClass ::=  LBRACKET CARET intervals:i insideChar:c MINUS RBRACKET
+                    {: NotCharacterClassNode node = new NotCharacterClassNode(i);
+                    node.addInterval(new IntervalNode(c));
+                    node.addInterval(new IntervalNode(new NormalCharNode('-')));
+                    RESULT = node; 
+                    :}
+                    | LBRACKET CARET intervals:i RBRACKET
+                    {: RESULT = new NotCharacterClassNode(i); 
+                    :}
+                    ;
+                
+integer ::= integer:i DIGIT:d 
+          {: RESULT = Integer.parseInt(String.valueOf(d.charVal))+ i*10;
+          :}
+          | DIGIT:d
+          {: RESULT = Integer.parseInt(String.valueOf(d.charVal)); 
+          :}
+          ;
+    
+intervals	::=	 intervals:ilist interval:i  
+            {: ilist.addLast(i);
+               RESULT = ilist;
+            :}
+            | /* epsilon */
+            {: RESULT = new LinkedList<IntervalNode>(); 
+            :}
+            ;
+
+interval	::=	insideChar:c1 MINUS insideChar:c2
+            {: RESULT = new IntervalNode(c1, c2); 
+            :}
+            | insideChar:c
+            {: RESULT = new IntervalNode(c); 
+            :}
+            | metaChar:m 
+            {: RESULT = new IntervalNode(m); 
+            :} 
+            ;
+        
+insideChar ::=  DIGIT:c
+                {: RESULT = new NormalCharNode(c.charVal); 
+                :}
+                | ESCAPEDCHAR:c 
+                {: RESULT = new EscapedCharNode(c.charVal); 
+                :}
+                | NOTDIGIT:c 
+                {: RESULT = new NormalCharNode(c.charVal); 
+                :}
+                | MINUS:c 
+                {: RESULT = new NormalCharNode('-'); 
+                :}
+                | DOT 
+                {: RESULT = new NormalCharNode('.'); 
+                :}
+                | PLUS 
+                {: RESULT = new NormalCharNode('+'); 
+                :}
+                | STAR 
+                {: RESULT = new NormalCharNode('*'); 
+                :}
+                | OPTIONAL 
+                {: RESULT = new NormalCharNode('?'); 
+                :}
+                | CARET 
+                {: RESULT = new NormalCharNode('^'); 
+                :}
+                | DOLLAR 
+                {: RESULT = new NormalCharNode('$'); 
+                :}
+                | LBRACKET 
+                {: RESULT = new NormalCharNode('['); 
+                :}
+                | RBRACKET 
+                {: RESULT = new NormalCharNode(']'); 
+                :}
+                | LPAREN 
+                {: RESULT = new NormalCharNode('('); 
+                :}
+                | RPAREN 
+                {: RESULT = new NormalCharNode(')'); 
+                :}
+                | LCURLY 
+                {: RESULT = new NormalCharNode('{'); 
+                :}
+                | RCURLY 
+                {: RESULT = new NormalCharNode('}'); 
+                :}
+                | UNION 
+                {: RESULT = new NormalCharNode('|'); 
+                :}
+                | COMMA
+                {: RESULT = new NormalCharNode(','); 
+                :}
+                ;
+
+
+outsideChar ::= DIGIT:c
+                {: RESULT = new NormalCharNode(c.charVal); 
+                :}
+                | ESCAPEDCHAR:c 
+                {: RESULT = new EscapedCharNode(c.charVal); 
+                :}
+                | metaChar:c 
+                {: RESULT = c; 
+                :}
+                | NOTDIGIT:c 
+                {: RESULT = new NormalCharNode(c.charVal); 
+                :}
+                | MINUS
+                {: RESULT = new NormalCharNode('-'); 
+                :}
+                | LCURLY 
+                {: RESULT = new NormalCharNode('{'); 
+                :}
+                | RCURLY 
+                {: RESULT = new NormalCharNode('}'); 
+                :}
+                | COMMA
+                {: RESULT = new NormalCharNode(','); 
+                :}
+                ;
+
+metaChar  ::=   METATAB 
+                {: RESULT = new MetaCharNode('t'); 
+                :}
+                | METANEWLINE
+                {: RESULT = new MetaCharNode('n'); 
+                :}
+                | METARETURN
+                {: RESULT = new MetaCharNode('r'); 
+                :}
+                | METAFEED
+                {: RESULT = new MetaCharNode('f'); 
+                :}
+                | METABOUNDARY
+                {: RESULT = new MetaCharNode('b'); 
+                :}
+                | METANOTBOUNDARY
+                {: RESULT = new MetaCharNode('B'); 
+                :}
+                | METADIGIT
+                {: RESULT = new MetaCharNode('d'); 
+                :}
+                | METANOTDIGIT
+                {: RESULT = new MetaCharNode('D'); 
+                :}
+                | METASPACE
+                {: RESULT = new MetaCharNode('s'); 
+                :}
+                | METANOTSPACE
+                {: RESULT = new MetaCharNode('S'); 
+                :}
+                | METAVERTICALTAB
+                {: RESULT = new MetaCharNode('v'); 
+                :}
+                | METAWORD
+                {: RESULT = new MetaCharNode('w'); 
+                :}
+                | METANOTWORD
+                {: RESULT = new MetaCharNode('W'); 
+                :}
+                ;
