@@ -12,8 +12,7 @@ public class Main {
     }
 
     // Parse a string to a regex AST.
-    RegexParserProvider prov = new RegexParserProvider(args[0]);
-    RegexNode regex = prov.process();
+    RegexNode regex = (new RegexParserProvider(args[0])).process();
 
     // Add holes to the AST.
     List<RegexNode> digestedTrees = Termite.digest(regex);
