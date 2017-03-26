@@ -1,82 +1,27 @@
 package RegexParser;
 
-import java.io.PrintWriter;
+public class IntervalNode implements RegexNode {
+  private enum Mode { SINGLE, RANGE }
+  private Mode mode;
+  private CharNode left;
+  private CharNode right;
 
-public class IntervalNode extends RegexNode {
-	public IntervalNode(CharNode c1) {
-		mode = "single";
-		myChar1 = c1;
-	}
+  public IntervalNode (CharNode left) {
+    this.mode = Mode.SINGLE;
+    this.left = left;
+  }
 
-	public IntervalNode(CharNode c1, CharNode c2) {
-		mode = "range";
-		myChar1 = c1;
-		myChar2 = c2;
+  public IntervalNode (CharNode left, CharNode right) {
+    this.mode = Mode.RANGE;
+    this.left = left;
+    this.right = right;
+  }
 
-	}
-
-	@Override
-	public void unparse(PrintWriter p) {
-		if (mode.equals("single")) {
-			myChar1.unparse(p);
-			p.print(" ");
-		} else {
-			myChar1.unparse(p);
-			p.print("-");
-			myChar2.unparse(p);
-			p.print(" ");
-		}
-	}
-
-	public String getMode() {
-		return mode;
-	}
-
-	public CharNode getChar1() {
-		return myChar1;
-	}
-
-	/**
-	 * be sure to use getMode() to check whether this is range mode getChar2 is
-	 * only valid in range mode
-	 */
-	public CharNode getChar2() {
-		return myChar2;
-	}
-
-	@Override
-	public void toString(StringBuilder s) {
-		if (mode.equals("single")) {
-			myChar1.toString(s);
-			s.append(" ");
-		} else {
-			myChar1.toString(s);
-			s.append("-");
-			myChar2.toString(s);
-			s.append(" ");
-		}
-	}
-
-	@Override
-	public String toString () {
-		if (mode.equals("single")) {
-			return myChar1.toString() + " ";
-		} else {
-			return myChar1.toString() + "-" + myChar2.toString() + " ";
-		}
-	}
-
-	@Override
-	public String toCleanString () {
-		if (mode.equals("single")) {
-			return myChar1.toCleanString();
-		} else {
-			return myChar1.toCleanString() + "-" + myChar2.toCleanString() + " ";
-		}
-	}
-
-	private String mode;
-	private CharNode myChar1;
-	private CharNode myChar2;
-
+  public String toString () {
+    if (this.mode == Mode.SINGLE) {
+      return this.left.toString();
+    } else {
+      return this.left.toString() + "-" + this.right.toString();
+    }
+  }
 }

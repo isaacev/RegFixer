@@ -1,31 +1,13 @@
 package RegexParser;
 
-import java.io.PrintWriter;
+public class CharNode implements RegexNode {
+  protected char ch;
 
+  public CharNode (char ch) {
+    this.ch = ch;
+  }
 
-public class CharNode extends RegexNode{
-	public CharNode(char val) {
-		this.myChar = val;
-	}
-	
-	@Override
-	public void unparse(PrintWriter p) {
-		p.print(myChar);
-	}
-
-	@Override
-	public void toString(StringBuilder s) {
-		s.append(myChar);
-	}
-
-	@Override
-	public String toString () {
-		return Character.toString(myChar);
-	}
-	
-	public char getChar(){
-		return myChar;
-	}
-	
-	protected char myChar;
+  public String toString () {
+    return Character.toString(this.ch);
+  }
 }
