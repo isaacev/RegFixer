@@ -23,8 +23,14 @@ import RegexParser.*;
  * `Termite.digest` method will return a list of ASTs where each AST has a
  * different sub-expression replaced with a hole.
  */
-public class Termite {
-  static List<RegexNode> digest (RegexNode expr) {
+class Termite {
+  public static List<DigestedTree> digest (RegexNode expr) {
+    return digestNode(expr).stream()
+      .map(elem -> new DigestedTree(elem))
+      .collect(Collectors.toList());
+  }
+
+  static List<RegexNode> digestNode (RegexNode expr) {
          if (expr instanceof ConcatNode)   { return digestConcat((ConcatNode) expr); }
     else if (expr instanceof UnionNode)    { return digestUnion((UnionNode) expr); }
     else if (expr instanceof OptionalNode) { return digestOptional((OptionalNode) expr); }
@@ -58,7 +64,7 @@ public class Termite {
         suffixExprs = new LinkedList<RegexNode>(subExprs.subList(i + n, subExprs.size()));
 
         if (midfixExprs.size() == 1) {
-          for (RegexNode midfixExprDigested : digest(midfixExprs.get(0))) {
+          for (RegexNode midfixExprDigested : digestNode(midfixExprs.get(0))) {
             List<RegexNode> tmp = new LinkedList<RegexNode>();
             tmp.addAll(prefixExprs);
             tmp.add(midfixExprDigested);
