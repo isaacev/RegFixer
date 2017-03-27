@@ -7,12 +7,7 @@ import RegexParser.*;
 /**
  * TODO:
  * - AST nodes to support:
- *   - CharacterClassNode
- *   - DotNode (probably atomic)
- *   - EscapedCharNode
  *   - IntervalNode
- *   - MetaCharNode
- *   - NormalCharNode (probably atomic)
  *   - RepetitionNode (how to handle limits?)
  *
  * IDEAS:
