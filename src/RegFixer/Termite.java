@@ -1,15 +1,8 @@
 package RegFixer;
 
-import java.util.List;
-import java.util.LinkedList;
-import RegexParser.RegexNode;
-import RegexParser.ConcatNode;
-import RegexParser.UnionNode;
-import RegexParser.OptionalNode;
-import RegexParser.StarNode;
-import RegexParser.PlusNode;
-import RegexParser.CharNode;
-import RegexParser.HoleNode;
+import java.util.*;
+import java.util.stream.*;
+import RegexParser.*;
 
 /**
  * TODO:
