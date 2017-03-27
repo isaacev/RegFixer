@@ -93,25 +93,25 @@ program ::= regexNode: r
         :}
         ;
 
-regexNode	::= CARET unionRegex:r 
-            {: RESULT = new AnchorNode(r,true,false); 
+regexNode	::= CARET unionRegex:r
+            {: RESULT = new AnchorNode(r,true,false);
             :}
             | CARET unionRegex:r DOLLAR
-            {: RESULT = new AnchorNode(r,true,true); 
+            {: RESULT = new AnchorNode(r,true,true);
             :}
             | unionRegex:r DOLLAR
-            {: RESULT = new AnchorNode(r,false,true); 
+            {: RESULT = new AnchorNode(r,false,true);
             :}
             | unionRegex:r
             {: RESULT = r;
             :}
             ;
 
-unionRegex ::=	unionRegex:r1 UNION simpleRegex:r2 
-            {: RESULT = new UnionNode(r1,r2); 
+unionRegex ::=	unionRegex:r1 UNION simpleRegex:r2
+            {: RESULT = new UnionNode(r1,r2);
             :}
-            | simpleRegex:r    
-            {: RESULT = r; 
+            | simpleRegex:r
+            {: RESULT = r;
             :}
             ;
 
@@ -120,66 +120,66 @@ simpleRegex ::= concateList:l
             {: RESULT = new ConcatNode(l);
             :}
             ;
-            
+
 concateList	::=	concateList:rlist basicRegex:r
             {: rlist.addLast(r);
                RESULT = rlist;
             :}
             | /* epsilon */
-            {: RESULT = new LinkedList<RegexNode>(); 
+            {: RESULT = new LinkedList<RegexNode>();
             :}
-            ; 
+            ;
 
-basicRegex	    ::=	 LPAREN regexNode:r RPAREN 
-                {: RESULT = r; 
+basicRegex	    ::=	 LPAREN regexNode:r RPAREN
+                {: RESULT = r;
                 :}
-                | basicRegex:r STAR 
-                {: RESULT = new StarNode(r); 
+                | basicRegex:r STAR
+                {: RESULT = new StarNode(r);
                 :}
-                | basicRegex:r PLUS 
-                {: RESULT = new PlusNode(r); 
+                | basicRegex:r PLUS
+                {: RESULT = new PlusNode(r);
                 :}
-                | basicRegex:r OPTIONAL 
-                {: RESULT = new OptionalNode(r); 
+                | basicRegex:r OPTIONAL
+                {: RESULT = new OptionalNode(r);
                 :}
                 | DOT
-                {: RESULT = new DotNode(); 
-                :}  
-                | outsideChar: c 
-                {: RESULT = c; 
+                {: RESULT = new DotNode();
+                :}
+                | outsideChar: c
+                {: RESULT = c;
                 :}
                 | characterClass:c
-                {: RESULT = c; 
+                {: RESULT = c;
                 :}
                 | notcharacterClass:c
-                {: RESULT = c; 
+                {: RESULT = c;
                 :}
                 | LPAREN regexNode:r RPAREN LCURLY integer:i RCURLY
                 {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Fixed); 
-                :}                      
+                :}
                 | LPAREN regexNode:r RPAREN LCURLY integer:i COMMA  RCURLY
                 {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Unfixed); 
                 :}
                 | LPAREN regexNode:r RPAREN LCURLY integer:i1 COMMA integer:i2 RCURLY
-                {: RESULT = new RepetitionNode(r, i1, i2); 
+                {: RESULT = new RepetitionNode(r, i1, i2);
                 :}
                 | outsideChar:r LCURLY integer:i RCURLY
                 {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Fixed); 
-                :}                      
+                :}
                 | outsideChar:r LCURLY integer:i COMMA  RCURLY
                 {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Unfixed); 
                 :}
                 | outsideChar:r LCURLY integer:i1 COMMA integer:i2 RCURLY
-                {: RESULT = new RepetitionNode(r, i1, i2); 
+                {: RESULT = new RepetitionNode(r, i1, i2);
                 :}
                 | characterClass:r LCURLY integer:i RCURLY
                 {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Fixed);
-                :}                      
+                :}
                 | characterClass:r LCURLY integer:i COMMA  RCURLY
                 {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Unfixed);
                 :}
                 | characterClass:r LCURLY integer:i1 COMMA integer:i2 RCURLY
-                {: RESULT = new RepetitionNode(r, i1, i2); 
+                {: RESULT = new RepetitionNode(r, i1, i2);
                 :}
                 | notcharacterClass:r LCURLY integer:i RCURLY
                 {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Fixed); 
@@ -188,181 +188,181 @@ basicRegex	    ::=	 LPAREN regexNode:r RPAREN
                 {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Unfixed); 
                 :}
                 | notcharacterClass:r LCURLY integer:i1 COMMA integer:i2 RCURLY
-                {: RESULT = new RepetitionNode(r, i1, i2); 
+                {: RESULT = new RepetitionNode(r, i1, i2);
                 :}
                 ;
-                
-characterClass ::= LBRACKET intervals:i RBRACKET  
-                   {: RESULT = new CharClassNode(false, i); 
-                   :}    
-                   | LBRACKET intervals:i insideChar:c MINUS RBRACKET  
-                   {: 
+
+characterClass ::= LBRACKET intervals:i RBRACKET
+                   {: RESULT = new CharClassNode(false, i);
+                   :}
+                   | LBRACKET intervals:i insideChar:c MINUS RBRACKET
+                   {:
                     CharClassNode node = new CharClassNode(false, i);
                     node.addInterval(new IntervalNode(c));
                     node.addInterval(new IntervalNode(new CharNode('-')));
                     RESULT = node;
-                    :}  
+                    :}
                    ;
-                    
+
 notcharacterClass ::=  LBRACKET CARET intervals:i insideChar:c MINUS RBRACKET
                     {: CharClassNode node = new CharClassNode(true, i);
                     node.addInterval(new IntervalNode(c));
                     node.addInterval(new IntervalNode(new CharNode('-')));
-                    RESULT = node; 
+                    RESULT = node;
                     :}
                     | LBRACKET CARET intervals:i RBRACKET
-                    {: RESULT = new CharClassNode(true, i); 
+                    {: RESULT = new CharClassNode(true, i);
                     :}
                     ;
-                
-integer ::= integer:i DIGIT:d 
+
+integer ::= integer:i DIGIT:d
           {: RESULT = Integer.parseInt(String.valueOf(d.charVal))+ i*10;
           :}
           | DIGIT:d
-          {: RESULT = Integer.parseInt(String.valueOf(d.charVal)); 
+          {: RESULT = Integer.parseInt(String.valueOf(d.charVal));
           :}
           ;
-    
-intervals	::=	 intervals:ilist interval:i  
+
+intervals	::=	 intervals:ilist interval:i
             {: ilist.addLast(i);
                RESULT = ilist;
             :}
             | /* epsilon */
-            {: RESULT = new LinkedList<IntervalNode>(); 
+            {: RESULT = new LinkedList<IntervalNode>();
             :}
             ;
 
 interval	::=	insideChar:c1 MINUS insideChar:c2
-            {: RESULT = new IntervalNode(c1, c2); 
+            {: RESULT = new IntervalNode(c1, c2);
             :}
             | insideChar:c
-            {: RESULT = new IntervalNode(c); 
+            {: RESULT = new IntervalNode(c);
             :}
-            | metaChar:m 
-            {: RESULT = new IntervalNode(m); 
-            :} 
+            | metaChar:m
+            {: RESULT = new IntervalNode(m);
+            :}
             ;
-        
+
 insideChar ::=  DIGIT:c
-                {: RESULT = new CharNode(c.charVal); 
+                {: RESULT = new CharNode(c.charVal);
                 :}
-                | ESCAPEDCHAR:c 
-                {: RESULT = new EscapedCharNode(c.charVal); 
+                | ESCAPEDCHAR:c
+                {: RESULT = new EscapedCharNode(c.charVal);
                 :}
-                | NOTDIGIT:c 
-                {: RESULT = new CharNode(c.charVal); 
+                | NOTDIGIT:c
+                {: RESULT = new CharNode(c.charVal);
                 :}
-                | MINUS:c 
-                {: RESULT = new CharNode('-'); 
+                | MINUS:c
+                {: RESULT = new CharNode('-');
                 :}
-                | DOT 
-                {: RESULT = new CharNode('.'); 
+                | DOT
+                {: RESULT = new CharNode('.');
                 :}
-                | PLUS 
-                {: RESULT = new CharNode('+'); 
+                | PLUS
+                {: RESULT = new CharNode('+');
                 :}
-                | STAR 
-                {: RESULT = new CharNode('*'); 
+                | STAR
+                {: RESULT = new CharNode('*');
                 :}
-                | OPTIONAL 
-                {: RESULT = new CharNode('?'); 
+                | OPTIONAL
+                {: RESULT = new CharNode('?');
                 :}
-                | CARET 
-                {: RESULT = new CharNode('^'); 
+                | CARET
+                {: RESULT = new CharNode('^');
                 :}
-                | DOLLAR 
-                {: RESULT = new CharNode('$'); 
+                | DOLLAR
+                {: RESULT = new CharNode('$');
                 :}
-                | LBRACKET 
-                {: RESULT = new CharNode('['); 
+                | LBRACKET
+                {: RESULT = new CharNode('[');
                 :}
-                | RBRACKET 
-                {: RESULT = new CharNode(']'); 
+                | RBRACKET
+                {: RESULT = new CharNode(']');
                 :}
-                | LPAREN 
-                {: RESULT = new CharNode('('); 
+                | LPAREN
+                {: RESULT = new CharNode('(');
                 :}
-                | RPAREN 
-                {: RESULT = new CharNode(')'); 
+                | RPAREN
+                {: RESULT = new CharNode(')');
                 :}
-                | LCURLY 
-                {: RESULT = new CharNode('{'); 
+                | LCURLY
+                {: RESULT = new CharNode('{');
                 :}
-                | RCURLY 
-                {: RESULT = new CharNode('}'); 
+                | RCURLY
+                {: RESULT = new CharNode('}');
                 :}
-                | UNION 
-                {: RESULT = new CharNode('|'); 
+                | UNION
+                {: RESULT = new CharNode('|');
                 :}
                 | COMMA
-                {: RESULT = new CharNode(','); 
+                {: RESULT = new CharNode(',');
                 :}
                 ;
 
 
 outsideChar ::= DIGIT:c
-                {: RESULT = new CharNode(c.charVal); 
+                {: RESULT = new CharNode(c.charVal);
                 :}
-                | ESCAPEDCHAR:c 
-                {: RESULT = new EscapedCharNode(c.charVal); 
+                | ESCAPEDCHAR:c
+                {: RESULT = new EscapedCharNode(c.charVal);
                 :}
-                | metaChar:c 
-                {: RESULT = c; 
+                | metaChar:c
+                {: RESULT = c;
                 :}
-                | NOTDIGIT:c 
-                {: RESULT = new CharNode(c.charVal); 
+                | NOTDIGIT:c
+                {: RESULT = new CharNode(c.charVal);
                 :}
                 | MINUS
-                {: RESULT = new CharNode('-'); 
+                {: RESULT = new CharNode('-');
                 :}
-                | LCURLY 
-                {: RESULT = new CharNode('{'); 
+                | LCURLY
+                {: RESULT = new CharNode('{');
                 :}
-                | RCURLY 
-                {: RESULT = new CharNode('}'); 
+                | RCURLY
+                {: RESULT = new CharNode('}');
                 :}
                 | COMMA
-                {: RESULT = new CharNode(','); 
+                {: RESULT = new CharNode(',');
                 :}
                 ;
 
-metaChar  ::=   METATAB 
-                {: RESULT = new MetaCharNode('t'); 
+metaChar  ::=   METATAB
+                {: RESULT = new MetaCharNode('t');
                 :}
                 | METANEWLINE
-                {: RESULT = new MetaCharNode('n'); 
+                {: RESULT = new MetaCharNode('n');
                 :}
                 | METARETURN
-                {: RESULT = new MetaCharNode('r'); 
+                {: RESULT = new MetaCharNode('r');
                 :}
                 | METAFEED
-                {: RESULT = new MetaCharNode('f'); 
+                {: RESULT = new MetaCharNode('f');
                 :}
                 | METABOUNDARY
-                {: RESULT = new MetaCharNode('b'); 
+                {: RESULT = new MetaCharNode('b');
                 :}
                 | METANOTBOUNDARY
-                {: RESULT = new MetaCharNode('B'); 
+                {: RESULT = new MetaCharNode('B');
                 :}
                 | METADIGIT
-                {: RESULT = new MetaCharNode('d'); 
+                {: RESULT = new MetaCharNode('d');
                 :}
                 | METANOTDIGIT
-                {: RESULT = new MetaCharNode('D'); 
+                {: RESULT = new MetaCharNode('D');
                 :}
                 | METASPACE
-                {: RESULT = new MetaCharNode('s'); 
+                {: RESULT = new MetaCharNode('s');
                 :}
                 | METANOTSPACE
-                {: RESULT = new MetaCharNode('S'); 
+                {: RESULT = new MetaCharNode('S');
                 :}
                 | METAVERTICALTAB
-                {: RESULT = new MetaCharNode('v'); 
+                {: RESULT = new MetaCharNode('v');
                 :}
                 | METAWORD
-                {: RESULT = new MetaCharNode('w'); 
+                {: RESULT = new MetaCharNode('w');
                 :}
                 | METANOTWORD
-                {: RESULT = new MetaCharNode('W'); 
+                {: RESULT = new MetaCharNode('W');
                 :}
                 ;
