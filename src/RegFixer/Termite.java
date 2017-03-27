@@ -24,10 +24,12 @@ import RegexParser.*;
  * different sub-expression replaced with a hole.
  */
 class Termite {
-  public static List<DigestedTree> digest (RegexNode expr) {
-    return digestNode(expr).stream()
-      .map(elem -> new DigestedTree(elem))
+  public static TermiteForest digest (RegexNode tree) {
+    List<TermiteTree> trees = digestNode(tree).stream()
+      .map(elem -> new TermiteTree(elem))
       .collect(Collectors.toList());
+
+    return new TermiteForest(tree, trees);
   }
 
   static List<RegexNode> digestNode (RegexNode expr) {

@@ -2,10 +2,10 @@ package RegFixer;
 
 import RegexParser.RegexNode;
 
-class DigestedTree {
+class TermiteTree {
   private RegexNode root;
 
-  DigestedTree (RegexNode root) {
+  TermiteTree (RegexNode root) {
     this.root = root;
   }
 

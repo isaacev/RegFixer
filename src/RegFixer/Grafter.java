@@ -9,7 +9,7 @@ import RegexParser.*;
  * produce a larger AST with no holes.
  */
 class Grafter {
-  public static RegexNode graft (DigestedTree tree, RegexNode twig) {
+  public static RegexNode graft (TermiteTree tree, RegexNode twig) {
     return graftNode(tree.getRoot(), twig);
   }
 
