@@ -9,17 +9,17 @@ import RegexParser.*;
  * produce a larger AST with no holes.
  */
 class Grafter {
-  public static RegexNode graft (DigestedTree tree, RegexNode branch) {
-    return graftNode(tree.getRoot(), branch);
+  public static RegexNode graft (DigestedTree tree, RegexNode twig) {
+    return graftNode(tree.getRoot(), twig);
   }
 
-  static RegexNode graftNode (RegexNode tree, RegexNode branch) {
-         if (tree instanceof ConcatNode)   { return graftConcat((ConcatNode) tree, branch); }
-    else if (tree instanceof UnionNode)    { return graftUnion((UnionNode) tree, branch); }
-    else if (tree instanceof OptionalNode) { return graftOptional((OptionalNode) tree, branch); }
-    else if (tree instanceof StarNode)     { return graftStar((StarNode) tree, branch); }
-    else if (tree instanceof PlusNode)     { return graftPlus((PlusNode) tree, branch); }
-    else if (tree instanceof HoleNode)     { return graftHole((HoleNode) tree, branch); }
+  static RegexNode graftNode (RegexNode tree, RegexNode twig) {
+         if (tree instanceof ConcatNode)   { return graftConcat((ConcatNode) tree, twig); }
+    else if (tree instanceof UnionNode)    { return graftUnion((UnionNode) tree, twig); }
+    else if (tree instanceof OptionalNode) { return graftOptional((OptionalNode) tree, twig); }
+    else if (tree instanceof StarNode)     { return graftStar((StarNode) tree, twig); }
+    else if (tree instanceof PlusNode)     { return graftPlus((PlusNode) tree, twig); }
+    else if (tree instanceof HoleNode)     { return graftHole((HoleNode) tree, twig); }
     else if (tree instanceof CharNode)     { return graftAtom(); }
     else {
       System.err.printf("Unknown AST class: %s\n", tree.getClass().getName());
@@ -28,10 +28,10 @@ class Grafter {
     }
   }
 
-  static RegexNode graftConcat (ConcatNode node, RegexNode branch) {
+  static RegexNode graftConcat (ConcatNode node, RegexNode twig) {
     List<RegexNode> children = node.getChildren();
     for (int i = 0; i < children.size(); i++) {
-      RegexNode childGrafted = graftNode(children.get(i), branch);
+      RegexNode childGrafted = graftNode(children.get(i), twig);
 
       if (childGrafted != null) {
         // Node *IS* an ancestor of a hole and must be copied and then modified.
@@ -46,8 +46,8 @@ class Grafter {
     return null;
   }
 
-  static RegexNode graftUnion (UnionNode node, RegexNode branch) {
-    RegexNode leftChildGrafted = graftNode(node.getLeftChild(), branch);
+  static RegexNode graftUnion (UnionNode node, RegexNode twig) {
+    RegexNode leftChildGrafted = graftNode(node.getLeftChild(), twig);
 
     if (leftChildGrafted != null) {
       // Node *IS* an ancestor (through the left child) of a hole and must be
@@ -55,7 +55,7 @@ class Grafter {
       return new UnionNode(leftChildGrafted, node.getRightChild());
     }
 
-    RegexNode rightChildGrafted = graftNode(node.getRightChild(), branch);
+    RegexNode rightChildGrafted = graftNode(node.getRightChild(), twig);
 
     if (rightChildGrafted != null) {
       // Node *IS* an ancestor (through the right child) of a hole and must be
@@ -67,8 +67,8 @@ class Grafter {
     return null;
   }
 
-  static RegexNode graftOptional (OptionalNode node, RegexNode branch) {
-    RegexNode childGraft = graftNode(node.getChild(), branch);
+  static RegexNode graftOptional (OptionalNode node, RegexNode twig) {
+    RegexNode childGraft = graftNode(node.getChild(), twig);
 
     if (childGraft != null) {
       return new OptionalNode(childGraft);
@@ -78,8 +78,8 @@ class Grafter {
     return null;
   }
 
-  static RegexNode graftStar (StarNode node, RegexNode branch) {
-    RegexNode childGraft = graftNode(node.getChild(), branch);
+  static RegexNode graftStar (StarNode node, RegexNode twig) {
+    RegexNode childGraft = graftNode(node.getChild(), twig);
 
     if (childGraft != null) {
       return new StarNode(childGraft);
@@ -89,8 +89,8 @@ class Grafter {
     return null;
   }
 
-  static RegexNode graftPlus (PlusNode node, RegexNode branch) {
-    RegexNode childGraft = graftNode(node.getChild(), branch);
+  static RegexNode graftPlus (PlusNode node, RegexNode twig) {
+    RegexNode childGraft = graftNode(node.getChild(), twig);
 
     if (childGraft != null) {
       return new PlusNode(childGraft);
@@ -100,8 +100,8 @@ class Grafter {
     return null;
   }
 
-  static RegexNode graftHole (RegexNode node, RegexNode branch) {
-    return branch;
+  static RegexNode graftHole (RegexNode node, RegexNode twig) {
+    return twig;
   }
 
   static RegexNode graftAtom () {
