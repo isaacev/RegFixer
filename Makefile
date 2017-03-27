@@ -20,11 +20,8 @@ clean: clean-parser clean-lexer
 	rm -rf bin
 
 clean-parser:
-	rm src/RegexParser/parser.java
-	rm src/RegexParser/sym.java
+	rm -f src/RegexParser/parser.java
+	rm -f src/RegexParser/sym.java
 
 clean-lexer:
-	rm src/RegexParser/Yylex.java
-
-test: build
-	java -cp $(cp) org.junit.runner.JUnitCore RegFixer.Test
+	rm -f src/RegexParser/Yylex.java
