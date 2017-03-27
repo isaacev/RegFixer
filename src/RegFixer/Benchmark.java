@@ -31,7 +31,7 @@ class Benchmark {
 
   static Benchmark readFromFile (String filename) throws IOException {
     RegexNode regex = null;
-    List<Range> matches = new ArrayList<Range>();
+    List<Range> matches = new LinkedList<Range>();
     String corpus = "";
 
     Scanner sc = new Scanner(new File(filename));
