@@ -52,7 +52,7 @@ public class Termite {
 
   static List<RegexNode> digestConcat (ConcatNode expr) {
     List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
-    List<RegexNode> subExprs = expr.getList();
+    List<RegexNode> subExprs = expr.getChildren();
 
     for (int n = 1; n <= subExprs.size(); n++) {
       for (int i = 0; i <= subExprs.size() - n; i++) {
@@ -94,15 +94,15 @@ public class Termite {
 
   static List<RegexNode> digestUnion (UnionNode expr) {
     List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
-    
+
     // Recursively compute holes of left sub-expression(s).
-    for (RegexNode digestedExpr : digest(expr.getMyRegex1())) {
-      digestedExprs.add(new UnionNode(digestedExpr, expr.getMyRegex2()));
+    for (RegexNode digestedExpr : digestNode(expr.getLeftChild())) {
+      digestedExprs.add(new UnionNode(digestedExpr, expr.getRightChild()));
     }
 
     // Recursively compute holes of right sub-expression(s).
-    for (RegexNode digestedExpr : digest(expr.getMyRegex2())) {
-      digestedExprs.add(new UnionNode(expr.getMyRegex1(), digestedExpr));
+    for (RegexNode digestedExpr : digestNode(expr.getRightChild())) {
+      digestedExprs.add(new UnionNode(expr.getLeftChild(), digestedExpr));
     }
 
     // Replace entire expression with a hole.
@@ -114,7 +114,7 @@ public class Termite {
     List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
 
     // Recursively compute holes of sub-expression(s).
-    for (RegexNode digestedExpr : digest(expr.getMyRegex1())) {
+    for (RegexNode digestedExpr : digestNode(expr.getChild())) {
       digestedExprs.add(new OptionalNode(digestedExpr));
     }
 
@@ -127,7 +127,7 @@ public class Termite {
     List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
 
     // Recursively compute holes of sub-expression(s).
-    for (RegexNode digestedExpr : digest(expr.getMyRegex1())) {
+    for (RegexNode digestedExpr : digestNode(expr.getChild())) {
       digestedExprs.add(new StarNode(digestedExpr));
     }
 
@@ -140,7 +140,7 @@ public class Termite {
     List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
 
     // Recursively compute holes of sub-expression(s).
-    for (RegexNode digestedExpr : digest(expr.getMyRegex1())) {
+    for (RegexNode digestedExpr : digestNode(expr.getChild())) {
       digestedExprs.add(new PlusNode(digestedExpr));
     }
 
