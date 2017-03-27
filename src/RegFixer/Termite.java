@@ -33,12 +33,13 @@ class Termite {
   }
 
   static List<RegexNode> digestNode (RegexNode expr) {
-         if (expr instanceof ConcatNode)   { return digestConcat((ConcatNode) expr); }
-    else if (expr instanceof UnionNode)    { return digestUnion((UnionNode) expr); }
-    else if (expr instanceof OptionalNode) { return digestOptional((OptionalNode) expr); }
-    else if (expr instanceof StarNode)     { return digestStar((StarNode) expr); }
-    else if (expr instanceof PlusNode)     { return digestPlus((PlusNode) expr); }
-    else if (expr instanceof CharNode)     { return digestAtom(); }
+         if (expr instanceof ConcatNode)    { return digestConcat((ConcatNode) expr); }
+    else if (expr instanceof UnionNode)     { return digestUnion((UnionNode) expr); }
+    else if (expr instanceof OptionalNode)  { return digestOptional((OptionalNode) expr); }
+    else if (expr instanceof StarNode)      { return digestStar((StarNode) expr); }
+    else if (expr instanceof PlusNode)      { return digestPlus((PlusNode) expr); }
+    else if (expr instanceof CharClassNode) { return digestAtom(); }
+    else if (expr instanceof CharNode)      { return digestAtom(); }
     else {
       System.err.printf("Unknown AST class: %s\n", expr.getClass().getName());
       System.exit(1);
