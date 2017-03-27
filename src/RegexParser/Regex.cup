@@ -69,8 +69,8 @@ non terminal IntervalNode interval;
 non terminal CharNode insideChar;
 non terminal CharNode outsideChar;
 non terminal CharNode metaChar;
-non terminal CharacterClassNode characterClass;
-non terminal CharacterClassNode notcharacterClass;
+non terminal CharClassNode characterClass;
+non terminal CharClassNode notcharacterClass;
 
 /* precedence and associativity declarations */
 precedence left UNION;
@@ -193,11 +193,11 @@ basicRegex	    ::=	 LPAREN regexNode:r RPAREN
                 ;
                 
 characterClass ::= LBRACKET intervals:i RBRACKET  
-                   {: RESULT = new CharacterClassNode(false, i); 
+                   {: RESULT = new CharClassNode(false, i); 
                    :}    
                    | LBRACKET intervals:i insideChar:c MINUS RBRACKET  
                    {: 
-                    CharacterClassNode node = new CharacterClassNode(false, i);
+                    CharClassNode node = new CharClassNode(false, i);
                     node.addInterval(new IntervalNode(c));
                     node.addInterval(new IntervalNode(new CharNode('-')));
                     RESULT = node;
@@ -205,13 +205,13 @@ characterClass ::= LBRACKET intervals:i RBRACKET
                    ;
                     
 notcharacterClass ::=  LBRACKET CARET intervals:i insideChar:c MINUS RBRACKET
-                    {: CharacterClassNode node = new CharacterClassNode(true, i);
+                    {: CharClassNode node = new CharClassNode(true, i);
                     node.addInterval(new IntervalNode(c));
                     node.addInterval(new IntervalNode(new CharNode('-')));
                     RESULT = node; 
                     :}
                     | LBRACKET CARET intervals:i RBRACKET
-                    {: RESULT = new CharacterClassNode(true, i); 
+                    {: RESULT = new CharClassNode(true, i); 
                     :}
                     ;
                 

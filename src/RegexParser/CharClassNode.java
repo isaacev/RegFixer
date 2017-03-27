@@ -2,11 +2,11 @@ package RegexParser;
 
 import java.util.List;
 
-public class CharacterClassNode implements RegexNode {
+public class CharClassNode implements RegexNode {
   private Boolean except;
   private List<IntervalNode> children;
 
-  public CharacterClassNode (Boolean except, List<IntervalNode> children){
+  public CharClassNode (Boolean except, List<IntervalNode> children){
     this.except = except;
     this.children = children;
   }
