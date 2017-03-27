@@ -33,13 +33,14 @@ class Termite {
   }
 
   static List<RegexNode> digestNode (RegexNode expr) {
-         if (expr instanceof ConcatNode)    { return digestConcat((ConcatNode) expr); }
-    else if (expr instanceof UnionNode)     { return digestUnion((UnionNode) expr); }
-    else if (expr instanceof OptionalNode)  { return digestOptional((OptionalNode) expr); }
-    else if (expr instanceof StarNode)      { return digestStar((StarNode) expr); }
-    else if (expr instanceof PlusNode)      { return digestPlus((PlusNode) expr); }
-    else if (expr instanceof CharClassNode) { return digestAtom(); }
-    else if (expr instanceof CharNode)      { return digestAtom(); }
+         if (expr instanceof ConcatNode)     { return digestConcat((ConcatNode) expr); }
+    else if (expr instanceof UnionNode)      { return digestUnion((UnionNode) expr); }
+    else if (expr instanceof RepetitionNode) { return digestRepetition((RepetitionNode) expr); }
+    else if (expr instanceof OptionalNode)   { return digestOptional((OptionalNode) expr); }
+    else if (expr instanceof StarNode)       { return digestStar((StarNode) expr); }
+    else if (expr instanceof PlusNode)       { return digestPlus((PlusNode) expr); }
+    else if (expr instanceof CharClassNode)  { return digestAtom(); }
+    else if (expr instanceof CharNode)       { return digestAtom(); }
     else {
       System.err.printf("Unknown AST class: %s\n", expr.getClass().getName());
       System.exit(1);
@@ -100,6 +101,23 @@ class Termite {
     // Recursively compute holes of right sub-expression(s).
     for (RegexNode digestedExpr : digestNode(expr.getRightChild())) {
       digestedExprs.add(new UnionNode(expr.getLeftChild(), digestedExpr));
+    }
+
+    // Replace entire expression with a hole.
+    digestedExprs.add(new HoleNode());
+    return digestedExprs;
+  }
+
+  static List<RegexNode> digestRepetition (RepetitionNode expr) {
+    List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
+
+    // Recursively compute holes of sub-expression(s).
+    for (RegexNode digestedExpr : digestNode(expr.getChild())) {
+      if (expr.hasMax()) {
+        digestedExprs.add(new RepetitionNode(digestedExpr, expr.getMin(), expr.getMax()));
+      } else {
+        digestedExprs.add(new RepetitionNode(digestedExpr, expr.getMin()));
+      }
     }
 
     // Replace entire expression with a hole.

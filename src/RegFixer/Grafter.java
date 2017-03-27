@@ -14,14 +14,15 @@ class Grafter {
   }
 
   static RegexNode graftNode (RegexNode tree, RegexNode twig) {
-         if (tree instanceof ConcatNode)    { return graftConcat((ConcatNode) tree, twig); }
-    else if (tree instanceof UnionNode)     { return graftUnion((UnionNode) tree, twig); }
-    else if (tree instanceof OptionalNode)  { return graftOptional((OptionalNode) tree, twig); }
-    else if (tree instanceof StarNode)      { return graftStar((StarNode) tree, twig); }
-    else if (tree instanceof PlusNode)      { return graftPlus((PlusNode) tree, twig); }
-    else if (tree instanceof CharClassNode) { return graftAtom(); }
-    else if (tree instanceof CharNode)      { return graftAtom(); }
-    else if (tree instanceof HoleNode)      { return graftHole((HoleNode) tree, twig); }
+         if (tree instanceof ConcatNode)     { return graftConcat((ConcatNode) tree, twig); }
+    else if (tree instanceof UnionNode)      { return graftUnion((UnionNode) tree, twig); }
+    else if (tree instanceof RepetitionNode) { return graftRepetition((RepetitionNode) tree, twig); }
+    else if (tree instanceof OptionalNode)   { return graftOptional((OptionalNode) tree, twig); }
+    else if (tree instanceof StarNode)       { return graftStar((StarNode) tree, twig); }
+    else if (tree instanceof PlusNode)       { return graftPlus((PlusNode) tree, twig); }
+    else if (tree instanceof CharClassNode)  { return graftAtom(); }
+    else if (tree instanceof CharNode)       { return graftAtom(); }
+    else if (tree instanceof HoleNode)       { return graftHole((HoleNode) tree, twig); }
     else {
       System.err.printf("Unknown AST class: %s\n", tree.getClass().getName());
       System.exit(1);
@@ -62,6 +63,21 @@ class Grafter {
       // Node *IS* an ancestor (through the right child) of a hole and must be
       // copied and then modified.
       return new UnionNode(node.getLeftChild(), rightChildGrafted);
+    }
+
+    // Node is *NOT* an ancestor of a hole so return `null`.
+    return null;
+  }
+
+  static RegexNode graftRepetition (RepetitionNode node, RegexNode twig) {
+    RegexNode childGraft = graftNode(node.getChild(), twig);
+
+    if (childGraft != null) {
+      if (node.hasMax()) {
+        return new RepetitionNode(childGraft, node.getMin(), node.getMax());
+      } else {
+        return new RepetitionNode(childGraft, node.getMin());
+      }
     }
 
     // Node is *NOT* an ancestor of a hole so return `null`.
