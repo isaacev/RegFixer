@@ -155,37 +155,37 @@ basicRegex	    ::=	 LPAREN regexNode:r RPAREN
                 {: RESULT = c;
                 :}
                 | LPAREN regexNode:r RPAREN LCURLY integer:i RCURLY
-                {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Fixed); 
+                {: RESULT = new RepetitionNode(r,i,i);
                 :}
                 | LPAREN regexNode:r RPAREN LCURLY integer:i COMMA  RCURLY
-                {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Unfixed); 
+                {: RESULT = new RepetitionNode(r,i);
                 :}
                 | LPAREN regexNode:r RPAREN LCURLY integer:i1 COMMA integer:i2 RCURLY
                 {: RESULT = new RepetitionNode(r, i1, i2);
                 :}
                 | outsideChar:r LCURLY integer:i RCURLY
-                {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Fixed); 
+                {: RESULT = new RepetitionNode(r,i,i);
                 :}
                 | outsideChar:r LCURLY integer:i COMMA  RCURLY
-                {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Unfixed); 
+                {: RESULT = new RepetitionNode(r,i);
                 :}
                 | outsideChar:r LCURLY integer:i1 COMMA integer:i2 RCURLY
                 {: RESULT = new RepetitionNode(r, i1, i2);
                 :}
                 | characterClass:r LCURLY integer:i RCURLY
-                {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Fixed);
+                {: RESULT = new RepetitionNode(r,i,i);
                 :}
                 | characterClass:r LCURLY integer:i COMMA  RCURLY
-                {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Unfixed);
+                {: RESULT = new RepetitionNode(r,i);
                 :}
                 | characterClass:r LCURLY integer:i1 COMMA integer:i2 RCURLY
                 {: RESULT = new RepetitionNode(r, i1, i2);
                 :}
                 | notcharacterClass:r LCURLY integer:i RCURLY
-                {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Fixed); 
-                :}                      
+                {: RESULT = new RepetitionNode(r,i,i);
+                :}
                 | notcharacterClass:r LCURLY integer:i COMMA  RCURLY
-                {: RESULT = new RepetitionNode(r,i,RepetitionNode.RepeatLimit.Unfixed); 
+                {: RESULT = new RepetitionNode(r,i);
                 :}
                 | notcharacterClass:r LCURLY integer:i1 COMMA integer:i2 RCURLY
                 {: RESULT = new RepetitionNode(r, i1, i2);
