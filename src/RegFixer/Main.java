@@ -6,7 +6,17 @@ import RegexParser.*;
 
 class Main {
   public static void main (String[] args) throws Exception {
-    runBatteries("ab*c", "x*", "y", "z");
+    if (args.length < 2) {
+      System.err.println("Usage: RegFixer <regex> ...<regex parts>");
+      System.exit(1);
+    }
+
+    String twigs[] = new String[args.length - 1];
+    for (int i = 1; i < args.length; i++) {
+      twigs[i-1] = args[i];
+    }
+
+    runBatteries(args[0], twigs);
   }
 
   static void runBatteries (String treeRegex, String... twigRegexes) throws Exception {
@@ -23,7 +33,7 @@ class Main {
     // Print header.
     System.out.printf("\n%-20s%s\n", "regex:", "twig:");
     System.out.printf("%-20s%s\n", forest.getTree(), twig);
-    System.out.println("--------------------------------");
+    System.out.println("----------------------------------------");
 
     // Graft a new twig at the hole location in each digested tree.
     List<RegexNode> graftedTrees = forest.getTrees().stream()
