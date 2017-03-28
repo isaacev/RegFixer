@@ -1,5 +1,7 @@
 # RegFixer
 
+On macOS with homebrew run `brew install jflex` to install Jflex.
+
 Run `make all` to build the lexer, parser, and RegFixer libraries.
 
 Running `make run` should produce the following results:
