@@ -17,6 +17,15 @@ lexer: clean-lexer
 run:
 	java -cp $(run_cp) RegFixer.Main
 
+clean-tests:
+	rm -rf bin/RegFixer/tests
+
+build-tests:
+	javac -cp $(build_cp) src/RegFixer/tests/*.java -d bin
+
+test: clean-tests build-tests
+	java -cp $(run_cp) RegFixer.TestRunner
+
 clean: clean-parser clean-lexer
 	rm -rf bin
 
