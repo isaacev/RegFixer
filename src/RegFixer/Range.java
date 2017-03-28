@@ -2,7 +2,7 @@ package RegFixer;
 
 import java.util.regex.*;
 
-class Range {
+class Range implements Comparable<Range> {
   private int leftIndex;
   private int rightIndex;
 
@@ -37,6 +37,34 @@ class Range {
     boolean rightIsEqual = (this.rightIndex == other.getRightIndex());
 
     return leftIsEqual && rightIsEqual;
+  }
+
+  boolean startsBefore (Range other) {
+    return (this.leftIndex < other.getLeftIndex());
+  }
+
+  boolean startsAfter (Range other) {
+    return (this.leftIndex > other.getRightIndex());
+  }
+
+  boolean endsBefore (Range other) {
+    return (this.rightIndex < other.getLeftIndex());
+  }
+
+  boolean endsAfter (Range other) {
+    return (this.rightIndex > other.getRightIndex());
+  }
+
+  boolean intersects (Range other) {
+    boolean intersectionAtStart = (this.leftIndex <= other.getRightIndex());
+    boolean intersectionAtEnd = (this.rightIndex <= other.getLeftIndex());
+
+    return intersectionAtStart || intersectionAtEnd;
+  }
+
+  @Override
+  public int compareTo (Range other) {
+    return Integer.compare(this.leftIndex, other.leftIndex);
   }
 
   public String toString () {
