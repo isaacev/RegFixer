@@ -26,13 +26,14 @@ import RegexParser.*;
 class Termite {
   public static TermiteForest digest (RegexNode tree) {
     List<TermiteTree> trees = digestNode(tree).stream()
-      .map(elem -> new TermiteTree(elem))
+      .filter(elem -> (elem.tree != elem.hole))
+      .map(elem -> new TermiteTree(elem.tree, elem.hole))
       .collect(Collectors.toList());
 
     return new TermiteForest(tree, trees);
   }
 
-  static List<RegexNode> digestNode (RegexNode expr) {
+  static List<TreeHolePair> digestNode (RegexNode expr) {
          if (expr instanceof ConcatNode)     { return digestConcat((ConcatNode) expr); }
     else if (expr instanceof UnionNode)      { return digestUnion((UnionNode) expr); }
     else if (expr instanceof RepetitionNode) { return digestRepetition((RepetitionNode) expr); }
@@ -47,41 +48,52 @@ class Termite {
     }
   }
 
-  static List<RegexNode> digestConcat (ConcatNode expr) {
-    List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
-    List<RegexNode> subExprs = expr.getChildren();
+  static List<TreeHolePair> digestConcat (ConcatNode expr) {
+    List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
+    List<RegexNode> children = expr.getChildren();
+    int numChilds = children.size();
 
-    for (int n = 1; n <= subExprs.size(); n++) {
-      for (int i = 0; i <= subExprs.size() - n; i++) {
-        List<RegexNode> prefixExprs = new LinkedList<RegexNode>();
-        List<RegexNode> midfixExprs = new LinkedList<RegexNode>();
-        List<RegexNode> suffixExprs = new LinkedList<RegexNode>();
+    for (int n = 1; n <= numChilds; n++) {
+      for (int i = 0; i <= numChilds - n; i++) {
+        List<RegexNode> prefix = new LinkedList<RegexNode>();
+        List<RegexNode> midfix = new LinkedList<RegexNode>();
+        List<RegexNode> suffix = new LinkedList<RegexNode>();
 
         // Collect exprs from 0 to i (exclusive).
-        prefixExprs = new LinkedList<RegexNode>(subExprs.subList(0, i));
+        prefix = new LinkedList<RegexNode>(children.subList(0, i));
 
         // Collect exprs from i to i+n (exclusive).
-        midfixExprs = new LinkedList<RegexNode>(subExprs.subList(i, i + n));
+        midfix = new LinkedList<RegexNode>(children.subList(i, i + n));
 
         // Collect exprs from i+n to end of list.
-        suffixExprs = new LinkedList<RegexNode>(subExprs.subList(i + n, subExprs.size()));
+        suffix = new LinkedList<RegexNode>(children.subList(i + n, numChilds));
 
-        if (midfixExprs.size() == 1) {
-          for (RegexNode midfixExprDigested : digestNode(midfixExprs.get(0))) {
-            List<RegexNode> tmp = new LinkedList<RegexNode>();
-            tmp.addAll(prefixExprs);
-            tmp.add(midfixExprDigested);
-            tmp.addAll(suffixExprs);
-
-            digestedExprs.add(new ConcatNode(tmp));
-          }
+        List<TreeHolePair> digestedMidfixes = new LinkedList<TreeHolePair>();
+        if (midfix.size() == 1) {
+          digestedMidfixes.addAll(digestNode(midfix.get(0)));
         } else {
-          List<RegexNode> tmp = new LinkedList<RegexNode>();
-          tmp.addAll(prefixExprs);
-          tmp.add(new HoleNode());
-          tmp.addAll(suffixExprs);
+          HoleNode hole = new HoleNode();
+          TreeHolePair pair = new TreeHolePair(hole, hole);
+          digestedMidfixes.add(pair);
+        }
 
-          digestedExprs.add(new ConcatNode(tmp));
+        if (prefix.size() == 0 && suffix.size() == 0) {
+          // If there are no prefix or suffix nodes, don't wrap the digested
+          // node in a ConcatNode object which will only obfuscate the tree's
+          // structure.
+          digestedExprs.addAll(digestedMidfixes);
+        } else {
+          for (TreeHolePair digestedMidfix : digestedMidfixes) {
+            List<RegexNode> newChildren = new LinkedList<RegexNode>();
+            newChildren.addAll(prefix);
+            newChildren.add(digestedMidfix.tree);
+            newChildren.addAll(suffix);
+
+            RegexNode tree = new ConcatNode(newChildren);
+            HoleNode hole = digestedMidfix.hole;
+            TreeHolePair pair = new TreeHolePair(tree, hole);
+            digestedExprs.add(pair);
+          }
         }
       }
     }
@@ -89,85 +101,130 @@ class Termite {
     return digestedExprs;
   }
 
-  static List<RegexNode> digestUnion (UnionNode expr) {
-    List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
+  static List<TreeHolePair> digestUnion (UnionNode expr) {
+    List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of left sub-expression(s).
-    for (RegexNode digestedExpr : digestNode(expr.getLeftChild())) {
-      digestedExprs.add(new UnionNode(digestedExpr, expr.getRightChild()));
+    for (TreeHolePair digestedExpr : digestNode(expr.getLeftChild())) {
+      RegexNode tree = new UnionNode(digestedExpr.tree, expr.getRightChild());
+      TreeHolePair pair = new TreeHolePair(tree, digestedExpr.hole);
+      digestedExprs.add(pair);
     }
 
     // Recursively compute holes of right sub-expression(s).
-    for (RegexNode digestedExpr : digestNode(expr.getRightChild())) {
-      digestedExprs.add(new UnionNode(expr.getLeftChild(), digestedExpr));
+    for (TreeHolePair digestedExpr : digestNode(expr.getRightChild())) {
+      RegexNode tree = new UnionNode(expr.getLeftChild(), digestedExpr.tree);
+      TreeHolePair pair = new TreeHolePair(tree, digestedExpr.hole);
+      digestedExprs.add(pair);
     }
 
     // Replace entire expression with a hole.
-    digestedExprs.add(new HoleNode());
+    HoleNode hole = new HoleNode();
+    TreeHolePair pair = new TreeHolePair(hole, hole);
+    digestedExprs.add(pair);
+
     return digestedExprs;
   }
 
-  static List<RegexNode> digestRepetition (RepetitionNode expr) {
-    List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
+  static List<TreeHolePair> digestRepetition (RepetitionNode expr) {
+    List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of sub-expression(s).
-    for (RegexNode digestedExpr : digestNode(expr.getChild())) {
+    for (TreeHolePair digestedExpr : digestNode(expr.getChild())) {
       if (expr.hasMax()) {
-        digestedExprs.add(new RepetitionNode(digestedExpr, expr.getMin(), expr.getMax()));
+        int min = expr.getMin();
+        int max = expr.getMax();
+        RegexNode tree = new RepetitionNode(digestedExpr.tree, min, max);
+        TreeHolePair pair = new TreeHolePair(tree, digestedExpr.hole);
+        digestedExprs.add(pair);
       } else {
-        digestedExprs.add(new RepetitionNode(digestedExpr, expr.getMin()));
+        int min = expr.getMin();
+        RegexNode tree = new RepetitionNode(digestedExpr.tree, min);
+        TreeHolePair pair = new TreeHolePair(tree, digestedExpr.hole);
+        digestedExprs.add(pair);
       }
     }
 
     // Replace entire expression with a hole.
-    digestedExprs.add(new HoleNode());
+    HoleNode hole = new HoleNode();
+    TreeHolePair pair = new TreeHolePair(hole, hole);
+    digestedExprs.add(pair);
+
     return digestedExprs;
   }
 
-  static List<RegexNode> digestOptional (OptionalNode expr) {
-    List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
+  static List<TreeHolePair> digestOptional (OptionalNode expr) {
+    List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of sub-expression(s).
-    for (RegexNode digestedExpr : digestNode(expr.getChild())) {
-      digestedExprs.add(new OptionalNode(digestedExpr));
+    for (TreeHolePair digestedExpr : digestNode(expr.getChild())) {
+      RegexNode tree = new OptionalNode(digestedExpr.tree);
+      TreeHolePair pair = new TreeHolePair(tree, digestedExpr.hole);
+      digestedExprs.add(pair);
     }
 
     // Replace entire expression with a hole.
-    digestedExprs.add(new HoleNode());
+    HoleNode hole = new HoleNode();
+    TreeHolePair pair = new TreeHolePair(hole, hole);
+    digestedExprs.add(pair);
+
     return digestedExprs;
   }
 
-  static List<RegexNode> digestStar (StarNode expr) {
-    List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
+  static List<TreeHolePair> digestStar (StarNode expr) {
+    List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of sub-expression(s).
-    for (RegexNode digestedExpr : digestNode(expr.getChild())) {
-      digestedExprs.add(new StarNode(digestedExpr));
+    for (TreeHolePair digestedExpr : digestNode(expr.getChild())) {
+      RegexNode tree = new StarNode(digestedExpr.tree);
+      TreeHolePair pair = new TreeHolePair(tree, digestedExpr.hole);
+      digestedExprs.add(pair);
     }
 
     // Replace entire expression with a hole.
-    digestedExprs.add(new HoleNode());
+    HoleNode hole = new HoleNode();
+    TreeHolePair pair = new TreeHolePair(hole, hole);
+    digestedExprs.add(pair);
+
     return digestedExprs;
   }
 
-  static List<RegexNode> digestPlus (PlusNode expr) {
-    List<RegexNode> digestedExprs = new LinkedList<RegexNode>();
+  static List<TreeHolePair> digestPlus (PlusNode expr) {
+    List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of sub-expression(s).
-    for (RegexNode digestedExpr : digestNode(expr.getChild())) {
-      digestedExprs.add(new PlusNode(digestedExpr));
+    for (TreeHolePair digestedExpr : digestNode(expr.getChild())) {
+      RegexNode tree = new PlusNode(digestedExpr.tree);
+      TreeHolePair pair = new TreeHolePair(tree, digestedExpr.hole);
+      digestedExprs.add(pair);
     }
 
     // Replace entire expression with a hole.
-    digestedExprs.add(new HoleNode());
+    HoleNode hole = new HoleNode();
+    TreeHolePair pair = new TreeHolePair(hole, hole);
+    digestedExprs.add(pair);
+
     return digestedExprs;
   }
 
-  static List<RegexNode> digestAtom () {
-    LinkedList<RegexNode> digestedExprs = new LinkedList<RegexNode>();
+  static List<TreeHolePair> digestAtom () {
+    LinkedList<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Replace entire expression with a hole.
-    digestedExprs.add(new HoleNode());
+    HoleNode hole = new HoleNode();
+    TreeHolePair pair = new TreeHolePair(hole, hole);
+    digestedExprs.add(pair);
+
     return digestedExprs;
+  }
+}
+
+class TreeHolePair {
+  RegexNode tree;
+  HoleNode hole;
+
+  TreeHolePair (RegexNode tree, HoleNode hole) {
+    this.tree = tree;
+    this.hole = hole;
   }
 }

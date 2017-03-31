@@ -1,16 +1,26 @@
 package RegFixer;
 
-import RegexParser.RegexNode;
+import RegexParser.*;
 
-class TermiteTree {
+class TermiteTree implements RegexNode {
   private RegexNode root;
+  private HoleNode hole;
 
-  TermiteTree (RegexNode root) {
+  TermiteTree (RegexNode root, HoleNode hole) {
     this.root = root;
+    this.hole = hole;
   }
 
   RegexNode getRoot () {
     return this.root;
+  }
+
+  void fillHole (RegexNode node) {
+    this.hole.fill(node);
+  }
+
+  void emptyHole () {
+    this.hole.empty();
   }
 
   public String toString () {
