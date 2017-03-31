@@ -7,45 +7,45 @@ Run `make all` to build the lexer, parser, and RegFixer libraries.
 Running `make run` should produce the following results:
 
 ```
-regex:              twig:
-(ab)*c(d)+          (.)*
-----------------------------------------
-(🔮 b)*c(d)+        ((.)*b)*c(d)+
-(a🔮 )*c(d)+        (a(.)*)*c(d)+
-(🔮 )*c(d)+         ((.)*)*c(d)+
-🔮 c(d)+            (.)*c(d)+
-(ab)*🔮 (d)+        (ab)*(.)*(d)+
-(ab)*c(🔮 )+        (ab)*c((.)*)+
-(ab)*c🔮            (ab)*c(.)*
-🔮 (d)+             (.)*(d)+
-(ab)*🔮             (ab)*(.)*
-🔮                  (.)*
+Given the regular expression:
 
-regex:              twig:
-(ab)*c(d)+          (\w)+
-----------------------------------------
-(🔮 b)*c(d)+        ((\w)+b)*c(d)+
-(a🔮 )*c(d)+        (a(\w)+)*c(d)+
-(🔮 )*c(d)+         ((\w)+)*c(d)+
-🔮 c(d)+            (\w)+c(d)+
-(ab)*🔮 (d)+        (ab)*(\w)+(d)+
-(ab)*c(🔮 )+        (ab)*c((\w)+)+
-(ab)*c🔮            (ab)*c(\w)+
-🔮 (d)+             (\w)+(d)+
-(ab)*🔮             (ab)*(\w)+
-🔮                  (\w)+
+  \w\w\w
 
-regex:              twig:
-(ab)*c(d)+          [0-9]
-----------------------------------------
-(🔮 b)*c(d)+        ([0-9]b)*c(d)+
-(a🔮 )*c(d)+        (a[0-9])*c(d)+
-(🔮 )*c(d)+         ([0-9])*c(d)+
-🔮 c(d)+            [0-9]c(d)+
-(ab)*🔮 (d)+        (ab)*[0-9](d)+
-(ab)*c(🔮 )+        (ab)*c([0-9])+
-(ab)*c🔮            (ab)*c[0-9]
-🔮 (d)+             [0-9](d)+
-(ab)*🔮             (ab)*[0-9]
-🔮                  [0-9]
+That already matches the strings:
+
+  ✗ (0:3)    abc
+  ✗ (4:7)    def
+  ✓ (8:11)   123
+  ✓ (12:15)  456
+  ✗ (16:19)  ghi
+
+When it *should only* match the strings:
+
+  ✓ (8:11)   123
+  ✓ (12:15)  456
+
+Start by identifying promising sub-expressions:
+
+  ❑\w\w
+  \w❑\w
+  \w\w❑
+  ❑\w
+  \w❑
+
+Then synthesize character class replacements:
+
+  ✗ .\w\w
+  ✗ \w\w\w
+  ✓ \d\w\w
+
+Results in the expression:
+
+  \d\w\w
+
+That matches the strings:
+
+  ✓ (8:11)   123
+  ✓ (12:15)  456
+
+All done
 ```
