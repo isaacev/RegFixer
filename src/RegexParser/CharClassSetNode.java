@@ -26,4 +26,8 @@ public class CharClassSetNode implements CharClass {
       return String.format("[%s]", str);
     }
   }
+
+  public int getBreadth () {
+    return 0;
+  }
 }
