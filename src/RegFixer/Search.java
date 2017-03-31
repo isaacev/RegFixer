@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.regex.*;
 import RegexParser.*;
 
-class Search {
-  static List<Range> getMatchingRanges (String corpus, RegexNode regex) {
+public class Search {
+  public static List<Range> getMatchingRanges (String corpus, RegexNode regex) {
     Matcher mt = Pattern.compile(regex.toString()).matcher(corpus);
     List<Range> ranges = new LinkedList<Range>();
 
@@ -17,14 +17,14 @@ class Search {
     return ranges;
   }
 
-  static List<String> getMatchingStrings (String corpus, RegexNode regex) {
+  public static List<String> getMatchingStrings (String corpus, RegexNode regex) {
     List<Range> ranges = getMatchingRanges(corpus, regex);
     List<String> substrings = getMatchingStrings(corpus, ranges);
 
     return substrings;
   }
 
-  static List<String> getMatchingStrings (String corpus, List<Range> ranges) {
+  public static List<String> getMatchingStrings (String corpus, List<Range> ranges) {
     List<String> substrings = new LinkedList<String>();
 
     for (Range range : ranges) {
@@ -34,14 +34,14 @@ class Search {
     return substrings;
   }
 
-  static String getMatchingString (String corpus, Range range) {
+  public static String getMatchingString (String corpus, Range range) {
     int from = range.getLeftIndex();
     int to = range.getRightIndex();
 
     return corpus.substring(from, to);
   }
 
-  static List<Range> inferNegativeRanges (List<Range> oldRanges, List<Range> newRanges) {
+  public static List<Range> inferNegativeRanges (List<Range> oldRanges, List<Range> newRanges) {
     Collections.sort(oldRanges);
     Collections.sort(newRanges);
 

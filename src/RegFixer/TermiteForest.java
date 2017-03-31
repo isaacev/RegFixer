@@ -3,20 +3,20 @@ package RegFixer;
 import java.util.*;
 import RegexParser.RegexNode;
 
-class TermiteForest {
+public class TermiteForest {
   private RegexNode tree;
   private List<TermiteTree> trees;
 
-  TermiteForest (RegexNode tree, List<TermiteTree> trees) {
+  public TermiteForest (RegexNode tree, List<TermiteTree> trees) {
     this.tree = tree;
     this.trees = trees;
   }
 
-  RegexNode getTree () {
+  public RegexNode getTree () {
     return this.tree;
   }
 
-  List<TermiteTree> getTrees () {
+  public List<TermiteTree> getTrees () {
     return this.trees;
   }
 }

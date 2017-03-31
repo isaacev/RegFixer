@@ -2,24 +2,24 @@ package RegFixer;
 
 import RegexParser.*;
 
-class TermiteTree implements RegexNode {
+public class TermiteTree implements RegexNode {
   private RegexNode root;
   private HoleNode hole;
 
-  TermiteTree (RegexNode root, HoleNode hole) {
+  public TermiteTree (RegexNode root, HoleNode hole) {
     this.root = root;
     this.hole = hole;
   }
 
-  RegexNode getRoot () {
+  public RegexNode getRoot () {
     return this.root;
   }
 
-  void fillHole (RegexNode node) {
+  public void fillHole (RegexNode node) {
     this.hole.fill(node);
   }
 
-  void emptyHole () {
+  public void emptyHole () {
     this.hole.empty();
   }
 

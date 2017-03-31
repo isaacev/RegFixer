@@ -2,16 +2,16 @@ package RegFixer;
 
 import java.util.regex.*;
 
-class Range implements Comparable<Range> {
+public class Range implements Comparable<Range> {
   private int leftIndex;
   private int rightIndex;
 
-  Range (int leftIndex, int rightIndex) {
+  public Range (int leftIndex, int rightIndex) {
     this.leftIndex = leftIndex;
     this.rightIndex = rightIndex;
   }
 
-  Range (String st) throws BadRangeException {
+  public Range (String st) throws BadRangeException {
     Pattern pt = Pattern.compile("\\((\\d+):(\\d+)\\)");
     Matcher mt = pt.matcher(st);
 
@@ -24,38 +24,38 @@ class Range implements Comparable<Range> {
     }
   }
 
-  int getLeftIndex () {
+  public int getLeftIndex () {
     return this.leftIndex;
   }
 
-  int getRightIndex () {
+  public int getRightIndex () {
     return this.rightIndex;
   }
 
-  boolean equals (Range other) {
+  public boolean equals (Range other) {
     boolean leftIsEqual = (this.leftIndex == other.getLeftIndex());
     boolean rightIsEqual = (this.rightIndex == other.getRightIndex());
 
     return leftIsEqual && rightIsEqual;
   }
 
-  boolean startsBefore (Range other) {
+  public boolean startsBefore (Range other) {
     return (this.leftIndex < other.getLeftIndex());
   }
 
-  boolean startsAfter (Range other) {
+  public boolean startsAfter (Range other) {
     return (this.leftIndex > other.getRightIndex());
   }
 
-  boolean endsBefore (Range other) {
+  public boolean endsBefore (Range other) {
     return (this.rightIndex < other.getLeftIndex());
   }
 
-  boolean endsAfter (Range other) {
+  public boolean endsAfter (Range other) {
     return (this.rightIndex > other.getRightIndex());
   }
 
-  boolean intersects (Range other) {
+  public boolean intersects (Range other) {
     boolean intersectionAtStart = (this.leftIndex <= other.getRightIndex());
     boolean intersectionAtEnd = (this.rightIndex <= other.getLeftIndex());
 

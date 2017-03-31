@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.regex.*;
 import RegexParser.*;
 
-class Evaluator {
+public class Evaluator {
   private String corpus;
 
   // The indexes in the corpus matched by the original (imperfect) regex.
@@ -25,7 +25,7 @@ class Evaluator {
   // Strings that a better regex MUST reject.
   private List<String> negativeExamples;
 
-  Evaluator (String corpus, List<Range> originalRanges, List<Range> selectedRanges) {
+  public Evaluator (String corpus, List<Range> originalRanges, List<Range> selectedRanges) {
     this.corpus = corpus;
 
     this.originalRanges = originalRanges;
@@ -39,31 +39,31 @@ class Evaluator {
     this.negativeExamples.removeAll(this.selectedStrings);
   }
 
-  List<Range> getOriginalRanges () {
+  public List<Range> getOriginalRanges () {
     return this.originalRanges;
   }
 
-  List<String> getOriginalStrings () {
+  public List<String> getOriginalStrings () {
     return this.originalStrings;
   }
 
-  List<Range> getSelectedRanges () {
+  public List<Range> getSelectedRanges () {
     return this.selectedRanges;
   }
 
-  List<String> getSelectedStrings () {
+  public List<String> getSelectedStrings () {
     return this.selectedStrings;
   }
 
-  List<String> getPositiveExamples () {
+  public List<String> getPositiveExamples () {
     return this.positiveExamples;
   }
 
-  List<String> getNegativeExamples () {
+  public List<String> getNegativeExamples () {
     return this.negativeExamples;
   }
 
-  boolean runDotStarTest (TermiteTree tree) {
+  public boolean runDotStarTest (TermiteTree tree) {
     RegexNode twig = new StarNode(new CharDotNode());
     tree.fillHole(twig);
     boolean didPass = Evaluator.regexMatchesAllExamples(tree, this.positiveExamples);
@@ -80,7 +80,7 @@ class Evaluator {
    * finding a character not in the corpus. Some sort of searching system should
    * be used to find character candidates instead.
    */
-  boolean runEmptySetTest (TermiteTree tree) {
+  public boolean runEmptySetTest (TermiteTree tree) {
     RegexNode twig = new CharLiteralNode('!');
     tree.fillHole(twig);
     boolean didPass = (Evaluator.regexMatchesAllExamples(tree, this.negativeExamples) == false);
@@ -89,15 +89,15 @@ class Evaluator {
     return didPass;
   }
 
-  boolean runPositiveExampleTest (RegexNode regex) {
+  public boolean runPositiveExampleTest (RegexNode regex) {
     return Evaluator.regexMatchesAllExamples(regex, this.positiveExamples);
   }
 
-  boolean runNegativeExampleTest (RegexNode regex) {
+  public boolean runNegativeExampleTest (RegexNode regex) {
     return (Evaluator.regexMatchesAllExamples(regex, this.negativeExamples) == false);
   }
 
-  TermiteForest pruneForest (TermiteForest forest) {
+  public TermiteForest pruneForest (TermiteForest forest) {
     List<TermiteTree> trees = new LinkedList<TermiteTree>();
 
     for (TermiteTree tree : forest.getTrees()) {
@@ -112,7 +112,7 @@ class Evaluator {
     return new TermiteForest(forest.getTree(), trees);
   }
 
-  static boolean regexMatchesAllExamples (RegexNode regex, List<String> examples) {
+  public static boolean regexMatchesAllExamples (RegexNode regex, List<String> examples) {
     // Add start and end regular expression anchors (`^` and `$`) to ensure that
     // the regular expression is tested against the entire example and not some
     // substring of the example.

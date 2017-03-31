@@ -4,41 +4,40 @@ import java.util.*;
 import java.io.*;
 import RegexParser.RegexNode;
 
-class Benchmark {
-  RegexNode regex;
-  List<Range> posMatches;
-  List<Range> negMatches;
+public class Benchmark {
   String corpus;
+  RegexNode originalRegex;
+  List<Range> originalRanges;
+  List<Range> selectedRanges;
 
   static String boundary = "---";
 
-  Benchmark (RegexNode regex, List<Range> posMatches, List<Range> negMatches, String corpus) {
-    this.regex = regex;
-    this.posMatches = posMatches;
-    this.negMatches = negMatches;
+  public Benchmark (RegexNode originalRegex, List<Range> selectedRanges, String corpus) {
     this.corpus = corpus;
+    this.originalRegex = originalRegex;
+    this.originalRanges = Search.getMatchingRanges(corpus, originalRegex);
+    this.selectedRanges = selectedRanges;
   }
 
-  RegexNode getRegex () {
-    return this.regex;
-  }
-
-  List<Range> getPosMatches () {
-    return this.posMatches;
-  }
-
-  List<Range> getNegMatches () {
-    return this.negMatches;
-  }
-
-  String getCorpus () {
+  public String getCorpus () {
     return this.corpus;
   }
 
-  static Benchmark readFromFile (String filename) throws IOException {
-    RegexNode regex = null;
-    List<Range> posMatches = new LinkedList<Range>();
-    List<Range> negMatches = new LinkedList<Range>();
+  public RegexNode getOriginalRegex () {
+    return this.originalRegex;
+  }
+
+  public List<Range> getOriginalRanges () {
+    return this.originalRanges;
+  }
+
+  public List<Range> getSelectedRanges () {
+    return this.selectedRanges;
+  }
+
+  public static Benchmark readFromFile (String filename) throws IOException {
+    RegexNode originalRegex = null;
+    List<Range> selectedRanges = new LinkedList<Range>();
     String corpus = "";
 
     Scanner sc = new Scanner(new File(filename));
@@ -49,7 +48,7 @@ class Benchmark {
       lineNum++;
 
       try {
-        regex = RegexParser.Main.parse(line);
+        originalRegex = RegexParser.Main.parse(line);
       } catch (Exception ex) {
         throw new IOException(ex.toString());
       }
@@ -71,24 +70,7 @@ class Benchmark {
         break;
       } else {
         try {
-          posMatches.add(new Range(line));
-        } catch (BadRangeException ex) {
-          String fmt = "Expected index pair or boundary on line %d of '%s'";
-          throw new IOException(String.format(fmt, lineNum, filename));
-        }
-      }
-    }
-
-    while (sc.hasNextLine()) {
-      String line = sc.nextLine();
-      lineNum++;
-
-      if (line.equals(boundary)) {
-        // Break loop since boundary was encountered.
-        break;
-      } else {
-        try {
-          negMatches.add(new Range(line));
+          selectedRanges.add(new Range(line));
         } catch (BadRangeException ex) {
           String fmt = "Expected index pair or boundary on line %d of '%s'";
           throw new IOException(String.format(fmt, lineNum, filename));
@@ -101,24 +83,18 @@ class Benchmark {
       lineNum++;
     }
 
-    return new Benchmark(regex, posMatches, negMatches, corpus);
+    return new Benchmark(originalRegex, selectedRanges, corpus);
   }
 
-  static void saveToFile (Benchmark bm, String filename) throws IOException {
+  public static void saveToFile (Benchmark bm, String filename) throws IOException {
     PrintWriter pw = new PrintWriter(filename, "UTF-8");
 
     // Print regex string.
-    pw.println(bm.getRegex());
+    pw.println(bm.getOriginalRegex());
 
-    // Print match indices.
+    // Print range indices.
     pw.println(boundary);
-    for (Range m : bm.getPosMatches()) {
-      pw.println(m.toString());
-    }
-
-    // Print match indices.
-    pw.println(boundary);
-    for (Range m : bm.getNegMatches()) {
+    for (Range m : bm.getSelectedRanges()) {
       pw.println(m.toString());
     }
 
