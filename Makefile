@@ -15,7 +15,7 @@ lexer: clean-lexer
 	jflex -d src/RegexParser src/RegexParser/Regex.jlex
 
 run:
-	java -cp $(run_cp) RegFixer.Main "(ab)*cd+" ".*" "\w+" "[0-9]"
+	java -cp $(run_cp) RegFixer.Main benchmarks/example1.txt
 
 clean: clean-parser clean-lexer
 	rm -rf bin
