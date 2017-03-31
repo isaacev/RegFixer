@@ -1,7 +1,7 @@
 package RegFixer;
 
-class BadRangeException extends Exception {
-  BadRangeException (String message) {
+public class BadRangeException extends Exception {
+  public BadRangeException (String message) {
     super(message);
   }
 }
