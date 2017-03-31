@@ -39,8 +39,7 @@ class Termite {
     else if (expr instanceof OptionalNode)   { return digestOptional((OptionalNode) expr); }
     else if (expr instanceof StarNode)       { return digestStar((StarNode) expr); }
     else if (expr instanceof PlusNode)       { return digestPlus((PlusNode) expr); }
-    else if (expr instanceof CharClassNode)  { return digestAtom(); }
-    else if (expr instanceof CharNode)       { return digestAtom(); }
+    else if (expr instanceof CharClass)      { return digestAtom(); }
     else {
       System.err.printf("Unknown AST class: %s\n", expr.getClass().getName());
       System.exit(1);

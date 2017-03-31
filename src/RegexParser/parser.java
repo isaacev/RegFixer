@@ -800,7 +800,7 @@ class CUP$parser$actions {
           case 15: // basicRegex ::= DOT 
             {
               RegexNode RESULT =null;
-		 RESULT = new DotNode();
+		 RESULT = new CharDotNode();
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("basicRegex",5, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -812,7 +812,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
-		CharNode c = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
+		CharClass c = (CharClass)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 RESULT = c;
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("basicRegex",5, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -825,7 +825,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
-		CharClassNode c = (CharClassNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
+		CharClassSetNode c = (CharClassSetNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 RESULT = c;
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("basicRegex",5, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -838,7 +838,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
-		CharClassNode c = (CharClassNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
+		CharClassSetNode c = (CharClassSetNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 RESULT = c;
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("basicRegex",5, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -902,7 +902,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int rleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).left;
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
-		CharNode r = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
+		CharClass r = (CharClass)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Integer i = (Integer)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
@@ -918,7 +918,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int rleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)).left;
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)).right;
-		CharNode r = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-4)).value;
+		CharClass r = (CharClass)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-4)).value;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		Integer i = (Integer)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
@@ -934,7 +934,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int rleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-5)).left;
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-5)).right;
-		CharNode r = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-5)).value;
+		CharClass r = (CharClass)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-5)).value;
 		int i1left = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).left;
 		int i1right = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
 		Integer i1 = (Integer)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
@@ -953,7 +953,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int rleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).left;
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
-		CharClassNode r = (CharClassNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
+		CharClassSetNode r = (CharClassSetNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Integer i = (Integer)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
@@ -969,7 +969,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int rleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)).left;
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)).right;
-		CharClassNode r = (CharClassNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-4)).value;
+		CharClassSetNode r = (CharClassSetNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-4)).value;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		Integer i = (Integer)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
@@ -985,7 +985,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int rleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-5)).left;
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-5)).right;
-		CharClassNode r = (CharClassNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-5)).value;
+		CharClassSetNode r = (CharClassSetNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-5)).value;
 		int i1left = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).left;
 		int i1right = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
 		Integer i1 = (Integer)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
@@ -1004,7 +1004,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int rleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).left;
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
-		CharClassNode r = (CharClassNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
+		CharClassSetNode r = (CharClassSetNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		Integer i = (Integer)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
@@ -1020,7 +1020,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int rleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)).left;
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)).right;
-		CharClassNode r = (CharClassNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-4)).value;
+		CharClassSetNode r = (CharClassSetNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-4)).value;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
 		Integer i = (Integer)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
@@ -1036,7 +1036,7 @@ class CUP$parser$actions {
               RegexNode RESULT =null;
 		int rleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-5)).left;
 		int rright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-5)).right;
-		CharClassNode r = (CharClassNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-5)).value;
+		CharClassSetNode r = (CharClassSetNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-5)).value;
 		int i1left = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).left;
 		int i1right = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
 		Integer i1 = (Integer)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
@@ -1052,11 +1052,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 31: // characterClass ::= LBRACKET intervals RBRACKET 
             {
-              CharClassNode RESULT =null;
+              CharClassSetNode RESULT =null;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		LinkedList i = (LinkedList)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
-		 RESULT = new CharClassNode(false, i);
+		 RESULT = new CharClassSetNode(false, i);
                    
               CUP$parser$result = parser.getSymbolFactory().newSymbol("characterClass",12, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1065,17 +1065,17 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 32: // characterClass ::= LBRACKET intervals insideChar MINUS RBRACKET 
             {
-              CharClassNode RESULT =null;
+              CharClassSetNode RESULT =null;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
 		LinkedList i = (LinkedList)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
-		CharNode c = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
+		CharClass c = (CharClass)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		
-                    CharClassNode node = new CharClassNode(false, i);
-                    node.addInterval(new IntervalNode(c));
-                    node.addInterval(new IntervalNode(new CharNode('-')));
+                    CharClassSetNode node = new CharClassSetNode(false, i);
+                    node.addSubClass(new CharRangeNode(c));
+                    node.addSubClass(new CharRangeNode(new CharLiteralNode('-')));
                     RESULT = node;
                     
               CUP$parser$result = parser.getSymbolFactory().newSymbol("characterClass",12, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-4)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1085,16 +1085,16 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 33: // notcharacterClass ::= LBRACKET CARET intervals insideChar MINUS RBRACKET 
             {
-              CharClassNode RESULT =null;
+              CharClassSetNode RESULT =null;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)).right;
 		LinkedList i = (LinkedList)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-3)).value;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
-		CharNode c = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
-		 CharClassNode node = new CharClassNode(true, i);
-                    node.addInterval(new IntervalNode(c));
-                    node.addInterval(new IntervalNode(new CharNode('-')));
+		CharClass c = (CharClass)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
+		 CharClassSetNode node = new CharClassSetNode(true, i);
+                    node.addSubClass(new CharRangeNode(c));
+                    node.addSubClass(new CharRangeNode(new CharLiteralNode('-')));
                     RESULT = node;
                     
               CUP$parser$result = parser.getSymbolFactory().newSymbol("notcharacterClass",13, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-5)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1104,11 +1104,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 34: // notcharacterClass ::= LBRACKET CARET intervals RBRACKET 
             {
-              CharClassNode RESULT =null;
+              CharClassSetNode RESULT =null;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)).right;
 		LinkedList i = (LinkedList)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
-		 RESULT = new CharClassNode(true, i);
+		 RESULT = new CharClassSetNode(true, i);
                     
               CUP$parser$result = parser.getSymbolFactory().newSymbol("notcharacterClass",13, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-3)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1152,7 +1152,7 @@ class CUP$parser$actions {
 		LinkedList ilist = (LinkedList)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-1)).value;
 		int ileft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
-		IntervalNode i = (IntervalNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
+		CharRangeNode i = (CharRangeNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 ilist.addLast(i);
                RESULT = ilist;
             
@@ -1164,7 +1164,7 @@ class CUP$parser$actions {
           case 38: // intervals ::= 
             {
               LinkedList RESULT =null;
-		 RESULT = new LinkedList<IntervalNode>();
+		 RESULT = new LinkedList<CharRangeNode>();
             
               CUP$parser$result = parser.getSymbolFactory().newSymbol("intervals",7, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1173,14 +1173,14 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 39: // interval ::= insideChar MINUS insideChar 
             {
-              IntervalNode RESULT =null;
+              CharRangeNode RESULT =null;
 		int c1left = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).left;
 		int c1right = ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)).right;
-		CharNode c1 = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
+		CharClass c1 = (CharClass)((java_cup.runtime.Symbol) CUP$parser$stack.elementAt(CUP$parser$top-2)).value;
 		int c2left = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int c2right = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
-		CharNode c2 = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new IntervalNode(c1, c2);
+		CharClass c2 = (CharClass)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
+		 RESULT = new CharRangeNode(c1, c2);
             
               CUP$parser$result = parser.getSymbolFactory().newSymbol("interval",8, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-2)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1189,11 +1189,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 40: // interval ::= insideChar 
             {
-              IntervalNode RESULT =null;
+              CharRangeNode RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
-		CharNode c = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new IntervalNode(c);
+		CharClass c = (CharClass)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
+		 RESULT = new CharRangeNode(c);
             
               CUP$parser$result = parser.getSymbolFactory().newSymbol("interval",8, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1202,11 +1202,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 41: // interval ::= metaChar 
             {
-              IntervalNode RESULT =null;
+              CharRangeNode RESULT =null;
 		int mleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int mright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
-		CharNode m = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new IntervalNode(m);
+		CharEscapedNode m = (CharEscapedNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
+		 RESULT = new CharRangeNode(m);
             
               CUP$parser$result = parser.getSymbolFactory().newSymbol("interval",8, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1215,11 +1215,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 42: // insideChar ::= DIGIT 
             {
-              CharNode RESULT =null;
+              CharClass RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		CharTokenVal c = (CharTokenVal)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new CharNode(c.charVal);
+		 RESULT = new CharLiteralNode(c.charVal);
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1228,11 +1228,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 43: // insideChar ::= ESCAPEDCHAR 
             {
-              CharNode RESULT =null;
+              CharClass RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		CharTokenVal c = (CharTokenVal)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new EscapedCharNode(c.charVal);
+		 RESULT = new CharEscapedNode(c.charVal);
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1241,11 +1241,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 44: // insideChar ::= NOTDIGIT 
             {
-              CharNode RESULT =null;
+              CharClass RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		CharTokenVal c = (CharTokenVal)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new CharNode(c.charVal);
+		 RESULT = new CharLiteralNode(c.charVal);
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1254,11 +1254,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 45: // insideChar ::= MINUS 
             {
-              CharNode RESULT =null;
+              CharClass RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		TokenVal c = (TokenVal)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new CharNode('-');
+		 RESULT = new CharLiteralNode('-');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1267,8 +1267,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 46: // insideChar ::= DOT 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('.');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('.');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1277,8 +1277,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 47: // insideChar ::= PLUS 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('+');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('+');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1287,8 +1287,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 48: // insideChar ::= STAR 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('*');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('*');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1297,8 +1297,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 49: // insideChar ::= OPTIONAL 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('?');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('?');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1307,8 +1307,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 50: // insideChar ::= CARET 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('^');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('^');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1317,8 +1317,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 51: // insideChar ::= DOLLAR 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('$');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('$');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1327,8 +1327,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 52: // insideChar ::= LBRACKET 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('[');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('[');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1337,8 +1337,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 53: // insideChar ::= RBRACKET 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode(']');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode(']');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1347,8 +1347,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 54: // insideChar ::= LPAREN 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('(');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('(');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1357,8 +1357,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 55: // insideChar ::= RPAREN 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode(')');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode(')');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1367,8 +1367,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 56: // insideChar ::= LCURLY 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('{');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('{');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1377,8 +1377,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 57: // insideChar ::= RCURLY 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('}');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('}');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1387,8 +1387,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 58: // insideChar ::= UNION 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('|');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('|');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1397,8 +1397,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 59: // insideChar ::= COMMA 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode(',');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode(',');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("insideChar",9, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1407,11 +1407,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 60: // outsideChar ::= DIGIT 
             {
-              CharNode RESULT =null;
+              CharClass RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		CharTokenVal c = (CharTokenVal)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new CharNode(c.charVal);
+		 RESULT = new CharLiteralNode(c.charVal);
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("outsideChar",10, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1420,11 +1420,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 61: // outsideChar ::= ESCAPEDCHAR 
             {
-              CharNode RESULT =null;
+              CharClass RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		CharTokenVal c = (CharTokenVal)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new EscapedCharNode(c.charVal);
+		 RESULT = new CharEscapedNode(c.charVal);
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("outsideChar",10, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1433,10 +1433,10 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 62: // outsideChar ::= metaChar 
             {
-              CharNode RESULT =null;
+              CharClass RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
-		CharNode c = (CharNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
+		CharEscapedNode c = (CharEscapedNode)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		 RESULT = c;
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("outsideChar",10, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
@@ -1446,11 +1446,11 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 63: // outsideChar ::= NOTDIGIT 
             {
-              CharNode RESULT =null;
+              CharClass RESULT =null;
 		int cleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int cright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		CharTokenVal c = (CharTokenVal)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		 RESULT = new CharNode(c.charVal);
+		 RESULT = new CharLiteralNode(c.charVal);
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("outsideChar",10, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1459,8 +1459,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 64: // outsideChar ::= MINUS 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('-');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('-');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("outsideChar",10, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1469,8 +1469,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 65: // outsideChar ::= LCURLY 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('{');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('{');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("outsideChar",10, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1479,8 +1479,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 66: // outsideChar ::= RCURLY 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode('}');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode('}');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("outsideChar",10, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1489,8 +1489,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 67: // outsideChar ::= COMMA 
             {
-              CharNode RESULT =null;
-		 RESULT = new CharNode(',');
+              CharClass RESULT =null;
+		 RESULT = new CharLiteralNode(',');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("outsideChar",10, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1499,8 +1499,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 68: // metaChar ::= METATAB 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('t');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('t');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1509,8 +1509,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 69: // metaChar ::= METANEWLINE 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('n');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('n');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1519,8 +1519,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 70: // metaChar ::= METARETURN 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('r');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('r');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1529,8 +1529,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 71: // metaChar ::= METAFEED 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('f');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('f');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1539,8 +1539,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 72: // metaChar ::= METABOUNDARY 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('b');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('b');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1549,8 +1549,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 73: // metaChar ::= METANOTBOUNDARY 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('B');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('B');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1559,8 +1559,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 74: // metaChar ::= METADIGIT 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('d');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('d');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1569,8 +1569,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 75: // metaChar ::= METANOTDIGIT 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('D');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('D');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1579,8 +1579,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 76: // metaChar ::= METASPACE 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('s');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('s');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1589,8 +1589,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 77: // metaChar ::= METANOTSPACE 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('S');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('S');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1599,8 +1599,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 78: // metaChar ::= METAVERTICALTAB 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('v');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('v');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1609,8 +1609,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 79: // metaChar ::= METAWORD 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('w');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('w');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
@@ -1619,8 +1619,8 @@ class CUP$parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 80: // metaChar ::= METANOTWORD 
             {
-              CharNode RESULT =null;
-		 RESULT = new MetaCharNode('W');
+              CharEscapedNode RESULT =null;
+		 RESULT = new CharEscapedNode('W');
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("metaChar",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
