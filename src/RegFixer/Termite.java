@@ -23,7 +23,7 @@ import RegexParser.*;
  * `Termite.digest` method will return a list of ASTs where each AST has a
  * different sub-expression replaced with a hole.
  */
-class Termite {
+public class Termite {
   public static TermiteForest digest (RegexNode tree) {
     List<TermiteTree> trees = digestNode(tree).stream()
       .filter(elem -> (elem.tree != elem.hole))
@@ -33,7 +33,7 @@ class Termite {
     return new TermiteForest(tree, trees);
   }
 
-  static List<TreeHolePair> digestNode (RegexNode expr) {
+  private static List<TreeHolePair> digestNode (RegexNode expr) {
          if (expr instanceof ConcatNode)     { return digestConcat((ConcatNode) expr); }
     else if (expr instanceof UnionNode)      { return digestUnion((UnionNode) expr); }
     else if (expr instanceof RepetitionNode) { return digestRepetition((RepetitionNode) expr); }
@@ -48,7 +48,7 @@ class Termite {
     }
   }
 
-  static List<TreeHolePair> digestConcat (ConcatNode expr) {
+  private static List<TreeHolePair> digestConcat (ConcatNode expr) {
     List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
     List<RegexNode> children = expr.getChildren();
     int numChilds = children.size();
@@ -101,7 +101,7 @@ class Termite {
     return digestedExprs;
   }
 
-  static List<TreeHolePair> digestUnion (UnionNode expr) {
+  private static List<TreeHolePair> digestUnion (UnionNode expr) {
     List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of left sub-expression(s).
@@ -126,7 +126,7 @@ class Termite {
     return digestedExprs;
   }
 
-  static List<TreeHolePair> digestRepetition (RepetitionNode expr) {
+  private static List<TreeHolePair> digestRepetition (RepetitionNode expr) {
     List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of sub-expression(s).
@@ -153,7 +153,7 @@ class Termite {
     return digestedExprs;
   }
 
-  static List<TreeHolePair> digestOptional (OptionalNode expr) {
+  private static List<TreeHolePair> digestOptional (OptionalNode expr) {
     List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of sub-expression(s).
@@ -171,7 +171,7 @@ class Termite {
     return digestedExprs;
   }
 
-  static List<TreeHolePair> digestStar (StarNode expr) {
+  private static List<TreeHolePair> digestStar (StarNode expr) {
     List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of sub-expression(s).
@@ -189,7 +189,7 @@ class Termite {
     return digestedExprs;
   }
 
-  static List<TreeHolePair> digestPlus (PlusNode expr) {
+  private static List<TreeHolePair> digestPlus (PlusNode expr) {
     List<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Recursively compute holes of sub-expression(s).
@@ -207,7 +207,7 @@ class Termite {
     return digestedExprs;
   }
 
-  static List<TreeHolePair> digestAtom () {
+  private static List<TreeHolePair> digestAtom () {
     LinkedList<TreeHolePair> digestedExprs = new LinkedList<TreeHolePair>();
 
     // Replace entire expression with a hole.
