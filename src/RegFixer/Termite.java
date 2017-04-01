@@ -1,4 +1,4 @@
-package RegFixer;
+package regfixer;
 
 import java.util.*;
 import java.util.stream.*;

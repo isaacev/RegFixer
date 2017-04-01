@@ -1,4 +1,4 @@
-package RegFixer;
+package regfixer;
 
 public class BadRangeException extends Exception {
   public BadRangeException (String message) {

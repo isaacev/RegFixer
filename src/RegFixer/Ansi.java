@@ -1,4 +1,4 @@
-package RegFixer;
+package regfixer;
 
 /**
  * Admittedly, this class is a little crazy. But it's done in the service of
