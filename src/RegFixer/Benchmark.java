@@ -3,6 +3,7 @@ package RegFixer;
 import java.util.*;
 import java.io.*;
 import RegexParser.RegexNode;
+import static RegFixer.CorpusSearchEngine.*;
 
 public class Benchmark {
   String corpus;
@@ -15,7 +16,7 @@ public class Benchmark {
   public Benchmark (RegexNode originalRegex, List<Range> selectedRanges, String corpus) {
     this.corpus = corpus;
     this.originalRegex = originalRegex;
-    this.originalRanges = Search.getMatchingRanges(corpus, originalRegex);
+    this.originalRanges = getMatchingRanges(corpus, originalRegex);
     this.selectedRanges = selectedRanges;
   }
 

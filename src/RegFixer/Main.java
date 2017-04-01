@@ -3,6 +3,7 @@ package RegFixer;
 import java.util.*;
 import java.util.stream.*;
 import RegexParser.*;
+import static RegFixer.CorpusSearchEngine.*;
 
 public class Main {
   public static void main (String[] args) throws Exception {
@@ -28,8 +29,8 @@ public class Main {
       printRegex(candidate);
 
       printHeader("That matches the strings:");
-      for (Range rng : Search.getMatchingRanges(bm.getCorpus(), candidate)) {
-        String str = Search.getMatchingString(bm.getCorpus(), rng);
+      for (Range rng : getMatchingRanges(bm.getCorpus(), candidate)) {
+        String str = getMatchingString(bm.getCorpus(), rng);
         printMatchStatus(true, rng, str);
       }
     }

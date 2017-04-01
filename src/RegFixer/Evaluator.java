@@ -3,6 +3,7 @@ package RegFixer;
 import java.util.*;
 import java.util.regex.*;
 import RegexParser.*;
+import static RegFixer.CorpusSearchEngine.*;
 
 public class Evaluator {
   private String corpus;
@@ -29,10 +30,10 @@ public class Evaluator {
     this.corpus = corpus;
 
     this.originalRanges = originalRanges;
-    this.originalStrings = Search.getMatchingStrings(corpus, originalRanges);
+    this.originalStrings = getMatchingStrings(corpus, originalRanges);
 
     this.selectedRanges = selectedRanges;
-    this.selectedStrings = Search.getMatchingStrings(corpus, selectedRanges);
+    this.selectedStrings = getMatchingStrings(corpus, selectedRanges);
 
     this.positiveExamples = this.selectedStrings;
     this.negativeExamples = new LinkedList<String>(this.originalStrings);
