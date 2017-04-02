@@ -16,6 +16,20 @@ public class Synthesizer {
     return null;
   }
 
+  public static RegexNode synthesize (Job job, List<IncompleteTree> trees, ReportStream report) {
+    report.printHeader("Then synthesize character class replacements:");
+    for (IncompleteTree tree : trees) {
+      RegexNode result = synthesizeTree(job, tree);
+      report.printRegexStatus((result != null), tree);
+
+      if (result != null) {
+        return result;
+      }
+    }
+
+    return null;
+  }
+
   public static RegexNode synthesizeTree (Job job, IncompleteTree tree) {
     // 1. assume all holes can be filled with a character class
     // 2. replace all holes with a character class (start with dot then refine)
@@ -50,20 +64,6 @@ public class Synthesizer {
         // a single character class.
         System.err.printf("%s needs to be expanded\n", tree);
         System.exit(1);
-      }
-    }
-
-    return null;
-  }
-
-  public static RegexNode synthesize (Job job, List<IncompleteTree> trees, ReportStream report) {
-    report.printHeader("Then synthesize character class replacements:");
-    for (IncompleteTree tree : trees) {
-      RegexNode result = synthesizeTree(job, tree);
-      report.printRegexStatus((result != null), tree);
-
-      if (result != null) {
-        return result;
       }
     }
 
