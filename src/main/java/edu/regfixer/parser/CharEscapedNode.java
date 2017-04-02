@@ -8,7 +8,7 @@ public class CharEscapedNode implements CharClass {
   }
 
   public int getBreadth () {
-    return 0;
+    return 200;
   }
 
   public String toString () {

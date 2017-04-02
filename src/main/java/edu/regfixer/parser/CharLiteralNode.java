@@ -8,7 +8,7 @@ public class CharLiteralNode implements CharClass {
   }
 
   public int getBreadth () {
-    return 0;
+    return 1;
   }
 
   public String toString () {

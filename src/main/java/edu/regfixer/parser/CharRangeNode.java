@@ -15,7 +15,7 @@ public class CharRangeNode implements CharClass {
   }
 
   public int getBreadth () {
-    return 0;
+    return 100;
   }
 
   public String toString () {
