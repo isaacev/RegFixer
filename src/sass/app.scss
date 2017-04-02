@@ -1,0 +1,130 @@
+.grabbing-cursor,
+.grabbing-cursor * {
+  cursor: -webkit-grabbing !important;
+  cursor: -moz-grabbing !important;
+  cursor: grabbing !important;
+}
+
+.app {
+  $color--editable-type: #444444;
+  $color--lightweight-type: lighten($color--editable-type, 50%);
+  $color--light-border:  #D3D3D3;
+
+  $app-horiz-padding: 64px;
+  $query-editor-height: 36px;
+
+  $font--monospace: "Source Code Pro", monospace;
+
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  .editable-font {
+    font: 500 24px $font--monospace;
+    color: $color--editable-type;
+  }
+
+  .query {
+    $query-vert-padding: 16px;
+
+    padding: $query-vert-padding $app-horiz-padding;
+    position: relative;
+    border-bottom: 1px solid $color--light-border;
+
+    .regex {
+      height: $query-editor-height;
+    }
+
+    .CodeMirror {
+      height: $query-editor-height;
+      position: absolute;
+      right: $app-horiz-padding;
+      left: $app-horiz-padding;
+    }
+
+    .regex-decorator {
+      color: $color--lightweight-type;
+    }
+
+    .bubble {
+      display: none;
+      padding: 8px 16px;
+      position: absolute;
+      top: $query-vert-padding;
+      right: $app-horiz-padding;
+      bottom: $query-vert-padding;
+      background-color: $color--lightweight-type;color: white;
+      font: 16px/20px $font--monospace;
+
+      &:not([data-status="hidden"]) {
+        display: block;
+      }
+
+      &[data-status="red"] {
+        background-color: red;
+      }
+    }
+  }
+
+  .corpus {
+    $corpus-vert-padding: 32px;
+
+    position: absolute;
+    top: 68px + 1px;
+    right: $app-horiz-padding;
+    bottom: 0;
+    left: $app-horiz-padding;
+
+    .grips {
+      width: 0;
+      height: 0;
+      position: absolute;
+      top: $corpus-vert-padding;
+      left: 0;
+      z-index: 1000;
+    }
+
+    .grip {
+      width: 8px;
+      height: 8px;
+      position: absolute;
+      border-radius: 50%;
+      cursor: -webkit-grab;
+      cursor: -moz-grab;
+      cursor: grab;
+    }
+
+    .editor {
+      position: absolute;
+      top: $corpus-vert-padding;
+      right: 0;
+      left: 0;
+      bottom: 0;
+    }
+
+    .CodeMirror {
+      height: auto;
+      position: absolute;
+      top: 0;
+      bottom: $corpus-vert-padding;
+      left: 0;
+      right: 0;
+      background-color: transparent;
+
+      .CodeMirror-line:not(:last-child):after {
+        content: "\ac";
+        color: $color--lightweight-type;
+        font-size: 80%;
+        padding-left: 2px;
+      }
+    }
+
+    .canvas {
+      position: absolute;
+      top: $corpus-vert-padding;
+      left: 0;
+    }
+  }
+}
