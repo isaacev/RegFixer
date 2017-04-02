@@ -1,6 +1,8 @@
 package edu.wisc.regfixer.server;
 
 import static spark.Spark.*;
+import spark.ModelAndView;
+import spark.template.freemarker.FreeMarkerEngine;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import edu.wisc.regfixer.fixer.Job;
@@ -10,6 +12,12 @@ public class Server {
     Gson gson = new Gson();
 
     port(Integer.valueOf(System.getenv("PORT")));
+
+    staticFileLocation("/dist");
+
+    get("/", (req, res) -> {
+      return new ModelAndView(null, "frontend.html");
+    }, new FreeMarkerEngine());
 
     post("/api/fix", (req, res) -> {
       Job job = null;
