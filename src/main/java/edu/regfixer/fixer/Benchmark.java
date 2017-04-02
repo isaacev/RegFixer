@@ -2,8 +2,8 @@ package edu.wisc.regfixer.fixer;
 
 import java.util.*;
 import java.io.*;
-import RegexParser.RegexNode;
-import static RegFixer.CorpusSearchEngine.*;
+import edu.wisc.regfixer.parser.RegexNode;
+import static edu.wisc.regfixer.fixer.CorpusSearchEngine.*;
 
 public class Benchmark {
   String corpus;
@@ -49,7 +49,7 @@ public class Benchmark {
       lineNum++;
 
       try {
-        originalRegex = RegexParser.Main.parse(line);
+        originalRegex = edu.wisc.regfixer.parser.Main.parse(line);
       } catch (Exception ex) {
         throw new IOException(ex.toString());
       }

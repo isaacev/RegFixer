@@ -2,7 +2,7 @@ package edu.wisc.regfixer.fixer;
 
 import java.util.*;
 import java.util.stream.*;
-import RegexParser.*;
+import edu.wisc.regfixer.parser.*;
 
 /**
  * TODO:

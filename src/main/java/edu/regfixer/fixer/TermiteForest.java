@@ -1,7 +1,7 @@
 package edu.wisc.regfixer.fixer;
 
 import java.util.*;
-import RegexParser.RegexNode;
+import edu.wisc.regfixer.parser.RegexNode;
 
 public class TermiteForest {
   private RegexNode tree;

@@ -1,6 +1,6 @@
 package edu.wisc.regfixer.fixer;
 
-import RegexParser.*;
+import edu.wisc.regfixer.parser.*;
 
 public class TermiteTree implements RegexNode {
   private RegexNode root;

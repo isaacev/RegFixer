@@ -2,7 +2,7 @@ package edu.wisc.regfixer.fixer;
 
 import java.util.*;
 import java.util.regex.*;
-import RegexParser.*;
+import edu.wisc.regfixer.parser.*;
 
 public class CorpusSearchEngine {
   public static List<Range> getMatchingRanges (String corpus, RegexNode regex) {

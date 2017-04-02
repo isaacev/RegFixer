@@ -1,7 +1,7 @@
 package edu.wisc.regfixer.fixer;
 
 import java.util.*;
-import RegexParser.*;
+import edu.wisc.regfixer.parser.*;
 
 public class CharClassAdviser {
   private PriorityQueue<CharClass> suggestions;

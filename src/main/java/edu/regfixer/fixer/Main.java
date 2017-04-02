@@ -2,8 +2,8 @@ package edu.wisc.regfixer.fixer;
 
 import java.util.*;
 import java.util.stream.*;
-import RegexParser.*;
-import static RegFixer.CorpusSearchEngine.*;
+import edu.wisc.regfixer.parser.*;
+import static edu.wisc.regfixer.fixer.CorpusSearchEngine.*;
 
 public class Main {
   public static void main (String[] args) throws Exception {
