@@ -13,7 +13,7 @@
   $app-horiz-padding: 64px;
   $query-editor-height: 36px;
 
-  $font--monospace: "Source Code Pro", monospace;
+  $font--monospace: "SFMono-Regular", "Source Code Pro", monospace;
 
   position: fixed;
   top: 0;
@@ -42,6 +42,7 @@
       position: absolute;
       right: $app-horiz-padding;
       left: $app-horiz-padding;
+      font-family: $font--monospace;
     }
 
     .regex-decorator {
@@ -112,6 +113,7 @@
       left: 0;
       right: 0;
       background-color: transparent;
+      font-family: $font--monospace;
 
       .CodeMirror-line:not(:last-child):after {
         content: "\ac";
