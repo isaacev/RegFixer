@@ -24,7 +24,7 @@ import edu.wisc.regfixer.parser.UnionNode;
  * - Since many AST nodes have structural similarities (2 child nodes, 1 child
  *   node, etc.) it may be more efficient to assign like nodes common abstract
  *   parent classes in the AST library. Then the code in this class may be
- *   made more generic and reusable between similarily structured nodes.
+ *   made more generic and reusable between similarly structured nodes.
  */
 
 /**
