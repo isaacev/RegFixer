@@ -4,7 +4,7 @@ package edu.wisc.regfixer.fixer;
  * Admittedly, this class is a little crazy. But it's done in the service of
  * allowing following kinds of method calls:
  *
- *   Ansi.Red.printf("foobar");
+ *   Ansi.Red.sprintf("foobar");
  *
  * The bizzare strings are special codes for ANSI terminals that tell the
  * terminal which color on the text that follows the code. The `ColorNormal`
@@ -54,13 +54,13 @@ public class Ansi {
   private String color;
   private Ansi (String color) { this.color = color; }
 
-  public void printf (String fmt, Object ...args) {
+  public String sprintf (String fmt, Object ...args) {
     String formatted = String.format(fmt, args);
 
     if (Ansi.isColorEnabled) {
-      System.out.print(this.color + formatted + Ansi.ColorNormal);
+      return this.color + formatted + Ansi.ColorNormal;
     } else {
-      System.out.print(formatted);
+      return formatted;
     }
   }
 }
