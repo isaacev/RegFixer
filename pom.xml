@@ -63,7 +63,7 @@
           </execution>
         </executions>
         <configuration>
-          <cupDefinition>src/main/java/edu/regfixer/parser/grammar.cup</cupDefinition>
+          <cupDefinition>src/main/java/edu/wisc/regfixer/parser/grammar.cup</cupDefinition>
           <expectedConflicts>500</expectedConflicts>
         </configuration>
       </plugin>
@@ -80,7 +80,7 @@
             </goals>
             <configuration>
               <lexDefinitions>
-                <lexDefinition>src/main/java/edu/regfixer/parser/lexer.jflex</lexDefinition>
+                <lexDefinition>src/main/java/edu/wisc/regfixer/parser/lexer.jflex</lexDefinition>
               </lexDefinitions>
             </configuration>
           </execution>
@@ -110,7 +110,7 @@
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
-              <mainClass>edu.wisc.regfixer.fixer.Main</mainClass>
+              <mainClass>edu.wisc.regfixer.server.Server</mainClass>
             </manifest>
           </archive>
         </configuration>
