@@ -1,11 +1,12 @@
 package edu.wisc.regfixer.fixer;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Range implements Comparable<Range> {
-  private int leftIndex;
-  private int rightIndex;
+  @SerializedName("left") private int leftIndex;
+  @SerializedName("right") private int rightIndex;
 
   public Range (int leftIndex, int rightIndex) {
     this.leftIndex = leftIndex;
