@@ -1,3 +1,6 @@
 bin
 target
 node_modules
+src/main/resources/dist/*.css
+src/main/resources/dist/*.js
+src/main/resources/dist/*.map
