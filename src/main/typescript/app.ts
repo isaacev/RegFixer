@@ -1,5 +1,5 @@
 //
-// src/typescript/app.ts
+// src/main/typescript/app.ts
 // RegEx Frontend
 //
 // Created on 2/20/17

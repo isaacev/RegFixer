@@ -1,5 +1,5 @@
 //
-// src/typescript/grip.ts
+// src/main/typescript/grip.ts
 // RegEx Frontend
 //
 // Created on 2/20/17

@@ -1,5 +1,5 @@
 //
-// src/typescript/query-editor.ts
+// src/main/typescript/query-editor.ts
 // RegEx Frontend
 //
 // Created on 2/20/17

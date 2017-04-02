@@ -1,5 +1,5 @@
 //
-// src/typescript/corpus-editor.ts
+// src/main/typescript/corpus-editor.ts
 // RegEx Frontend
 //
 // Created on 2/20/17
