@@ -1,10 +1,10 @@
 # RegFixer
 
-On macOS with homebrew run `brew install jflex` to install Jflex.
+Install the latest version of [Maven](https://maven.apache.org/).
 
-Run `make all` to build the lexer, parser, and RegFixer libraries.
+Run `mvn install` to compile & bundle the project. The finished JAR will be available in `target/`.
 
-Running `make run` should produce the following results:
+Running `java -jar target/regfixer.jar benchmarks/example1.txt` should produce the following report:
 
 ```
 Given the regular expression:
