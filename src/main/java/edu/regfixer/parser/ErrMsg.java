@@ -1,4 +1,4 @@
-package RegexParser;
+package edu.wisc.regfixer.parser;
 
 /**
  * ErrMsg

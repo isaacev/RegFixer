@@ -1,4 +1,4 @@
-package RegexParser;
+package edu.wisc.regfixer.parser;
 
 public class HoleNode implements RegexNode {
   private RegexNode child;

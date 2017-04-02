@@ -1,6 +1,6 @@
-package RegexParser;
+package edu.wisc.regfixer.parser;
 
-import java.util.*;
+import java.util.List;
 
 public class CharClassSetNode implements CharClass {
   private boolean not;

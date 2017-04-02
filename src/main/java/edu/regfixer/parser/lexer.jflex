@@ -1,4 +1,4 @@
-package RegexParser;
+package edu.wisc.regfixer.parser;
 
 import java_cup.runtime.*;
 
@@ -51,15 +51,15 @@ return new Symbol(sym.EOF);
 
 %%
 
-\n        { 
-            CharNum.num = 1; 
-          }  
+\n        {
+            CharNum.num = 1;
+          }
 
 "\\t"      { Symbol S = new Symbol(sym.METATAB, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
             return S;
           }
-          
+
 "\\n"      { Symbol S = new Symbol(sym.METANEWLINE, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
             return S;
@@ -68,7 +68,7 @@ return new Symbol(sym.EOF);
 "\\r"      { Symbol S = new Symbol(sym.METARETURN, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
             return S;
-          }                    
+          }
 
 "\\f"      { Symbol S = new Symbol(sym.METAFEED, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
@@ -78,13 +78,13 @@ return new Symbol(sym.EOF);
 "\\b"      { Symbol S = new Symbol(sym.METABOUNDARY, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
             return S;
-          }                    
+          }
 
 "\\B"      { Symbol S = new Symbol(sym.METANOTBOUNDARY, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
             return S;
           }
-          
+
 "\\d"      { Symbol S = new Symbol(sym.METADIGIT, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
             return S;
@@ -93,7 +93,7 @@ return new Symbol(sym.EOF);
 "\\D"      { Symbol S = new Symbol(sym.METANOTDIGIT, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
             return S;
-          }                    
+          }
 
 "\\s"      { Symbol S = new Symbol(sym.METASPACE, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
@@ -103,12 +103,12 @@ return new Symbol(sym.EOF);
 "\\S"      { Symbol S = new Symbol(sym.METANOTSPACE, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
             return S;
-          } 
-          
+          }
+
 "\\v"      { Symbol S = new Symbol(sym.METAVERTICALTAB, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
             return S;
-          }                    
+          }
 
 "\\w"      { Symbol S = new Symbol(sym.METAWORD, new TokenVal(yyline+1, CharNum.num));
             CharNum.num+=2;
@@ -119,7 +119,7 @@ return new Symbol(sym.EOF);
             CharNum.num+=2;
             return S;
           }
-                               
+
 
 {ESCAPEDCHAR} {
             String val = yytext();
@@ -129,85 +129,85 @@ return new Symbol(sym.EOF);
             CharNum.num += yytext().length();
             return S;
           }
-          
+
 "-"       { Symbol S = new Symbol(sym.MINUS, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
-          }          
-          
+          }
+
 "."       { Symbol S = new Symbol(sym.DOT, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
 
-          
+
+
 "+"       { Symbol S = new Symbol(sym.PLUS, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 "*"       { Symbol S = new Symbol(sym.STAR, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 "?"       { Symbol S = new Symbol(sym.OPTIONAL, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 "^"       { Symbol S = new Symbol(sym.CARET, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
-          } 
+          }
 "$"       { Symbol S = new Symbol(sym.DOLLAR, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 "["       { Symbol S = new Symbol(sym.LBRACKET, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 "]"       { Symbol S = new Symbol(sym.RBRACKET, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 "("       { Symbol S = new Symbol(sym.LPAREN, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 ")"       { Symbol S = new Symbol(sym.RPAREN, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 "{"       { Symbol S = new Symbol(sym.LCURLY, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 "}"       { Symbol S = new Symbol(sym.RCURLY, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
           }
-          
+
 "|"       { Symbol S = new Symbol(sym.UNION, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
-          }           
+          }
 
 ","       { Symbol S = new Symbol(sym.COMMA, new TokenVal(yyline+1, CharNum.num));
             CharNum.num++;
             return S;
-          }                                                  
-          
-          
-          
+          }
+
+
+
 
 {DIGIT}   {
             String val = yytext();
@@ -216,7 +216,7 @@ return new Symbol(sym.EOF);
                              new CharTokenVal(yyline+1, CharNum.num, charVal));
             CharNum.num += yytext().length();
             return S;
-          }        
+          }
 
 {NOTDIGIT} {
             String val = yytext();
@@ -225,5 +225,5 @@ return new Symbol(sym.EOF);
                              new CharTokenVal(yyline+1, CharNum.num, charVal));
             CharNum.num += yytext().length();
             return S;
-          } 
-          
+          }
+

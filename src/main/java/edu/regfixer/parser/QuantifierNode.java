@@ -1,4 +1,4 @@
-package RegexParser;
+package edu.wisc.regfixer.parser;
 
 public abstract class QuantifierNode implements RegexNode {
   private char operator;

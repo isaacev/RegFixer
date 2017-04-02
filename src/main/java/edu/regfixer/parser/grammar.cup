@@ -1,4 +1,4 @@
-package RegexParser;
+package edu.wisc.regfixer.parser;
 
 import java_cup.runtime.*;
 import java.util.*;
