@@ -1,9 +1,13 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Scanner;
 import edu.wisc.regfixer.parser.RegexNode;
-import static edu.wisc.regfixer.fixer.CorpusSearchEngine.*;
+import static edu.wisc.regfixer.fixer.CorpusSearchEngine.getMatchingRanges;
 
 public class Benchmark {
   String corpus;

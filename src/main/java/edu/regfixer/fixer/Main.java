@@ -1,8 +1,6 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.*;
-import java.util.stream.*;
-import edu.wisc.regfixer.parser.*;
+import edu.wisc.regfixer.parser.RegexNode;
 import static edu.wisc.regfixer.fixer.CorpusSearchEngine.*;
 
 public class Main {

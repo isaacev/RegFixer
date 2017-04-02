@@ -1,6 +1,7 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Range implements Comparable<Range> {
   private int leftIndex;

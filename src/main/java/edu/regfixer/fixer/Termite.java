@@ -1,8 +1,18 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.*;
-import java.util.stream.*;
-import edu.wisc.regfixer.parser.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+import edu.wisc.regfixer.parser.CharClass;
+import edu.wisc.regfixer.parser.ConcatNode;
+import edu.wisc.regfixer.parser.HoleNode;
+import edu.wisc.regfixer.parser.OptionalNode;
+import edu.wisc.regfixer.parser.PlusNode;
+import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.parser.RepetitionNode;
+import edu.wisc.regfixer.parser.StarNode;
+import edu.wisc.regfixer.parser.UnionNode;
 
 /**
  * TODO:

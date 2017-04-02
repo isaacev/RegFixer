@@ -1,8 +1,11 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.*;
-import java.util.regex.*;
-import edu.wisc.regfixer.parser.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import edu.wisc.regfixer.parser.RegexNode;
 
 public class CorpusSearchEngine {
   public static List<Range> getMatchingRanges (String corpus, RegexNode regex) {

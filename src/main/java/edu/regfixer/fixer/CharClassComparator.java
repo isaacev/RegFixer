@@ -1,7 +1,7 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.*;
-import edu.wisc.regfixer.parser.*;
+import java.util.Comparator;
+import edu.wisc.regfixer.parser.CharClass;
 
 public class CharClassComparator implements Comparator<CharClass> {
   @Override

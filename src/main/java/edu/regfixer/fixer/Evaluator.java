@@ -1,9 +1,13 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.*;
-import java.util.regex.*;
-import edu.wisc.regfixer.parser.*;
-import static edu.wisc.regfixer.fixer.CorpusSearchEngine.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Pattern;
+import edu.wisc.regfixer.parser.CharDotNode;
+import edu.wisc.regfixer.parser.CharLiteralNode;
+import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.parser.StarNode;
+import static edu.wisc.regfixer.fixer.CorpusSearchEngine.getMatchingStrings;
 
 public class Evaluator {
   private String corpus;
