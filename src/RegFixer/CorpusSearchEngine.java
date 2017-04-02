@@ -60,8 +60,8 @@ public class CorpusSearchEngine {
       Range oldRange = oldRanges.get(oldIndex++);
       Range newRange = newRanges.get(newIndex++);
 
-      // Ignore "old" ranges that don't intersect the current "new" match and come
-      // before the current "new" match.
+      // Ignore "old" ranges that don't intersect the current "new" match and
+      // come before the current "new" match.
       while (oldRange.endsBefore(newRange)) {
         if (oldIndex >= oldRanges.size()) {
           break whileLoop;
