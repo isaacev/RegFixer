@@ -1,4 +1,4 @@
-package regfixer;
+package edu.wisc.regfixer.fixer;
 
 import java.util.*;
 import java.util.regex.*;

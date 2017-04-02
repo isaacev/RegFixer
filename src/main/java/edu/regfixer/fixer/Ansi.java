@@ -1,4 +1,4 @@
-package regfixer;
+package edu.wisc.regfixer.fixer;
 
 /**
  * Admittedly, this class is a little crazy. But it's done in the service of
