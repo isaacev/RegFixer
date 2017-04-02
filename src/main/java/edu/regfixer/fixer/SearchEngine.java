@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import edu.wisc.regfixer.parser.RegexNode;
 
-public class CorpusSearchEngine {
+public class SearchEngine {
   public static List<Range> getMatchingRanges (String corpus, RegexNode regex) {
     Matcher mt = Pattern.compile(regex.toString()).matcher(corpus);
     List<Range> ranges = new LinkedList<Range>();
