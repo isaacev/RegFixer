@@ -110,7 +110,7 @@
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
-              <mainClass>edu.wisc.regfixer.server.Server</mainClass>
+              <mainClass>edu.wisc.regfixer.fixer.Main</mainClass>
             </manifest>
           </archive>
         </configuration>
