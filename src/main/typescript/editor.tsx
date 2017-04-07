@@ -1,5 +1,12 @@
+//
+// src/main/typescript/editor.tsx
+// RegEx Frontend
+//
+// Created on 4/7/17
+//
+
+import 'codemirror'
 import { Component } from 'react'
-import * as CodeMirror from 'codemirror'
 
 interface EditorProps {
   value: string
@@ -8,7 +15,7 @@ interface EditorProps {
   onBlur?: () => void
 }
 
-export default class Editor extends Component<EditorProps, {}> {
+export class Editor extends Component<EditorProps, {}> {
   textarea: HTMLTextAreaElement
   instance: CodeMirror.Editor
 

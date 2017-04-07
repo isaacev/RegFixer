@@ -18,17 +18,27 @@ gulp.task('compile:js', () => {
       format: 'iife',
       sourceMap: true,
       plugins: [
-        typescript()
+        typescript({
+          'jsx': 'React',
+        })
       ],
       external: [
         'codemirror',
         'codemirror-no-newlines',
-        'localforage'
+        'localforage',
+        'react',
+        'react-dom',
       ],
       globals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
         codemirror: 'CodeMirror',
         localforage: 'localforage'
       }
+    })
+    .on('error', (err) => {
+      console.error(err.stack)
+      process.exit(1)
     })
     .pipe(source('app.js'))
     .pipe(buffer())
@@ -43,10 +53,11 @@ gulp.task('bundle:js', () => {
   // concatenated into ./src/main/resources/dist/libs.js and will be
   // concatenated in this order:
   const libs = [
+    './node_modules/react/dist/react.js',
+    './node_modules/react-dom/dist/react-dom.js',
     './node_modules/codemirror/lib/codemirror.js',
     './node_modules/codemirror/addon/display/placeholder.js',
     './node_modules/codemirror-no-newlines/no-newlines.js',
-    './node_modules/localforage/dist/localforage.nopromises.min.js'
   ]
 
   return gulp.src(libs)
@@ -92,11 +103,14 @@ gulp.task('compress:css', ['compile:css', 'bundle:css'], () => {
 gulp.task('build:all', ['compress:css', 'compress:js'])
 
 gulp.task('watch:js', ['compile:js'], () => {
-  gulp.watch('src/typescript/*.ts', ['compile:js'])
+  gulp.watch([
+    'src/main/typescript/*.tsx',
+    'src/main/typescript/*.ts',
+  ], ['compile:js'])
 })
 
 gulp.task('watch:css', ['compile:css'], () => {
-  gulp.watch('src/sass/*.scss', ['compile:css'])
+  gulp.watch('src/main/sass/*.scss', ['compile:css'])
 })
 
 // Delete everything inside the ./src/main/resources/dist directory including

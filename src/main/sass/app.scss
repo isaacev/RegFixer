@@ -1,3 +1,63 @@
+///
+/// Aesthetic constants
+///
+$color-white:       #FFF;
+$color-light-gray:  #F8F8F8;
+$color-mid-gray:    #D3D3D3;
+$color-gray:        #636363;
+$color-green:       #29b765;
+$color-red:         #ED7669;
+$color-blue:        #3498DB;
+
+$font-monospace:    "SFMono-Regular", "Source Code Pro", monospace;
+$font-sans-serif:   "Roboto", "Source Sans Pro", sans-serif;
+$font-size-global:  16px;
+$font-size-large:   1.5rem;
+
+$border-radius:     4px;
+$shadow-blur:       16px;
+$button-size:       32px;
+
+
+///
+/// Layout constants
+///
+$margin-app:        64px;
+$padding-thick:     32px;
+$padding-medium:    16px;
+$padding-thin:      8px;
+
+.match-popover {
+  width: $button-size;
+  padding-top: 12px;
+  position: absolute;
+  z-index: 1000;
+
+  .action {
+    position: relative;
+
+    &::before {
+      content: "";
+      display: block;
+      width: 10px;
+      height: 10px;
+      background-color: inherit;
+      position: absolute;
+      top: -5px;
+      left: 11px;
+      transform: rotate(45deg);
+    }
+  }
+}
+
+///
+/// App styles
+///
+html, body {
+  font-family: $font-sans-serif;
+  font-size: $font-size-global;
+}
+
 .grabbing-cursor,
 .grabbing-cursor * {
   cursor: -webkit-grabbing !important;
@@ -6,127 +66,208 @@
 }
 
 .app {
-  $color--editable-type: #444444;
-  $color--lightweight-type: lighten($color--editable-type, 50%);
-  $color--light-border:  #D3D3D3;
-
-  $app-horiz-padding: 64px;
-  $query-editor-height: 36px;
-
-  $font--monospace: "SFMono-Regular", "Source Code Pro", monospace;
-
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
 
-  .editable-font {
-    font: 500 24px $font--monospace;
-    color: $color--editable-type;
+  p {
+    margin: 1rem 0;
+    padding: 0;
+  }
+}
+
+.action {
+  width: $button-size;
+  height: $button-size;
+  border-style: none;
+  font-size: $font-size-large;
+  font-family: $font-monospace;
+  color: white;
+  border-radius: 2px;
+  background-color: $color-mid-gray;
+  transition: background-color .2s;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darken($color-mid-gray, 10%);
   }
 
-  .query {
-    $query-vert-padding: 16px;
+  &:focus {
+    outline: none;
+  }
 
-    padding: $query-vert-padding $app-horiz-padding;
-    position: relative;
-    border-bottom: 1px solid $color--light-border;
+  &:disabled {
+    cursor: auto;
+  }
 
-    .regex {
-      height: $query-editor-height;
+  &[data-color="red"] {
+    background-color: $color-red;
+
+    &:hover {
+      background-color: darken($color-red, 20%);
+    }
+  }
+
+  &[data-color="green"] {
+    background-color: $color-green;
+
+    &:hover {
+      background-color: darken($color-green, 10%);
+    }
+  }
+
+  &[data-color="blue"] {
+    background-color: $color-blue;
+
+    &:hover {
+      background-color: darken($color-blue, 10%);
     }
 
-    .CodeMirror {
-      height: $query-editor-height;
-      position: absolute;
-      right: $app-horiz-padding;
-      left: $app-horiz-padding;
-      font-family: $font--monospace;
+    &:disabled {
+      background-color: lighten($color-blue, 20%);
     }
+  }
+}
+
+.query-editor {
+  min-height: 40px;
+  position: relative;
+  padding: $padding-medium $margin-app;
+  border-bottom: 1px solid $color-mid-gray;
+  font-family: $font-monospace;
+
+  .CodeMirror {
+    max-width: 800px;
+    height: 32px + (2 * 4px);
+    font-size: $font-size-large;
+    line-height: 32px;
+    color: $color-gray;
 
     .regex-decorator {
-      color: $color--lightweight-type;
-    }
-
-    .bubble {
-      display: none;
-      padding: 8px 16px;
-      position: absolute;
-      top: $query-vert-padding;
-      right: $app-horiz-padding;
-      bottom: $query-vert-padding;
-      background-color: $color--lightweight-type;color: white;
-      font: 16px/20px $font--monospace;
-
-      &:not([data-status="hidden"]) {
-        display: block;
-      }
-
-      &[data-status="red"] {
-        background-color: red;
-      }
+      color: $color-mid-gray;
     }
   }
 
-  .corpus {
-    $corpus-vert-padding: 32px;
-
+  .query-controls {
+    height: 32px;
     position: absolute;
-    top: 68px + 1px;
-    right: $app-horiz-padding;
-    bottom: 0;
-    left: $app-horiz-padding;
+    top: $padding-medium;
+    right: $margin-app;
+    bottom: $padding-medium;
+    margin: 4px 0;
+  }
 
-    .grips {
-      width: 0;
-      height: 0;
-      position: absolute;
-      top: $corpus-vert-padding;
-      left: 0;
-      z-index: 1000;
+  .action {
+    display: inline-block;
+    margin-right: $padding-thin;
+  }
+
+  .query-status {
+    display: inline-block;
+    padding: 6px $padding-medium;
+    line-height: 20px;
+    background-color: $color-light-gray;
+    color: $color-gray;
+    border-radius: 2px;
+    vertical-align: top;
+  }
+}
+
+.query-modal {
+  width: 360px;
+  position: absolute;
+  top: 36px + (2 * $padding-medium) + $padding-thick;
+  left: $padding-thick;
+  border-radius: $border-radius;
+  box-shadow: 0 0 $shadow-blur $color-mid-gray;
+  z-index: 1000;
+
+  .query-modal-triangle {
+    $triangle-size: 24px;
+    width: $triangle-size;
+    height: $triangle-size;
+    position: absolute;
+    top: -($triangle-size / 2);
+    left: -($triangle-size / 2) + 48px;
+    background-color: $color-light-gray;
+    box-shadow: 0 0 $shadow-blur $color-mid-gray;
+    transform: rotate(45deg);
+  }
+
+  .query-modal-header {
+    position: relative;
+    padding: $padding-thick;
+    border-radius: $border-radius $border-radius 0 0;
+    background-color: $color-light-gray;
+    font-family: $font-monospace;
+    font-size: $font-size-large;
+
+    .replacement {
+      height: 32px;
+      margin: 0;
+      padding: 0;
+      line-height: 32px;
+      color: $color-gray;
     }
 
-    .grip {
-      width: 8px;
-      height: 8px;
+    .action {
       position: absolute;
-      border-radius: 50%;
-      cursor: -webkit-grab;
-      cursor: -moz-grab;
-      cursor: grab;
+      top: $padding-thick;
     }
 
-    .editor {
-      position: absolute;
-      top: $corpus-vert-padding;
-      right: 0;
-      left: 0;
-      bottom: 0;
-    }
-
-    .CodeMirror {
-      height: auto;
-      position: absolute;
-      top: 0;
-      bottom: $corpus-vert-padding;
-      left: 0;
-      right: 0;
-      background-color: transparent;
-      font-family: $font--monospace;
-
-      .CodeMirror-line:not(:last-child):after {
-        content: "\ac";
-        color: $color--lightweight-type;
-        font-size: 80%;
-        padding-left: 2px;
+    @for $i from 0 through 4 {
+      button:nth-of-type(#{$i}) {
+        right: (($i - 1) * ($button-size + $padding-thin)) + $padding-thick;
       }
     }
-
-    .canvas {
-      position: absolute;
-      top: $corpus-vert-padding;
-      left: 0;
-    }
   }
+
+  .query-modal-explanation {
+    padding: $padding-medium $padding-thick;
+    border-radius: 0 0 $border-radius $border-radius;
+    font-family: $font-sans-serif;
+  }
+}
+
+.corpus {
+  position: absolute;
+  top: 73px + $padding-thick;
+  right: 0;
+  bottom: 0;
+  left: $margin-app;
+  font-size: $font-size-large;
+
+  .grips {
+    width: 0;
+    height: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 500;
+  }
+
+  .grip {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $color-blue;
+    position: absolute;
+    cursor: -webkit-grab;
+  }
+
+  .CodeMirror {
+    height: auto;
+    background-color: transparent;
+  }
+
+  .CodeMirror-lines {
+    padding: 0;
+  }
+}
+
+.CodeMirror {
+  background-color: transparent;
+  font-family: $font-monospace;
 }

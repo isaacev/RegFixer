@@ -5,26 +5,28 @@
 // Created on 2/20/17
 //
 
-import CodeMirror, { Position } from 'codemirror'
+import 'codemirror'
+import { Position } from 'codemirror'
 import { RegionList } from './region-list'
 import { Region } from './region'
+import { Point } from './point'
 import * as util from './util'
 
-const EDITOR_PADDING = 4
+const POPOVER_WIDTH = 32
 
 export class CorpusEditor {
   wrapper: HTMLElement
   grips: HTMLElement
-  canvas: HTMLElement
-  context: CanvasRenderingContext2D
   cm: CodeMirror.Editor
   doc: CodeMirror.Doc
   regex: RegExp
   regions: RegionList = new RegionList()
+  textMarkers: [CodeMirror.TextMarker, Region, HTMLElement][] = []
   palette: string[] = []
   nextColor: number = 0
   offset: { top: number, left: number }
   isRegionCleared: boolean = true
+  popoverTimeout: number
 
   onInfiniteMatches: () => void = util.noop
   onMatches: (totalMatches: number) => void = util.noop
@@ -36,23 +38,15 @@ export class CorpusEditor {
     this.grips = util.createElement('div', this.wrapper)
     util.addClass(this.grips, 'grips')
 
-    // Create canvas for drawing match backgrounds.
-    this.canvas = util.createElement('canvas', this.wrapper)
-    util.addClass(this.canvas, 'canvas')
-    util.setAttr(this.canvas, 'width', this.wrapper.offsetWidth.toString())
-    util.setAttr(this.canvas, 'height', this.wrapper.offsetHeight.toString())
-
-    // Create drawing context.
-    this.context = (this.canvas as HTMLCanvasElement).getContext('2d')
-
     // Create element to hold CodeMirror editor.
     let editorElem = util.createElement('div', this.wrapper)
     util.addClass(editorElem, 'editor')
     util.addClass(editorElem, 'editable-font')
 
     // Create a CodeMirror instance.
-    this.cm = CodeMirror(editorElem, {
-      lineWrapping: true
+    this.cm = window['CodeMirror'](editorElem, {
+      lineWrapping: true,
+      flattenSpans: false,
     })
     this.doc = this.cm.getDoc()
 
@@ -71,7 +65,7 @@ export class CorpusEditor {
     this.palette = palette
 
     // Cache editor position on the page.
-    let boundingRect = this.canvas.getBoundingClientRect()
+    let boundingRect = this.wrapper.getBoundingClientRect()
     this.offset = { top: boundingRect.top, left: boundingRect.left }
   }
 
@@ -84,78 +78,131 @@ export class CorpusEditor {
     this.doc.setValue(value)
   }
 
-  clearCanvas () {
-    let canvasSize = this.canvas.getBoundingClientRect()
-    this.context.clearRect(0, 0, canvasSize.width, canvasSize.height)
+  createTextMarker (reg: Region, color: string): CodeMirror.TextMarker {
+    const opts = {
+      className: 'corpus-match-marker',
+      css: 'background-color:' + color,
+    }
+
+    let start = reg.start.pos
+    let end = { line: reg.end.pos.line, ch: reg.end.pos.ch + 1}
+    let marker = this.doc.markText(start, end, opts)
+
+    return marker
   }
 
-  drawCanvas () {
-    let canvasSize = this.canvas.getBoundingClientRect()
-    this.clearCanvas()
+  remarkText () {
+    this.hidePopover()
+    this.clearTextMarkers()
+    this.resetColor()
 
-    this.regions.forEach((reg) => {
-      this.context.fillStyle = reg.color
-      let nw = util.charCoordsShowNewlines(this.cm, reg.start)
-      let se = util.charCoordsShowNewlines(this.cm, reg.end)
-
-      let x: number, y: number, w: number, h: number
-      if (nw.top === se.top) {
-        // Start and end of region are horizontally aligned. (Does not wrap).
-        x = nw.left
-        y = nw.top
-        w = se.right - nw.left
-        h = se.bottom - se.top
-        this.context.fillRect(x, y, w, h)
-      } else {
-        // 1. Draw from left grip to the end line or to line wrap.
-        x = nw.left
-        y = nw.top
-        w = canvasSize.width - nw.left
-        h = nw.bottom - nw.top
-        this.context.fillRect(x, y, w, h)
-
-        // 2. Draw full covered lines
-        let middleLines = Math.round((se.top - nw.bottom) / util.charHeight)
-        x = EDITOR_PADDING
-        y = nw.bottom
-        w = canvasSize.width - EDITOR_PADDING
-        h = util.charHeight * middleLines
-        this.context.fillRect(x, y, w, h)
-
-        // 3. Draw from start of line to right grip.
-        x = EDITOR_PADDING
-        y = se.top
-        w = se.left + util.charWidth - EDITOR_PADDING
-        h = se.bottom - se.top
-        this.context.fillRect(x, y, w, h)
-      }
+    let tuples: [CodeMirror.TextMarker, Region, HTMLElement][] = []
+    this.regions.forEach((reg, i) => {
+      let marker = this.createTextMarker(reg, this.getNextColor())
+      tuples[i] = [marker, reg, null]
     })
+
+    this.textMarkers = tuples
+    this.attachMarkerListeners()
   }
 
-  addRegion (start: Position | number, end: Position | number) {
-    if (typeof start === 'number') {
-      start = this.doc.posFromIndex(start) as Position
-    }
+  attachMarkerListeners () {
+    setTimeout(() => {
+      let markerElements = document.querySelectorAll('span.corpus-match-marker')
+      for (let i = 0; i < markerElements.length; i++) {
+        this.textMarkers[i][2] = markerElements[i] as HTMLElement
+      }
 
-    if (typeof end === 'number') {
-      end = this.doc.posFromIndex(end - 1) as Position
-    }
+      this.textMarkers.forEach((tuple) => {
+        let [marker, reg, elem] = tuple
 
+        elem.addEventListener('mouseover', () => {
+          this.showMatchPopover(reg, elem)
+        })
+
+        elem.addEventListener('mouseout', this.delayHidePopover.bind(this))
+      })
+    }, 0)
+  }
+
+  clearTextMarkers () {
+    this.textMarkers.forEach((tuple) => tuple[0].clear())
+    this.textMarkers = []
+  }
+
+  showMatchPopover (reg: Region, elem: HTMLElement) {
+    this.hidePopover()
+
+    let gripsBox = this.grips.getBoundingClientRect()
+    let elemBox = elem.getBoundingClientRect()
+
+    // Create & position popover element.
+    let popoverElem = util.createElement('div', this.grips)
+    util.addClass(popoverElem, 'match-popover')
+
+    let deleteBtn = util.createElement('button', popoverElem)
+    util.addClass(deleteBtn, 'action')
+    util.setAttr(deleteBtn, 'data-color', 'red')
+    util.setText(deleteBtn, '\u2717')
+    deleteBtn.addEventListener('click', () => {
+      this.removeRegion(reg)
+    })
+
+    let left = ((elemBox.left - gripsBox.left) + (elemBox.width / 2)) - (POPOVER_WIDTH / 2)
+    util.setCSS(popoverElem, 'left', left)
+
+    let top = elemBox.bottom - gripsBox.bottom
+    util.setCSS(popoverElem, 'top', top)
+
+    // Attach event listeners to popover element.
+    popoverElem.addEventListener('mouseover', () => {
+      this.cancelHidingPopover()
+    })
+
+    popoverElem.addEventListener('mouseout', this.delayHidePopover.bind(this))
+  }
+
+  cancelHidingPopover () {
+    clearTimeout(this.popoverTimeout)
+  }
+
+  hidePopover () {
+    this.cancelHidingPopover()
+    let popovers = this.grips.querySelectorAll('.match-popover')
+    for (let i = 0; i < popovers.length; i++) {
+      popovers[i].remove()
+    }
+  }
+
+  delayHidePopover () {
+    this.popoverTimeout = setTimeout(this.hidePopover.bind(this), 500)
+  }
+
+  addRegion (start: Point, end: Point) {
     let color = this.getNextColor()
     let reg = new Region(this, start, end, color)
     this.regions.insert(reg)
 
-    reg.onMove = (left: Position, right: Position) => {
-      this.drawCanvas()
+    reg.onMove = (left: Point, right: Point) => {
+      this.remarkText()
     }
 
     this.isRegionCleared = false
   }
 
+  removeRegion (reg: Region) {
+    reg.remove()
+    this.remarkText()
+    this.onMatches(this.regions.length())
+  }
+
   setRegex (regex: RegExp) {
     this.regex = regex
     this.clearRegions()
-    this.findMatches()
+
+    if (regex instanceof RegExp) {
+      this.findMatches()
+    }
   }
 
   clearRegex () {
@@ -166,7 +213,7 @@ export class CorpusEditor {
     if (this.isRegionCleared === false) {
       this.isRegionCleared = true
       this.regions.forEach((reg) => reg.remove())
-      this.clearCanvas()
+      this.clearTextMarkers()
       this.resetColor()
     }
   }
@@ -191,7 +238,18 @@ export class CorpusEditor {
       }
 
       index = match.index
-      this.addRegion(match.index, match.index + match[0].length)
+
+      let startIndex = match.index
+      let startPos = this.doc.posFromIndex(startIndex)
+      let startCoords = this.cm.charCoords(startPos, 'local')
+      let start = { index: startIndex, pos: startPos, coords: startCoords }
+
+      let endIndex = match.index + match[0].length - 1
+      let endPos = this.doc.posFromIndex(endIndex)
+      let endCoords = this.cm.charCoords(endPos, 'local')
+      let end = { index: endIndex, pos: endPos, coords: endCoords }
+
+      this.addRegion(start, end)
       totalMatches++
 
       if (!this.regex.global) {
@@ -199,7 +257,7 @@ export class CorpusEditor {
       }
     }
 
-    this.drawCanvas()
+    this.remarkText()
     this.onMatches(totalMatches)
   }
 
@@ -212,6 +270,6 @@ export class CorpusEditor {
       this.nextColor = 0
     }
 
-    return this.palette[this.nextColor++] || 'gray'
+    return this.palette[this.nextColor++] || '#8bc4ea'
   }
 }

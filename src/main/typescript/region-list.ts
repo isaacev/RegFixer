@@ -5,7 +5,7 @@
 // Created on 2/20/17
 //
 
-import { Position } from 'codemirror'
+import 'codemirror'
 import { Region } from './region'
 import * as util from './util'
 
@@ -21,11 +21,18 @@ export class RegionList {
     this.tail = null
   }
 
+  length (): number {
+    let counter = 0
+    this.forEach(() => counter++)
+
+    return counter
+  }
+
   // Add a region to the appropriate location within the list.
   insert (reg: Region) {
     // Link is small enough to be at the start of the list. Or the list is
     // empty and this is the first link.
-    if (this.head === null || util.lessThanPosition(reg.start, this.head.value.start)) {
+    if (this.head === null || util.lessThanPoint(reg.start, this.head.value.start)) {
       this.head = new RegionLink(this, reg, null, this.head)
 
       // Set tail pointer if this is the only link.
@@ -37,7 +44,7 @@ export class RegionList {
     }
 
     // Link is large enough to be at the end of the list.
-    if (util.greaterThanPosition(reg.end, this.tail.value.start)) {
+    if (util.greaterThanPoint(reg.end, this.tail.value.start)) {
       this.tail.next = new RegionLink(this, reg, this.tail, null)
       this.tail = this.tail.next
       return
@@ -46,10 +53,10 @@ export class RegionList {
     // Link belongs somewhere in the middle of the list.
     let curr = this.head
     while (curr !== null && curr.next !== null) {
-      let lowerThreshold = curr.value.right.index
-      let upperTheshold = curr.next.value.left.index
+      let lowerThreshold = curr.value.right.point.index
+      let upperTheshold = curr.next.value.left.point.index
 
-      if (lowerThreshold < reg.start && reg.end < upperTheshold) {
+      if (lowerThreshold < reg.start.index && reg.end.index < upperTheshold) {
         curr.next = new RegionLink(this, reg, curr, curr.next)
         curr.next.next.prev = curr.next
         return

@@ -1,19 +1,33 @@
+//
+// src/main/typescript/query-controls.tsx
+// RegEx Frontend
+//
+// Created on 4/7/17
+//
+
 import { PureComponent } from 'react'
-import ActionButton, { ActionButtonColor } from './action-button'
-import StatusBubble, { BubbleStatus } from './status-bubble'
+import { Button, ButtonColor } from './button'
 
 interface QueryControlsProps {
   totalMatches: number
-  status: BubbleStatus
 }
 
-export default class QueryControls extends PureComponent<QueryControlsProps, {}> {
+export class QueryControls extends PureComponent<QueryControlsProps, {}> {
   render () {
+    let message: string
+
+    if (this.props.totalMatches === Infinity) {
+      message = 'Infinity'
+    } else if (this.props.totalMatches === 1) {
+      message = '1 match'
+    } else {
+      message = `${this.props.totalMatches} matches`
+    }
+
     return (
       <div className="query-controls">
-        <ActionButton name="undo" color={ActionButtonColor.Blue} glyph="\uF6D7" />
-        <ActionButton name="redo" color={ActionButtonColor.Blue} glyph="\uF6D8" />
-        <StatusBubble status={this.props.status} totalMatches={this.props.totalMatches} />
+        <Button name="ask" color={ButtonColor.Blue} glyph="?" />
+        <div className="query-status">{message}</div>
       </div>
     )
   }
