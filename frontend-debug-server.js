@@ -1,5 +1,5 @@
 //
-// server.js
+// frontend-debug-server.js
 // RegEx Frontend
 //
 // Created on 2/26/17
@@ -21,10 +21,8 @@ function staticDir (app, endpoint, relative) {
 const port = process.env.PORT || 8080
 const app = express()
 
-staticFile(app, '/', './frontend.html')
-staticFile(app, '/favicon.ico', './favicon.ico')
-staticDir(app, '/js', './dist')
-staticDir(app, '/css', './dist')
+staticFile(app, '/', './src/main/resources/spark/template/freemarker/frontend.html')
+staticDir(app, '/', './src/main/resources/dist')
 
 app.listen(port)
 console.log(`http://localhost:${port}`)
