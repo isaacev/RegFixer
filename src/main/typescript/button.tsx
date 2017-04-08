@@ -14,9 +14,9 @@ export enum ButtonColor {
 }
 
 interface ButtonProps {
-  name: string
   color: ButtonColor
   glyph: string
+  onClick: () => void
 }
 
 export class Button extends PureComponent<ButtonProps, {}> {
@@ -25,7 +25,7 @@ export class Button extends PureComponent<ButtonProps, {}> {
       <button
         className="action"
         data-color={ButtonColor[this.props.color].toLowerCase()}
-        name={this.props.name}>{this.props.glyph}</button>
+        onClick={this.props.onClick}>{this.props.glyph}</button>
     )
   }
 }

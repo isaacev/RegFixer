@@ -26,6 +26,7 @@ export class CorpusEditor {
   nextColor: number = 0
   offset: { top: number, left: number }
   isRegionCleared: boolean = true
+  isDragging: boolean = false
   popoverTimeout: number
 
   onInfiniteMatches: () => void = util.noop
@@ -69,8 +70,29 @@ export class CorpusEditor {
     this.offset = { top: boundingRect.top, left: boundingRect.left }
   }
 
+  getMatches (): { left: number, right: number}[] {
+    let matches: { left: number, right: number}[] = []
+
+    this.regions.forEach((reg) => {
+      matches.push({
+        left: reg.start.index,
+        right: reg.end.index,
+      })
+    })
+
+    return matches
+  }
+
   getValue (): string {
     return this.doc.getValue()
+  }
+
+  startDrag () {
+    this.isDragging = true
+  }
+
+  stopDrag () {
+    this.isDragging = false
   }
 
   setValue (value: string) {
@@ -117,7 +139,9 @@ export class CorpusEditor {
         let [marker, reg, elem] = tuple
 
         elem.addEventListener('mouseover', () => {
-          this.showMatchPopover(reg, elem)
+          if (this.isDragging === false) {
+            this.showMatchPopover(reg, elem)
+          }
         })
 
         elem.addEventListener('mouseout', this.delayHidePopover.bind(this))
@@ -138,10 +162,10 @@ export class CorpusEditor {
 
     // Create & position popover element.
     let popoverElem = util.createElement('div', this.grips)
-    util.addClass(popoverElem, 'match-popover')
+    util.addClass(popoverElem, 'popover')
 
     let deleteBtn = util.createElement('button', popoverElem)
-    util.addClass(deleteBtn, 'action')
+    util.addClass(deleteBtn, 'action has-triangle')
     util.setAttr(deleteBtn, 'data-color', 'red')
     util.setText(deleteBtn, '\u2717')
     deleteBtn.addEventListener('click', () => {
@@ -168,7 +192,7 @@ export class CorpusEditor {
 
   hidePopover () {
     this.cancelHidingPopover()
-    let popovers = this.grips.querySelectorAll('.match-popover')
+    let popovers = this.grips.querySelectorAll('.popover')
     for (let i = 0; i < popovers.length; i++) {
       popovers[i].remove()
     }

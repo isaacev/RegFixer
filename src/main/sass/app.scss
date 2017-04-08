@@ -27,27 +27,11 @@ $padding-thick:     32px;
 $padding-medium:    16px;
 $padding-thin:      8px;
 
-.match-popover {
+.popover {
   width: $button-size;
   padding-top: 12px;
   position: absolute;
   z-index: 1000;
-
-  .action {
-    position: relative;
-
-    &::before {
-      content: "";
-      display: block;
-      width: 10px;
-      height: 10px;
-      background-color: inherit;
-      position: absolute;
-      top: -5px;
-      left: 11px;
-      transform: rotate(45deg);
-    }
-  }
 }
 
 ///
@@ -89,6 +73,22 @@ html, body {
   background-color: $color-mid-gray;
   transition: background-color .2s;
   cursor: pointer;
+
+  &.has-triangle {
+    position: relative;
+
+    &::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      position: absolute;
+      top: -5px;
+      left: 11px;
+      display: block;
+      background-color: inherit;
+      transform: rotate(45deg);
+    }
+  }
 
   &:hover {
     background-color: darken($color-mid-gray, 10%);

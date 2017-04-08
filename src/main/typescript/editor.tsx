@@ -34,6 +34,12 @@ export class Editor extends Component<EditorProps, {}> {
     this.instance.setValue(this.props.value)
   }
 
+  componentWillReceiveProps (newProps: EditorProps) {
+    if (this.instance.getValue() !== newProps.value) {
+      this.instance.setValue(newProps.value)
+    }
+  }
+
   editorValueChanged (cm: CodeMirror.Editor, change: CodeMirror.EditorChange) {
     if (change.origin !== 'setValue') {
       this.props.onChange(cm.getValue())

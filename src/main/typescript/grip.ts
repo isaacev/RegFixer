@@ -35,6 +35,7 @@ class Grip {
       let prevCursorPos = this.parent.editor.doc.getCursor()
       let wasFocused = this.parent.editor.cm.hasFocus()
       this.parent.editor.cm.setOption('readOnly', 'nocursor')
+      this.parent.editor.startDrag()
 
       // Prevent mouse-down event from propogating to any other elements.
       event.stopPropagation()
@@ -52,6 +53,7 @@ class Grip {
       let onWindowMouseUp = () => {
         // Return editing control to editor once the drag has completed.
         this.parent.editor.cm.setOption('readOnly', false)
+        this.parent.editor.stopDrag()
 
         if (wasFocused) {
           this.parent.editor.doc.setCursor(prevCursorPos)

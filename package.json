@@ -8,7 +8,8 @@
     "codemirror-no-newlines": "^1.0.2",
     "localforage": "^1.5.0",
     "react": "^15.4.2",
-    "react-dom": "^15.4.2"
+    "react-dom": "^15.4.2",
+    "superagent": "^3.5.2"
   },
   "scripts": {
     "postinstall": "gulp clean && gulp build:all",
@@ -20,6 +21,7 @@
     "@types/codemirror": "0.0.38",
     "@types/localforage": "0.0.33",
     "@types/react": "^15.0.21",
+    "@types/superagent": "^2.0.36",
     "del": "^2.2.2",
     "express": "^4.14.1",
     "gulp": "^3.9.1",

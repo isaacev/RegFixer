@@ -28,8 +28,10 @@ gulp.task('compile:js', () => {
         'localforage',
         'react',
         'react-dom',
+        'superagent',
       ],
       globals: {
+        superagent: 'superagent',
         react: 'React',
         'react-dom': 'ReactDOM',
         codemirror: 'CodeMirror',
@@ -53,6 +55,7 @@ gulp.task('bundle:js', () => {
   // concatenated into ./src/main/resources/dist/libs.js and will be
   // concatenated in this order:
   const libs = [
+    './node_modules/superagent/superagent.js',
     './node_modules/react/dist/react.js',
     './node_modules/react-dom/dist/react-dom.js',
     './node_modules/codemirror/lib/codemirror.js',

@@ -10,6 +10,8 @@ import { Button, ButtonColor } from './button'
 
 interface QueryModalProps {
   replacement: string
+  onAccept: () => void
+  onReject: () => void
 }
 
 export class QueryModal extends PureComponent<QueryModalProps, {}> {
@@ -17,8 +19,10 @@ export class QueryModal extends PureComponent<QueryModalProps, {}> {
     return (
       <div className="query-modal">
         <div className="query-modal-triangle" />
-        <QueryModalHeader replacement={this.props.replacement} />
-        <QueryModalExplanation />
+        <QueryModalHeader
+          replacement={this.props.replacement}
+          onAccept={this.props.onAccept}
+          onReject={this.props.onReject} />
       </div>
     )
   }
@@ -26,6 +30,8 @@ export class QueryModal extends PureComponent<QueryModalProps, {}> {
 
 interface QueryModalHeaderProps {
   replacement: string
+  onAccept: () => void
+  onReject: () => void
 }
 
 class QueryModalHeader extends PureComponent<QueryModalHeaderProps, {}> {
@@ -33,8 +39,8 @@ class QueryModalHeader extends PureComponent<QueryModalHeaderProps, {}> {
     return (
       <div className="query-modal-header">
         <div className="replacement">{this.props.replacement}</div>
-        <Button name="accept" color={ButtonColor.Green} glyph="\u2713" />
-        <Button name="reject" color={ButtonColor.Red} glyph="\u2717" />
+        <Button color={ButtonColor.Green} glyph="\u2713" onClick={this.props.onAccept} />
+        <Button color={ButtonColor.Red} glyph="\u2717" onClick={this.props.onReject} />
       </div>
     )
   }

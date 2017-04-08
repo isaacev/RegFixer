@@ -90,7 +90,14 @@ export function createWrapper (parent: HTMLElement, className: string): HTMLElem
 }
 
 export function addClass (elem: HTMLElement, className: string) {
-  elem.classList.add(className)
+  if (className.indexOf(' ') === -1) {
+    // Class name has no spaces.
+    elem.classList.add(className)
+  } else {
+    className.split(' ').forEach((oneClassName) => {
+      elem.classList.add(oneClassName)
+    })
+  }
 }
 
 export function removeClass (elem: HTMLElement, className: string) {

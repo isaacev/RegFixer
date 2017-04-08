@@ -10,6 +10,7 @@ import { Button, ButtonColor } from './button'
 
 interface QueryControlsProps {
   totalMatches: number
+  onAsk: () => void
 }
 
 export class QueryControls extends PureComponent<QueryControlsProps, {}> {
@@ -17,7 +18,7 @@ export class QueryControls extends PureComponent<QueryControlsProps, {}> {
     let message: string
 
     if (this.props.totalMatches === Infinity) {
-      message = 'Infinity'
+      message = '\u221E matches'
     } else if (this.props.totalMatches === 1) {
       message = '1 match'
     } else {
@@ -26,7 +27,7 @@ export class QueryControls extends PureComponent<QueryControlsProps, {}> {
 
     return (
       <div className="query-controls">
-        <Button name="ask" color={ButtonColor.Blue} glyph="?" />
+        <Button onClick={this.props.onAsk} color={ButtonColor.Blue} glyph="?" />
         <div className="query-status">{message}</div>
       </div>
     )
