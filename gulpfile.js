@@ -4,6 +4,7 @@ const sourcemaps  = require('gulp-sourcemaps')
 const typescript  = require('rollup-plugin-typescript')
 const source      = require('vinyl-source-stream')
 const buffer      = require('vinyl-buffer')
+const decide      = require('gulp-if')
 const concat      = require('gulp-concat')
 const compressJS  = require('gulp-uglify')
 const sass        = require('gulp-sass')
@@ -55,22 +56,28 @@ gulp.task('bundle:js', () => {
   // concatenated into ./src/main/resources/dist/libs.js and will be
   // concatenated in this order:
   const libs = [
+    './node_modules/react/dist/react.min.js',
+    './node_modules/react-dom/dist/react-dom.min.js',
     './node_modules/superagent/superagent.js',
-    './node_modules/react/dist/react.js',
-    './node_modules/react-dom/dist/react-dom.js',
     './node_modules/codemirror/lib/codemirror.js',
     './node_modules/codemirror/addon/display/placeholder.js',
     './node_modules/codemirror-no-newlines/no-newlines.js',
   ]
 
-  return gulp.src(libs)
+  function isNotMinified (file) {
+    let isMinified = /\.min\.js$/.test(file.history[0])
+    return (isMinified === false)
+  }
+
+  gulp.src(libs)
+    .pipe(decide(isNotMinified, compressJS()))
     .pipe(concat('libs.js'))
     .pipe(gulp.dest('./src/main/resources/dist'))
 })
 
 // Uglify app logic and concatenated libraries.
 gulp.task('compress:js', ['compile:js', 'bundle:js'], () => {
-  return gulp.src('./src/main/resources/dist/*.js')
+  return gulp.src('./src/main/resources/dist/app.js')
     .pipe(compressJS())
     .pipe(gulp.dest('./src/main/resources/dist'))
 })
