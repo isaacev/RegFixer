@@ -36,7 +36,7 @@ gulp.task('compile:js', () => {
         'react-dom'   : 'ReactDOM',
         'superagent'  : 'superagent',
         'codemirror'  : 'CodeMirror',
-        'localforage' : 'localforage'
+        'localforage' : 'localforage',
       },
     })
     .on('error', (err) => {
@@ -95,7 +95,7 @@ gulp.task('bundle:css', () => {
   // concatenated into ./src/main/resources/dist/libs.css and will be
   // concatenated in this order:
   const libs = [
-    './node_modules/codemirror/lib/codemirror.css'
+    './node_modules/codemirror/lib/codemirror.css',
   ]
 
   return gulp.src(libs)
