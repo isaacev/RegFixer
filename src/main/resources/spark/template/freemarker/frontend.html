@@ -12,10 +12,10 @@
     <script src="/app.js"></script>
 
     <script>
-      const app = new frontend.App(document.querySelector('.app'), [
-        '#61D2FE', // light blue
-        '#FDD201'  // yellow
-      ])
+      let app = ReactDOM.render(React.createElement(frontend.App, {
+        regex: '\\d+',
+        corpus: 'abc def 123 456 ghi',
+      }), document.querySelector('.app'))
     </script>
   </body>
 </html>

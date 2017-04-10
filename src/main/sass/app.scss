@@ -14,7 +14,7 @@ $font-sans-serif:   "Roboto", "Source Sans Pro", sans-serif;
 $font-size-global:  16px;
 $font-size-large:   1.5rem;
 
-$border-radius:     4px;
+$border-radius:     3px;
 $shadow-blur:       16px;
 $button-size:       32px;
 
@@ -26,13 +26,7 @@ $margin-app:        64px;
 $padding-thick:     32px;
 $padding-medium:    16px;
 $padding-thin:      8px;
-
-.popover {
-  width: $button-size;
-  padding-top: 12px;
-  position: absolute;
-  z-index: 1000;
-}
+$cm-padding:        4px;
 
 ///
 /// App styles
@@ -40,6 +34,11 @@ $padding-thin:      8px;
 html, body {
   font-family: $font-sans-serif;
   font-size: $font-size-global;
+}
+
+.CodeMirror {
+  background-color: transparent;
+  font-family: $font-monospace;
 }
 
 .grabbing-cursor,
@@ -55,11 +54,6 @@ html, body {
   right: 0;
   bottom: 0;
   left: 0;
-
-  p {
-    margin: 1rem 0;
-    padding: 0;
-  }
 }
 
 .action {
@@ -69,12 +63,12 @@ html, body {
   font-size: $font-size-large;
   font-family: $font-monospace;
   color: white;
-  border-radius: 2px;
+  border-radius: $border-radius;
   background-color: $color-mid-gray;
   transition: background-color .2s;
   cursor: pointer;
 
-  &.has-triangle {
+  &.arrow {
     position: relative;
 
     &::before {
@@ -131,16 +125,18 @@ html, body {
   }
 }
 
-.query-editor {
+.regex-editor {
   min-height: 40px;
   position: relative;
   padding: $padding-medium $margin-app;
   border-bottom: 1px solid $color-mid-gray;
   font-family: $font-monospace;
+  z-index: 1000;
 
   .CodeMirror {
     max-width: 800px;
     height: 32px + (2 * 4px);
+    left: -$cm-padding;
     font-size: $font-size-large;
     line-height: 32px;
     color: $color-gray;
@@ -150,41 +146,47 @@ html, body {
     }
   }
 
-  .query-controls {
-    height: 32px;
-    position: absolute;
-    top: $padding-medium;
-    right: $margin-app;
-    bottom: $padding-medium;
-    margin: 4px 0;
-  }
-
   .action {
     display: inline-block;
     margin-right: $padding-thin;
   }
+}
 
-  .query-status {
-    display: inline-block;
-    padding: 6px $padding-medium;
-    line-height: 20px;
-    background-color: $color-light-gray;
-    color: $color-gray;
-    border-radius: 2px;
-    vertical-align: top;
+.regex-editor-controls {
+  height: 32px;
+  position: absolute;
+  top: $padding-medium;
+  right: $margin-app;
+  bottom: $padding-medium;
+  margin: 4px 0;
+}
+
+.regex-editor-status {
+  min-width: 120px;
+  display: inline-block;
+  padding: 6px $padding-medium;
+  line-height: 20px;
+  background-color: $color-light-gray;
+  color: $color-gray;
+  text-align: center;
+  border-radius: $border-radius;
+  vertical-align: top;
+
+  &[data-error="true"] {
+    background-color: $color-red;
+    color: white
   }
 }
 
-.query-modal {
+.fix-modal {
   width: 360px;
   position: absolute;
   top: 36px + (2 * $padding-medium) + $padding-thick;
   left: $padding-thick;
-  border-radius: $border-radius;
   box-shadow: 0 0 $shadow-blur $color-mid-gray;
-  z-index: 1000;
+  z-index: 2000;
 
-  .query-modal-triangle {
+  .triangle {
     $triangle-size: 24px;
     width: $triangle-size;
     height: $triangle-size;
@@ -196,15 +198,14 @@ html, body {
     transform: rotate(45deg);
   }
 
-  .query-modal-header {
+  .header {
     position: relative;
-    padding: $padding-thick;
-    border-radius: $border-radius $border-radius 0 0;
     background-color: $color-light-gray;
-    font-family: $font-monospace;
+    padding: $padding-thick;
     font-size: $font-size-large;
+    z-index: 100;
 
-    .replacement {
+    .regex {
       height: 32px;
       margin: 0;
       padding: 0;
@@ -215,23 +216,17 @@ html, body {
     .action {
       position: absolute;
       top: $padding-thick;
-    }
 
-    @for $i from 0 through 4 {
-      button:nth-of-type(#{$i}) {
-        right: (($i - 1) * ($button-size + $padding-thin)) + $padding-thick;
+      @for $i from 0 through 4 {
+        &:nth-of-type(#{$i}) {
+          right: (($i - 1) * ($button-size + $padding-thin)) + $padding-thick;
+        }
       }
     }
   }
-
-  .query-modal-explanation {
-    padding: $padding-medium $padding-thick;
-    border-radius: 0 0 $border-radius $border-radius;
-    font-family: $font-sans-serif;
-  }
 }
 
-.corpus {
+.corpus-editor {
   position: absolute;
   top: 73px + $padding-thick;
   right: 0;
@@ -239,35 +234,41 @@ html, body {
   left: $margin-app;
   font-size: $font-size-large;
 
-  .grips {
-    width: 0;
-    height: 0;
+  .CodeMirror {
+    height: auto;
+    background-color: transparent;
+
+    .CodeMirror-lines {
+      padding: 0;
+    }
+
+    .marked-highlight {
+      background-color: silver;
+    }
+  }
+}
+
+.corpus-editor-overlay {
+  width: 0;
+  height: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 500;
+
+  .popover {
+    width: $button-size;
+    height: $button-size;
     position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 500;
+    padding-top: 12px;
   }
 
   .grip {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: $color-blue;
+    background-color: gray;
     position: absolute;
     cursor: -webkit-grab;
   }
-
-  .CodeMirror {
-    height: auto;
-    background-color: transparent;
-  }
-
-  .CodeMirror-lines {
-    padding: 0;
-  }
-}
-
-.CodeMirror {
-  background-color: transparent;
-  font-family: $font-monospace;
 }

@@ -14,14 +14,14 @@ const del         = require('del')
 // Compile Typescript files to ES6 and combine modules with Rollup.
 gulp.task('compile:js', () => {
   return rollup({
-      entry: './src/main/typescript/app.ts',
+      entry: './src/main/typescript/app.tsx',
       moduleName: 'frontend',
       format: 'iife',
       sourceMap: true,
       plugins: [
         typescript({
           'jsx': 'React',
-        })
+        }),
       ],
       external: [
         'codemirror',
@@ -32,12 +32,12 @@ gulp.task('compile:js', () => {
         'superagent',
       ],
       globals: {
-        superagent: 'superagent',
-        react: 'React',
-        'react-dom': 'ReactDOM',
-        codemirror: 'CodeMirror',
-        localforage: 'localforage'
-      }
+        'react'       : 'React',
+        'react-dom'   : 'ReactDOM',
+        'superagent'  : 'superagent',
+        'codemirror'  : 'CodeMirror',
+        'localforage' : 'localforage'
+      },
     })
     .on('error', (err) => {
       console.error(err.stack)

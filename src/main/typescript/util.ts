@@ -6,13 +6,9 @@
 //
 
 import 'codemirror'
-import { Point } from './point'
 
-export const charWidth = 14.4
-export const charHeight = 28
-
-export function samePoint (a: Point, b: Point): boolean {
-  return (a.pos.line === b.pos.line && a.pos.ch === b.pos.ch)
+export function samePosition (a: CodeMirror.Position, b: CodeMirror.Position): boolean {
+  return (a.line === b.line && a.ch === b.ch)
 }
 
 export function lessThanPosition (a: CodeMirror.Position, b: CodeMirror.Position): boolean {
@@ -20,100 +16,49 @@ export function lessThanPosition (a: CodeMirror.Position, b: CodeMirror.Position
   return a.line < b.line
 }
 
-export function lessThanPoint (a: Point, b: Point): boolean {
-  return lessThanPosition(a.pos, b.pos)
-}
-
 export function greaterThanPosition (a: CodeMirror.Position, b: CodeMirror.Position): boolean {
   if (a.line === b.line) { return a.ch > b.ch }
   return a.line > b.line
 }
 
-export function greaterThanPoint (a: Point, b: Point): boolean {
-  return greaterThanPosition(a.pos, b.pos)
-}
-
-export function clampPoint (val: Point, min: Point, max: Point): Point {
-  if (val.pos.line === min.pos.line && val.pos.ch < min.pos.ch) { return min }
-  if (val.pos.line === max.pos.line && val.pos.ch > max.pos.ch) { return max }
-  if (val.pos.line < min.pos.line) { return min }
-  if (val.pos.line > max.pos.line) { return max }
-  return val
-}
-
-export function getFirstPoint (doc: CodeMirror.Doc): Point {
+export function getFirstPosition (doc: CodeMirror.Doc): CodeMirror.Position {
   let firstLine = doc.firstLine()
   let firstCh = 0
 
-  let pos = { line: firstLine, ch: firstCh }
-  let index = doc.indexFromPos(pos)
-  let coords = doc.getEditor().charCoords(pos, 'local')
-
-  return { index: index, pos: pos, coords: coords }
+  return { line: firstLine, ch: firstCh }
 }
 
-export function getLastPoint (doc: CodeMirror.Doc): Position {
+export function getLastPosition (doc: CodeMirror.Doc): CodeMirror.Position {
+  let lastLine = doc.lastLine()
+  let lastCh = doc.getLine(lastLine).length
+
+  return { line: lastLine, ch: lastCh }
+}
+
+export function getPositionBefore (doc: CodeMirror.Doc, pos: CodeMirror.Position): CodeMirror.Position {
+  if (pos.ch > 0) {
+    return { line: pos.line, ch: pos.ch - 1 }
+  }
+
+  if (pos.line > 0) {
+    return { line: pos.line - 1, ch: doc.getLine(pos.line - 1).length }
+  }
+
+  throw new Error('cannot get position before (0:0)')
+}
+
+export function getPositionAfter (doc: CodeMirror.Doc, pos: CodeMirror.Position): CodeMirror.Position {
+  if (pos.ch < doc.getLine(pos.line).length - 1) {
+    return { line: pos.line, ch: pos.ch + 1 }
+  }
+
+  if (pos.line < doc.lastLine()) {
+    return { line: pos.line + 1, ch: 0 }
+  }
+
   let lastLine = doc.lastLine()
   let lastCh = doc.getLine(lastLine).length - 1
-
-  let pos = { line: lastLine, ch: lastCh }
-  let index = doc.indexFromPos(pos)
-  let coords = doc.getEditor().charCoords(pos, 'local')
-
-  return { index: index, pos: pos, coords: coords }
-}
-
-/**
- * DOM manipulation functions. Requires IE 11 or newer.
- */
-
-export function createElement (tagName: string, parent: HTMLElement = null): HTMLElement {
-  let elem = document.createElement(tagName)
-
-  if (parent !== null) {
-    parent.appendChild(elem)
-  }
-
-  return elem
-}
-
-export function removeElement (elem: HTMLElement) {
-  let parent = elem.parentNode
-  parent.removeChild(elem)
-}
-
-export function createWrapper (parent: HTMLElement, className: string): HTMLElement {
-  let child = createElement('div', parent)
-  addClass(child, className)
-
-  return child
-}
-
-export function addClass (elem: HTMLElement, className: string) {
-  if (className.indexOf(' ') === -1) {
-    // Class name has no spaces.
-    elem.classList.add(className)
-  } else {
-    className.split(' ').forEach((oneClassName) => {
-      elem.classList.add(oneClassName)
-    })
-  }
-}
-
-export function removeClass (elem: HTMLElement, className: string) {
-  elem.classList.remove(className)
-}
-
-export function setAttr (elem: HTMLElement, attrName: string, val: string) {
-  elem.setAttribute(attrName, val)
-}
-
-export function setText (elem: HTMLElement, val: string) {
-  elem.innerText = val
-}
-
-export function setCSS (elem: HTMLElement, propName: string, val: any) {
-  elem.style[propName] = val
+  throw new Error(`cannot get position after (${lastLine}:${lastCh})`)
 }
 
 export function onEvent (elem: HTMLElement, eventName: string, cb: (MouseEvent) => void) {
@@ -149,39 +94,4 @@ export function debounce (fn: () => void, wait: number): () => void {
     clearTimeout(timeout)
     timeout = setTimeout(later, wait)
   }
-}
-
-export function noop () {
-  // Do nothing.
-}
-
-type CharCoords = { left: number, right: number, top: number, bottom: number }
-export function charCoordsShowNewlines (cm: CodeMirror.Editor, point: Point): CharCoords {
-  let naiveCoords = point.coords
-
-  // If CodeMirror describes a character coordinate as having a width of 0,
-  // check if the character coordinate represents the position of a newline
-  // character.
-  if (naiveCoords.right - naiveCoords.left === 0) {
-    let doc = cm.getDoc()
-    let lastLineNum = doc.lastLine()
-
-    // If the position is from the last line of the document then it can't end in
-    // a newline so further checks can be skipped.
-    if (point.pos.line >= lastLineNum) {
-      return naiveCoords
-    }
-
-    let lineLength = doc.getLine(position.line).length
-    if (point.pos.ch === lineLength) {
-      // Position corresponds to a newline.
-      let charWidth = cm.defaultCharWidth()
-      let newlineCoords = naiveCoords
-      newlineCoords.right = naiveCoords.left + charWidth
-
-      return newlineCoords
-    }
-  }
-
-  return naiveCoords
 }

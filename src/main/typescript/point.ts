@@ -7,6 +7,11 @@
 
 import 'codemirror'
 
+export interface PointPair {
+  start: Point,
+  end: Point,
+}
+
 export interface Point {
   index: number
   pos: CodeMirror.Position

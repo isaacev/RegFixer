@@ -7,24 +7,25 @@
 
 import { PureComponent } from 'react'
 
-export enum ButtonColor {
-  Red,
-  Green,
-  Blue,
-}
-
-interface ButtonProps {
-  color: ButtonColor
+interface Props {
   glyph: string
+  color: string
+  arrow?: boolean
   onClick: () => void
 }
 
-export class Button extends PureComponent<ButtonProps, {}> {
+const GRIP_SIZE = 8
+
+export class Button extends PureComponent<Props, {}> {
+  public static defaultProps: Partial<Props> = {
+    arrow: false,
+  }
+
   render () {
     return (
       <button
-        className="action"
-        data-color={ButtonColor[this.props.color].toLowerCase()}
+        className={'action' + ((this.props.arrow) ? ' arrow' : '')}
+        data-color={this.props.color}
         onClick={this.props.onClick}>{this.props.glyph}</button>
     )
   }
