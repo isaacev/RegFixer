@@ -1,15 +1,15 @@
+const buffer      = require('vinyl-buffer')
+const compressCSS = require('gulp-clean-css')
+const compressJS  = require('gulp-uglify')
+const concat      = require('gulp-concat')
+const decide      = require('gulp-if')
+const del         = require('del')
 const gulp        = require('gulp')
 const rollup      = require('rollup-stream')
+const sass        = require('gulp-sass')
+const source      = require('vinyl-source-stream')
 const sourcemaps  = require('gulp-sourcemaps')
 const typescript  = require('rollup-plugin-typescript')
-const source      = require('vinyl-source-stream')
-const buffer      = require('vinyl-buffer')
-const decide      = require('gulp-if')
-const concat      = require('gulp-concat')
-const compressJS  = require('gulp-uglify')
-const sass        = require('gulp-sass')
-const compressCSS = require('gulp-clean-css')
-const del         = require('del')
 
 // Compile Typescript files to ES6 and combine modules with Rollup.
 gulp.task('compile:js', () => {
