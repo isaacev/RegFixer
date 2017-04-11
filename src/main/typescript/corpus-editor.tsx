@@ -25,8 +25,8 @@ interface Props {
   regex: string
   corpus: string
   onMatchesChange: (matches: { start: number, end: number }[]) => void
-  onInfiniteRegex: () => void
   onEmptyRegex: () => void
+  onInfiniteMatches: () => void
   onBrokenRegex: () => void
 }
 
@@ -280,7 +280,7 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   private handleInfiniteMatches (): void {
-    this.props.onInfiniteRegex()
+    this.props.onInfiniteMatches()
   }
 
   private handleBrokenRegex (): void {

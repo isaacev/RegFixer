@@ -95,7 +95,6 @@ export class App extends Component<Props, State> {
     })
   }
 
-  handleInfiniteRegex (): void {
   handleEmptyRegex (): void {
     this.setState({
       inError: false,
@@ -103,6 +102,7 @@ export class App extends Component<Props, State> {
     })
   }
 
+  handleInfiniteMatches (): void {
     this.setState({
       inError: true,
       message: 'Infinite',
@@ -117,14 +117,14 @@ export class App extends Component<Props, State> {
   }
 
   render () {
-    let handleRegexChange   = this.handleRegexChange.bind(this)
-    let handleRequestFix    = this.handleRequestFix.bind(this)
-    let handleAcceptFix     = this.handleAcceptFix.bind(this)
-    let handleRejectFix     = this.handleRejectFix.bind(this)
-    let handleMatchesChange = this.handleMatchesChange.bind(this)
-    let handleInfiniteRegex = this.handleInfiniteRegex.bind(this)
-    let handleEmptyRegex    = this.handleEmptyRegex.bind(this)
-    let handleBrokenRegex   = this.handleBrokenRegex.bind(this)
+    let handleRegexChange     = this.handleRegexChange.bind(this)
+    let handleRequestFix      = this.handleRequestFix.bind(this)
+    let handleAcceptFix       = this.handleAcceptFix.bind(this)
+    let handleRejectFix       = this.handleRejectFix.bind(this)
+    let handleMatchesChange   = this.handleMatchesChange.bind(this)
+    let handleEmptyRegex      = this.handleEmptyRegex.bind(this)
+    let handleInfiniteMatches = this.handleInfiniteMatches.bind(this)
+    let handleBrokenRegex     = this.handleBrokenRegex.bind(this)
 
     return (
       <div>
@@ -146,8 +146,8 @@ export class App extends Component<Props, State> {
           regex={this.state.regex}
           corpus={this.state.corpus}
           onMatchesChange={handleMatchesChange}
-          onInfiniteRegex={handleInfiniteRegex}
           onEmptyRegex={handleEmptyRegex}
+          onInfiniteMatches={handleInfiniteMatches}
           onBrokenRegex={handleBrokenRegex} />
       </div>
     )
