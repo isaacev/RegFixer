@@ -4,7 +4,8 @@
 //
 // Created on 4/7/17
 //
-// BUG: "add highlight" popovers linger after mouse has moved away
+// BUG: "add highlight" popovers can't be re-opened after use has ignored new
+//      selection for at least 500ms
 //
 
 import 'codemirror'
