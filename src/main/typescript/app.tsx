@@ -5,7 +5,7 @@
 // Created on 4/7/17
 //
 
-import * as request from 'superagent'
+import { post } from 'superagent'
 import { Component } from 'react'
 import { RegexEditor } from './regex-editor'
 import { RegexEditorControls } from './regex-editor-controls'
@@ -56,23 +56,20 @@ export class App extends Component<Props, State> {
       right: match.end,
     }))
 
-    request
-      .post('/api/fix')
-      .send({
-        regex: this.state.regex,
-        ranges: matches,
-        corpus: this.state.corpus,
-      })
-      .end((err, res) => {
-        if (err != null || res.status !== 200) {
-          console.error(err)
-        } else {
-          this.setState({
-            hasFix: true,
-            fixedRegex: res.text,
-          })
-        }
-      })
+    post('/api/fix').send({
+      regex: this.state.regex,
+      ranges: matches,
+      corpus: this.state.corpus,
+    }).end((err, res) => {
+      if (err != null || res.status !== 200) {
+        console.error(err)
+      } else {
+        this.setState({
+          hasFix: true,
+          fixedRegex: res.text,
+        })
+      }
+    })
   }
 
   handleAcceptFix () {
