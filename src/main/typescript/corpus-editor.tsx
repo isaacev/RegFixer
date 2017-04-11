@@ -26,6 +26,7 @@ interface Props {
   corpus: string
   onMatchesChange: (matches: { start: number, end: number }[]) => void
   onInfiniteRegex: () => void
+  onEmptyRegex: () => void
   onBrokenRegex: () => void
 }
 
@@ -274,6 +275,10 @@ export class CorpusEditor extends Component<Props, State> {
     this.forceUpdate()
   }
 
+  private handleEmptyRegex (): void {
+    this.props.onEmptyRegex()
+  }
+
   private handleInfiniteMatches (): void {
     this.props.onInfiniteRegex()
   }
@@ -287,6 +292,10 @@ export class CorpusEditor extends Component<Props, State> {
   // matched the regular expression. Causes no side effects.
   private getMatchingPointPairs (): PointPair[] | undefined {
     let regex: RegExp
+
+    if (this.state.regex === '') {
+      return void this.handleEmptyRegex()
+    }
 
     try {
       regex = new RegExp(this.state.regex, 'g')
