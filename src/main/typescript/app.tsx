@@ -87,6 +87,12 @@ export class App extends Component<Props, State> {
     })
   }
 
+  handleCorpusChange (newCorpus: string): void {
+    this.setState({
+      corpus: newCorpus,
+    })
+  }
+
   handleMatchesChange (matches: { start: number, end: number }[]): void {
     this.setState({
       matches: matches,
@@ -121,6 +127,7 @@ export class App extends Component<Props, State> {
     let handleRequestFix      = this.handleRequestFix.bind(this)
     let handleAcceptFix       = this.handleAcceptFix.bind(this)
     let handleRejectFix       = this.handleRejectFix.bind(this)
+    let handleCorpusChange    = this.handleCorpusChange.bind(this)
     let handleMatchesChange   = this.handleMatchesChange.bind(this)
     let handleEmptyRegex      = this.handleEmptyRegex.bind(this)
     let handleInfiniteMatches = this.handleInfiniteMatches.bind(this)
@@ -145,6 +152,7 @@ export class App extends Component<Props, State> {
         <CorpusEditor
           regex={this.state.regex}
           corpus={this.state.corpus}
+          onCorpusChange={handleCorpusChange}
           onMatchesChange={handleMatchesChange}
           onEmptyRegex={handleEmptyRegex}
           onInfiniteMatches={handleInfiniteMatches}

@@ -25,6 +25,7 @@ const CM_HIGHLIGHT_CLASS = 'marked-highlight'
 interface Props {
   regex: string
   corpus: string
+  onCorpusChange: (newCorpus: string) => void
   onMatchesChange: (matches: { start: number, end: number }[]) => void
   onEmptyRegex: () => void
   onInfiniteMatches: () => void
@@ -84,6 +85,7 @@ export class CorpusEditor extends Component<Props, State> {
 
   private handleEditorChange () {
     this.resetHighlights()
+    this.props.onCorpusChange(this.instance.getValue())
   }
 
   private handleCursorActivity () {
