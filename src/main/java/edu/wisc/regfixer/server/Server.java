@@ -22,10 +22,10 @@ public class Server {
     }, new FreeMarkerEngine());
 
     post("/api/fix", (req, res) -> {
-      Payload payload = null;
+      RequestPayload reqPayload = null;
 
       try {
-        payload = gson.fromJson(req.body(), Payload.class);
+        reqPayload = gson.fromJson(req.body(), RequestPayload.class);
       } catch (JsonSyntaxException ex) {
         res.status(400);
         String error = "malformed JSON";
@@ -36,19 +36,19 @@ public class Server {
         return gson.toJson(new JobError(error));
       }
 
-      if (payload.getRegex() == null) {
+      if (reqPayload.getRegex() == null) {
         res.status(422);
         String error = "missing \"regex\" field";
         return gson.toJson(new JobError(error));
       }
 
-      if (payload.getRanges() == null) {
+      if (reqPayload.getRanges() == null) {
         res.status(422);
         String error = "missing \"ranges\" field";
         return gson.toJson(new JobError(error));
       }
 
-      if (payload.getCorpus() == null) {
+      if (reqPayload.getCorpus() == null) {
         res.status(422);
         String error = "missing \"corpus\" field";
         return gson.toJson(new JobError(error));
@@ -56,7 +56,7 @@ public class Server {
 
       Job job = null;
       try {
-        job = payload.toJob();
+        job = reqPayload.toJob();
       } catch (Exception ex) {
         res.status(400);
         String error = "malformed regular expression";
@@ -64,13 +64,14 @@ public class Server {
       }
 
       RegexNode candidate = Main.synthesize(job);
+      ResponsePayload resPayload = new ResponsePayload(candidate);
 
       if (candidate == null) {
         res.status(204);
         return gson.toJson(new JobError("could not synthesize a fix"));
       } else {
         res.status(200);
-        return gson.toJson(candidate.toString());
+        return gson.toJson(resPayload);
       }
     });
   }

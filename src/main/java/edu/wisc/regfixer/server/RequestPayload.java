@@ -6,12 +6,12 @@ import edu.wisc.regfixer.parser.Main;
 import edu.wisc.regfixer.fixer.Job;
 import edu.wisc.regfixer.fixer.Range;
 
-public class Payload {
+public class RequestPayload {
   private final String regex;
   private final List<Range> ranges;
   private final String corpus;
 
-  public Payload (String regex, List<Range> ranges, String corpus) {
+  public RequestPayload (String regex, List<Range> ranges, String corpus) {
     this.regex = regex;
     this.ranges = ranges;
     this.corpus = corpus;
