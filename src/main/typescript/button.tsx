@@ -14,8 +14,6 @@ interface Props {
   onClick: () => void
 }
 
-const GRIP_SIZE = 8
-
 export class Button extends PureComponent<Props, {}> {
   public static defaultProps: Partial<Props> = {
     arrow: false,
