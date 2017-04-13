@@ -62,11 +62,18 @@ export class App extends Component<Props, State> {
       corpus: this.state.corpus,
     }).end((err, res) => {
       if (err != null || res.status !== 200) {
-        console.error(err)
+        throw new Error('did not receive fix from server')
       } else {
+        let fixed = res.body.fixed
+        if (typeof fixed !== 'string') {
+          throw new Error('did not receive fix from server')
+        }
+
+        fixed = fixed.replace(/\\\\/g, '\\')
+
         this.setState({
           hasFix: true,
-          fixedRegex: res.text,
+          fixedRegex: fixed,
         })
       }
     })
