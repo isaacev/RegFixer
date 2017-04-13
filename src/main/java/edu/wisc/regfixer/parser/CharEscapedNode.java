@@ -7,10 +7,6 @@ public class CharEscapedNode implements CharClass {
     this.ch = ch;
   }
 
-  public int getBreadth () {
-    return 200;
-  }
-
   public String toString () {
     return String.format("\\%c", this.ch);
   }

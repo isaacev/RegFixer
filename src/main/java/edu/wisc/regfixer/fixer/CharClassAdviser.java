@@ -1,7 +1,7 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.Comparator;
-import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.LinkedList;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
@@ -12,13 +12,11 @@ import edu.wisc.regfixer.parser.CharEscapedNode;
  * expression synthesis.
  */
 public class CharClassAdviser {
-  private PriorityQueue<CharClass> suggestions;
+  private Queue<CharClass> suggestions;
 
   public CharClassAdviser () {
-    Comparator<CharClass> comp = new CharClassComparator();
-    this.suggestions = new PriorityQueue<CharClass>(comp);
+    this.suggestions = new LinkedList<CharClass>();
 
-    // Default starting character classes.
     this.suggestions.add(new CharDotNode());
     this.suggestions.add(new CharEscapedNode('w'));
     this.suggestions.add(new CharEscapedNode('d'));

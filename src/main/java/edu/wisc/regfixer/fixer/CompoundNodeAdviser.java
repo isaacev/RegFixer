@@ -1,7 +1,7 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.Comparator;
-import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.LinkedList;
 import edu.wisc.regfixer.parser.RegexNode;
 
 /**
@@ -15,11 +15,10 @@ import edu.wisc.regfixer.parser.RegexNode;
  * - PlusNode
  */
 public class CompoundNodeAdviser {
-  private PriorityQueue<RegexNode> suggestions;
+  private Queue<RegexNode> suggestions;
 
   public CompoundNodeAdviser () {
-    Comparator<RegexNode> comp = new CompoundNodeComparator();
-    this.suggestions = new PriorityQueue<RegexNode>(comp);
+    this.suggestions = new LinkedList<RegexNode>();
   }
 
   public RegexNode nextSuggestion () {
