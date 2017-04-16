@@ -7,6 +7,10 @@ public class CharLiteralNode implements CharClass {
     this.ch = ch;
   }
 
+  public char getChar () {
+    return this.ch;
+  }
+
   public String toString () {
     return String.format("%c", this.ch);
   }

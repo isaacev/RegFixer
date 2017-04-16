@@ -14,6 +14,18 @@ public class CharRangeNode implements CharClass {
     this.right = right;
   }
 
+  public CharClass getLeftChild () {
+    return this.left;
+  }
+
+  public boolean isSingle () {
+    return (this.left == this.right);
+  }
+
+  public CharClass getRightChild () {
+    return this.right;
+  }
+
   public String toString () {
     if (this.left == this.right) {
       return this.left.toString();

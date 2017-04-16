@@ -12,6 +12,14 @@ public class CharClassSetNode implements CharClass {
   }
 
   public void addSubClass (CharClass subClass) {
+  public boolean isInverted () {
+    return this.not;
+  }
+
+  public List<CharRangeNode> getSubClasses () {
+    return this.subClasses;
+  }
+
     this.subClasses.add(subClass);
   }
 
