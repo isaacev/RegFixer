@@ -186,9 +186,12 @@ public class Converter {
         subPredicate = new CharPred(leftCh, rightCh);
       }
 
-      wholePredicate = (wholePredicate == null)
-        ? subPredicate
-        : solver.MkOr(wholePredicate, subPredicate);
+      if (wholePredicate == null) {
+        wholePredicate = subPredicate;
+      } else {
+        wholePredicate = solver.MkOr(wholePredicate, subPredicate);
+      }
+    }
     }
 
     return predicateToSFA(wholePredicate, solver);
