@@ -114,6 +114,7 @@ public class Converter {
 
       return wholeAutomaton;
     } else if (node.getMin() < node.getMax()) {
+      // min to max
       SFA<CharPred, Character> unionAutomaton = minAutomaton;
       SFA<CharPred, Character> wholeAutomaton = minAutomaton;
 
@@ -124,6 +125,7 @@ public class Converter {
 
       return wholeAutomaton;
     } else {
+      // just min
       return minAutomaton;
     }
   }
@@ -161,7 +163,7 @@ public class Converter {
 
   private static SFA<CharPred, Character> holeToSFA (HoleNode node, UnaryCharIntervalSolver solver) throws TimeoutException {
     // TODO
-    System.err.println("not supported");
+    System.err.println("HoleNode not supported");
     System.exit(-1);
     return null;
   }
