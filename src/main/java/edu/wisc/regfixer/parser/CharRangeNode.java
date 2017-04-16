@@ -1,20 +1,20 @@
 package edu.wisc.regfixer.parser;
 
 public class CharRangeNode implements CharClass {
-  private CharClass left;
-  private CharClass right;
+  private ConcreteCharClass left;
+  private ConcreteCharClass right;
 
-  public CharRangeNode (CharClass left) {
+  public CharRangeNode (ConcreteCharClass left) {
     this.left = left;
     this.right = left;
   }
 
-  public CharRangeNode (CharClass left, CharClass right) {
+  public CharRangeNode (ConcreteCharClass left, ConcreteCharClass right) {
     this.left = left;
     this.right = right;
   }
 
-  public CharClass getLeftChild () {
+  public ConcreteCharClass getLeftChild () {
     return this.left;
   }
 
@@ -22,7 +22,7 @@ public class CharRangeNode implements CharClass {
     return (this.left == this.right);
   }
 
-  public CharClass getRightChild () {
+  public ConcreteCharClass getRightChild () {
     return this.right;
   }
 

@@ -1,6 +1,6 @@
 package edu.wisc.regfixer.parser;
 
-public class CharEscapedNode implements CharClass {
+public class CharEscapedNode implements ConcreteCharClass {
   private char ch;
 
   public CharEscapedNode (char ch) {

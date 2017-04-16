@@ -4,14 +4,13 @@ import java.util.List;
 
 public class CharClassSetNode implements CharClass {
   private boolean not;
-  private List<CharClass> subClasses;
+  private List<CharRangeNode> subClasses;
 
-  public CharClassSetNode (boolean not, List<CharClass> subClasses) {
+  public CharClassSetNode (boolean not, List<CharRangeNode> subClasses) {
     this.not = not;
     this.subClasses = subClasses;
   }
 
-  public void addSubClass (CharClass subClass) {
   public boolean isInverted () {
     return this.not;
   }
@@ -20,6 +19,7 @@ public class CharClassSetNode implements CharClass {
     return this.subClasses;
   }
 
+  public void addSubClass (CharRangeNode subClass) {
     this.subClasses.add(subClass);
   }
 
