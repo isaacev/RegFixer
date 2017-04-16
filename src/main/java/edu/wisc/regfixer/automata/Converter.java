@@ -192,6 +192,9 @@ public class Converter {
         wholePredicate = solver.MkOr(wholePredicate, subPredicate);
       }
     }
+
+    if (node.isInverted()) {
+      wholePredicate = solver.MkNot(wholePredicate);
     }
 
     return predicateToSFA(wholePredicate, solver);
