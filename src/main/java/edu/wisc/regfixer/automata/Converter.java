@@ -68,6 +68,7 @@ public class Converter {
         SFA<CharPred, Character> followingAutomata = nodeToSFA(child, solver);
         subAutomaton = SFA.concatenate(subAutomaton, followingAutomata, solver);
       }
+      System.out.println(subAutomaton.toString());
     }
 
     if (subAutomaton == null) {

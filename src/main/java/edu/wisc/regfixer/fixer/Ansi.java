@@ -21,6 +21,7 @@ package edu.wisc.regfixer.fixer;
 public class Ansi {
   // ANSI color codes from: https://gist.github.com/dainkaplan/4651352
   private final static String ColorNormal  = "\u001B[0m";
+
   private final static String ColorBlack   = "\u001B[30m";
   private final static String ColorRed     = "\u001B[31m";
   private final static String ColorGreen   = "\u001B[32m";
