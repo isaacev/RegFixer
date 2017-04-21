@@ -64,7 +64,7 @@ export class App extends Component<Props, State> {
       if (err != null || res.status !== 200) {
         throw new Error('did not receive fix from server')
       } else {
-        let fixed = res.body.fixed
+        let fixed = JSON.parse(res.text).fix
         if (typeof fixed !== 'string') {
           throw new Error('did not receive fix from server')
         }
