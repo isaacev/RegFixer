@@ -57,7 +57,7 @@ public class Converter {
   }
 
   private static SFA<CharPred, Character> concatToSFA (ConcatNode node, UnaryCharIntervalSolver solver) throws TimeoutException {
-    SFA<CharPred, Character> subAutomaton = null;
+/*    SFA<CharPred, Character> subAutomaton = null;
 
     // Build a composite automaton from the sub-automata derrived from each
     // child node of this concatenation expression.
@@ -68,7 +68,6 @@ public class Converter {
         SFA<CharPred, Character> followingAutomata = nodeToSFA(child, solver);
         subAutomaton = SFA.concatenate(subAutomaton, followingAutomata, solver);
       }
-      System.out.println(subAutomaton.toString());
     }
 
     if (subAutomaton == null) {
@@ -76,12 +75,24 @@ public class Converter {
     } else {
       return subAutomaton;
     }
+    */
+    SFA<CharPred, Character> iterateSFA = SFA.getEmptySFA(solver);
+    System.out.print(iterateSFA.stateCount());
+    for(RegexNode child : node.getChildren()) {
+      if(iterateSFA.stateCount() == 1) {
+        iterateSFA = nodeToSFA(child, solver);
+        continue;
+      }
+      SFA<CharPred, Character> followingSFA = nodeToSFA(child, solver);
+      iterateSFA = SFA.concatenate(iterateSFA, followingSFA, solver) ;
+    }
+    return iterateSFA;
   }
 
   private static SFA<CharPred, Character> unionToSFA (UnionNode node, UnaryCharIntervalSolver solver) throws TimeoutException {
-    SFA<CharPred, Character> leftAutomaton = nodeToSFA(node.getLeftChild(), solver);
+    SFA<CharPred, Character> leftAutomaton = nodeToSFA(node.getLeftChild(), solver);  // recursively find SFA of child
     SFA<CharPred, Character> rightAutomaton = nodeToSFA(node.getRightChild(), solver);
-    SFA<CharPred, Character> unionAutomaton = SFA.union(leftAutomaton, rightAutomaton, solver);
+    SFA<CharPred, Character> unionAutomaton = SFA.union(leftAutomaton, rightAutomaton, solver); // union on left and right child's SFA
 
     return unionAutomaton;
   }

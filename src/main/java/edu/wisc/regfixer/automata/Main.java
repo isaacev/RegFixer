@@ -19,5 +19,6 @@ public class Main {
     System.out.println(sfa.toString());
     System.out.println("===");
 
+    // Test SAT Boolean Algebra
   }
 }
