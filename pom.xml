@@ -142,7 +142,6 @@
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
           <finalName>regfixer</finalName>
-          <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
               <mainClass>edu.wisc.regfixer.server.Server</mainClass>
