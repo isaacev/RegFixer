@@ -3,7 +3,6 @@ package edu.wisc.regfixer.automata;
 import java.util.LinkedList;
 import java.util.List;
 
-import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.CharClassSetNode;
 import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
