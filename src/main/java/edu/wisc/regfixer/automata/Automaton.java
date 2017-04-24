@@ -43,7 +43,7 @@ public class Automaton extends automata.Automaton {
   }
 
   /**
-   * METHOD FOR EVALUATING THE AUTOMATON
+   * METHODS FOR EVALUATING THE AUTOMATON
    */
 
   private List<State> getEpsClosure (State frontier) {
