@@ -1,8 +1,10 @@
-package edu.wisc.regfixer.fixer;
+package edu.wisc.regfixer.util;
 
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
+
+import edu.wisc.regfixer.fixer.Range;
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class ReportStream extends PrintStream {

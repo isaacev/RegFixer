@@ -2,6 +2,7 @@ package edu.wisc.regfixer.fixer;
 
 import java.util.List;
 import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.util.ReportStream;
 
 public class Synthesizer {
   public static RegexNode synthesize (Job job, List<IncompleteTree> trees) {
