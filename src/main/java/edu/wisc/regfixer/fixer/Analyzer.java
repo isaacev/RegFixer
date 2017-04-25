@@ -1,6 +1,7 @@
 package edu.wisc.regfixer.fixer;
 
 import java.util.List;
+import edu.wisc.regfixer.util.ReportStream;
 
 public class Analyzer {
   public static List<IncompleteTree> analyze (Job job) {

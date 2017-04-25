@@ -68,6 +68,15 @@ public class Evaluator {
     return this.negativeExamples;
   }
 
+  public boolean runDotTest (IncompleteTree tree) {
+    RegexNode twig = new CharDotNode();
+    tree.completeWith(twig);
+    boolean didPass = Evaluator.matchesAllExamples(tree, this.positiveExamples);
+    tree.emptyHole();
+
+    return didPass;
+  }
+
   public boolean runDotStarTest (IncompleteTree tree) {
     RegexNode twig = new StarNode(new CharDotNode());
     tree.completeWith(twig);
