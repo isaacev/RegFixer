@@ -3,7 +3,7 @@ package edu.wisc.regfixer.util;
 import java.util.Arrays;
 
 public class Subscript {
-  public static String toSubscript (int notation) {
+  public static String format (int notation) {
     return Integer.toString(notation).chars()
                   .mapToObj(i -> single((char) i))
                   .reduce("", String::concat);
