@@ -2,7 +2,7 @@ package edu.wisc.regfixer.automata;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -110,7 +110,6 @@ public class Automaton extends automata.Automaton {
   private boolean isFinalConfiguration (List<State> states) {
     for (State state : states) {
       if (isFinalState(state.getStateId())) {
-        buildHoleSets(state);
         return true;
       }
     }
@@ -118,11 +117,8 @@ public class Automaton extends automata.Automaton {
     return false;
   }
 
-  private void buildHoleSets (State endState) {
-    System.out.println();
-    System.out.println("RESULTS:");
-    System.out.println("========");
-    Map<Integer, Set<Character>> result = new HashMap<>();
+  private Map<Integer, Set<Character>> computeCrosses (State endState) {
+    Map<Integer, Set<Character>> crosses = new TreeMap<>();
 
     State currState = endState;
     while (currState != null) {
@@ -130,27 +126,17 @@ public class Automaton extends automata.Automaton {
         char value = currState.getValue();
         int holeId = currState.getHoleId();
 
-        if (result.containsKey(holeId) == false) {
-          result.put(holeId, new HashSet<>());
+        if (crosses.containsKey(holeId) == false) {
+          crosses.put(holeId, new HashSet<>());
         }
 
-        result.get(holeId).add(value);
+        crosses.get(holeId).add(value);
       }
 
       currState = currState.getParent();
     }
 
-    for (Map.Entry<Integer, Set<Character>> entry : result.entrySet()) {
-      System.out.printf("❑ %d: { ", entry.getKey());
-
-      for (Character holeChar : entry.getValue()) {
-        System.out.printf("%c ", holeChar);
-      }
-
-      System.out.print("}\n");
-    }
-
-    System.out.println();
+    return crosses;
   }
 
   public boolean accepts (String str) throws TimeoutException {
@@ -176,6 +162,37 @@ public class Automaton extends automata.Automaton {
     }
 
     return isFinalConfiguration(frontier);
+  }
+
+  public Map<Integer, Set<Character>> crosses (String str) throws TimeoutException {
+    List<Character> charList = new LinkedList<>();
+
+    for (int i = 0; i < str.length(); i++) {
+      charList.add(str.charAt(i));
+    }
+
+    return crosses(charList);
+  }
+
+  public Map<Integer, Set<Character>> crosses (List<Character> chars) throws TimeoutException {
+    List<State> frontier = getEpsClosure(new State(getInitialState()));
+
+    for (Character ch : chars) {
+      frontier = getNextState(frontier, ch);
+      frontier = getEpsClosure(frontier);
+
+      if (frontier.isEmpty()) {
+        return null;
+      }
+    }
+
+    for (State state : frontier) {
+      if (isFinalState(state.getStateId())) {
+        return computeCrosses(state);
+      }
+    }
+
+    return null;
   }
 
   /**
