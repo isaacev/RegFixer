@@ -6,14 +6,14 @@ import edu.wisc.regfixer.util.ReportStream;
 
 public class Main {
   public static RegexNode synthesize (Job job) {
-    List<IncompleteTree> candidates = Analyzer.analyze(job);
+    List<PartialTree> candidates = Analyzer.analyze(job);
     RegexNode candidate = Synthesizer.synthesize(job, candidates);
 
     return candidate;
   }
 
   public static RegexNode synthesize (Job job, ReportStream report) {
-    List<IncompleteTree> candidates = Analyzer.analyze(job, report);
+    List<PartialTree> candidates = Analyzer.analyze(job, report);
     RegexNode candidate = Synthesizer.synthesize(job, candidates, report);
 
     if (candidate != null) {

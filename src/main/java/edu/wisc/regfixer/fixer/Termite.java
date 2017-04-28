@@ -34,11 +34,11 @@ import edu.wisc.regfixer.parser.UnionNode;
  * different sub-expression replaced with a hole.
  */
 public class Termite {
-  public static List<IncompleteTree> digest (RegexNode n) {
+  public static List<PartialTree> digest (RegexNode n) {
     return digestNode(n);
   }
 
-  private static List<IncompleteTree> digestNode (RegexNode n) {
+  private static List<PartialTree> digestNode (RegexNode n) {
          if (n instanceof ConcatNode)     { return digestConcat((ConcatNode) n); }
     else if (n instanceof UnionNode)      { return digestUnion((UnionNode) n); }
     else if (n instanceof RepetitionNode) { return digestRepetition((RepetitionNode) n); }
@@ -53,8 +53,8 @@ public class Termite {
     }
   }
 
-  private static List<IncompleteTree> digestConcat (ConcatNode n) {
-    List<IncompleteTree> digestedExprs = new LinkedList<IncompleteTree>();
+  private static List<PartialTree> digestConcat (ConcatNode n) {
+    List<PartialTree> digestedExprs = new LinkedList<PartialTree>();
     List<RegexNode> children = n.getChildren();
     int numChilds = children.size();
 
@@ -73,12 +73,12 @@ public class Termite {
         // Collect nodes from i+n to end of list.
         suffix = new LinkedList<RegexNode>(children.subList(i + w, numChilds));
 
-        List<IncompleteTree> digestedMidfixes = new LinkedList<IncompleteTree>();
+        List<PartialTree> digestedMidfixes = new LinkedList<PartialTree>();
         if (midfix.size() == 1) {
           digestedMidfixes.addAll(digestNode(midfix.get(0)));
         } else {
           HoleNode hole = new HoleNode();
-          IncompleteTree pair = new IncompleteTree(hole, hole);
+          PartialTree pair = new PartialTree(hole, hole);
           digestedMidfixes.add(pair);
         }
 
@@ -88,7 +88,7 @@ public class Termite {
           // structure.
           digestedExprs.addAll(digestedMidfixes);
         } else {
-          for (IncompleteTree digestedMidfix : digestedMidfixes) {
+          for (PartialTree digestedMidfix : digestedMidfixes) {
             List<RegexNode> newChildren = new LinkedList<RegexNode>();
             newChildren.addAll(prefix);
             newChildren.add(digestedMidfix.getTree());
@@ -96,7 +96,7 @@ public class Termite {
 
             RegexNode tree = new ConcatNode(newChildren);
             HoleNode hole = digestedMidfix.getHole();
-            IncompleteTree pair = new IncompleteTree(tree, hole);
+            PartialTree pair = new PartialTree(tree, hole);
             digestedExprs.add(pair);
           }
         }
@@ -106,118 +106,118 @@ public class Termite {
     return digestedExprs;
   }
 
-  private static List<IncompleteTree> digestUnion (UnionNode n) {
-    List<IncompleteTree> digestedExprs = new LinkedList<IncompleteTree>();
+  private static List<PartialTree> digestUnion (UnionNode n) {
+    List<PartialTree> digestedExprs = new LinkedList<PartialTree>();
 
     // Recursively compute holes of left sub-node(s).
-    for (IncompleteTree digestedExpr : digestNode(n.getLeftChild())) {
+    for (PartialTree digestedExpr : digestNode(n.getLeftChild())) {
       RegexNode tree = new UnionNode(digestedExpr.getTree(), n.getRightChild());
-      IncompleteTree pair = new IncompleteTree(tree, digestedExpr.getHole());
+      PartialTree pair = new PartialTree(tree, digestedExpr.getHole());
       digestedExprs.add(pair);
     }
 
     // Recursively compute holes of right sub-node(s).
-    for (IncompleteTree digestedExpr : digestNode(n.getRightChild())) {
+    for (PartialTree digestedExpr : digestNode(n.getRightChild())) {
       RegexNode tree = new UnionNode(n.getLeftChild(), digestedExpr.getTree());
-      IncompleteTree pair = new IncompleteTree(tree, digestedExpr.getHole());
+      PartialTree pair = new PartialTree(tree, digestedExpr.getHole());
       digestedExprs.add(pair);
     }
 
     // Replace entire node with a hole.
     HoleNode hole = new HoleNode();
-    IncompleteTree pair = new IncompleteTree(hole, hole);
+    PartialTree pair = new PartialTree(hole, hole);
     digestedExprs.add(pair);
 
     return digestedExprs;
   }
 
-  private static List<IncompleteTree> digestRepetition (RepetitionNode n) {
-    List<IncompleteTree> digestedExprs = new LinkedList<IncompleteTree>();
+  private static List<PartialTree> digestRepetition (RepetitionNode n) {
+    List<PartialTree> digestedExprs = new LinkedList<PartialTree>();
 
     // Recursively compute holes of sub-node(s).
-    for (IncompleteTree digestedExpr : digestNode(n.getChild())) {
+    for (PartialTree digestedExpr : digestNode(n.getChild())) {
       if (n.hasMax()) {
         int min = n.getMin();
         int max = n.getMax();
         RegexNode tree = new RepetitionNode(digestedExpr.getTree(), min, max);
-        IncompleteTree pair = new IncompleteTree(tree, digestedExpr.getHole());
+        PartialTree pair = new PartialTree(tree, digestedExpr.getHole());
         digestedExprs.add(pair);
       } else {
         int min = n.getMin();
         RegexNode tree = new RepetitionNode(digestedExpr.getTree(), min);
-        IncompleteTree pair = new IncompleteTree(tree, digestedExpr.getHole());
+        PartialTree pair = new PartialTree(tree, digestedExpr.getHole());
         digestedExprs.add(pair);
       }
     }
 
     // Replace entire node with a hole.
     HoleNode hole = new HoleNode();
-    IncompleteTree pair = new IncompleteTree(hole, hole);
+    PartialTree pair = new PartialTree(hole, hole);
     digestedExprs.add(pair);
 
     return digestedExprs;
   }
 
-  private static List<IncompleteTree> digestOptional (OptionalNode n) {
-    List<IncompleteTree> digestedExprs = new LinkedList<IncompleteTree>();
+  private static List<PartialTree> digestOptional (OptionalNode n) {
+    List<PartialTree> digestedExprs = new LinkedList<PartialTree>();
 
     // Recursively compute holes of sub-node(s).
-    for (IncompleteTree digestedExpr : digestNode(n.getChild())) {
+    for (PartialTree digestedExpr : digestNode(n.getChild())) {
       RegexNode tree = new OptionalNode(digestedExpr.getTree());
-      IncompleteTree pair = new IncompleteTree(tree, digestedExpr.getHole());
+      PartialTree pair = new PartialTree(tree, digestedExpr.getHole());
       digestedExprs.add(pair);
     }
 
     // Replace entire node with a hole.
     HoleNode hole = new HoleNode();
-    IncompleteTree pair = new IncompleteTree(hole, hole);
+    PartialTree pair = new PartialTree(hole, hole);
     digestedExprs.add(pair);
 
     return digestedExprs;
   }
 
-  private static List<IncompleteTree> digestStar (StarNode n) {
-    List<IncompleteTree> digestedExprs = new LinkedList<IncompleteTree>();
+  private static List<PartialTree> digestStar (StarNode n) {
+    List<PartialTree> digestedExprs = new LinkedList<PartialTree>();
 
     // Recursively compute holes of sub-node(s).
-    for (IncompleteTree digestedExpr : digestNode(n.getChild())) {
+    for (PartialTree digestedExpr : digestNode(n.getChild())) {
       RegexNode tree = new StarNode(digestedExpr.getTree());
-      IncompleteTree pair = new IncompleteTree(tree, digestedExpr.getHole());
+      PartialTree pair = new PartialTree(tree, digestedExpr.getHole());
       digestedExprs.add(pair);
     }
 
     // Replace entire node with a hole.
     HoleNode hole = new HoleNode();
-    IncompleteTree pair = new IncompleteTree(hole, hole);
+    PartialTree pair = new PartialTree(hole, hole);
     digestedExprs.add(pair);
 
     return digestedExprs;
   }
 
-  private static List<IncompleteTree> digestPlus (PlusNode n) {
-    List<IncompleteTree> digestedExprs = new LinkedList<IncompleteTree>();
+  private static List<PartialTree> digestPlus (PlusNode n) {
+    List<PartialTree> digestedExprs = new LinkedList<PartialTree>();
 
     // Recursively compute holes of sub-node(s).
-    for (IncompleteTree digestedExpr : digestNode(n.getChild())) {
+    for (PartialTree digestedExpr : digestNode(n.getChild())) {
       RegexNode tree = new PlusNode(digestedExpr.getTree());
-      IncompleteTree pair = new IncompleteTree(tree, digestedExpr.getHole());
+      PartialTree pair = new PartialTree(tree, digestedExpr.getHole());
       digestedExprs.add(pair);
     }
 
     // Replace entire node with a hole.
     HoleNode hole = new HoleNode();
-    IncompleteTree pair = new IncompleteTree(hole, hole);
+    PartialTree pair = new PartialTree(hole, hole);
     digestedExprs.add(pair);
 
     return digestedExprs;
   }
 
-  private static List<IncompleteTree> digestAtom () {
-    LinkedList<IncompleteTree> digestedExprs = new LinkedList<IncompleteTree>();
+  private static List<PartialTree> digestAtom () {
+    LinkedList<PartialTree> digestedExprs = new LinkedList<PartialTree>();
 
     // Replace entire node with a hole.
     HoleNode hole = new HoleNode();
-    IncompleteTree pair = new IncompleteTree(hole, hole);
+    PartialTree pair = new PartialTree(hole, hole);
     digestedExprs.add(pair);
 
     return digestedExprs;

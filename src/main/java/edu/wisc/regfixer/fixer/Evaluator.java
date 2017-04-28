@@ -68,7 +68,7 @@ public class Evaluator {
     return this.negativeExamples;
   }
 
-  public boolean runDotTest (IncompleteTree tree) {
+  public boolean runDotTest (PartialTree tree) {
     RegexNode twig = new CharDotNode();
     tree.completeWith(twig);
     boolean didPass = Evaluator.matchesAllExamples(tree, this.positiveExamples);
@@ -77,7 +77,7 @@ public class Evaluator {
     return didPass;
   }
 
-  public boolean runDotStarTest (IncompleteTree tree) {
+  public boolean runDotStarTest (PartialTree tree) {
     RegexNode twig = new StarNode(new CharDotNode());
     tree.completeWith(twig);
     boolean didPass = Evaluator.matchesAllExamples(tree, this.positiveExamples);
@@ -94,7 +94,7 @@ public class Evaluator {
    * finding a character not in the corpus. Some sort of searching system should
    * be used to find character candidates instead.
    */
-  public boolean runEmptySetTest (IncompleteTree tree) {
+  public boolean runEmptySetTest (PartialTree tree) {
     RegexNode twig = new CharLiteralNode('!');
     tree.completeWith(twig);
     boolean didPass = Evaluator.matchesAllExamples(tree, this.negativeExamples) == false;
@@ -111,10 +111,10 @@ public class Evaluator {
     return Evaluator.matchesAllExamples(regex, this.negativeExamples) == false;
   }
 
-  public List<IncompleteTree> pruneForest (List<IncompleteTree> forest) {
-    List<IncompleteTree> pruned = new LinkedList<IncompleteTree>();
+  public List<PartialTree> pruneForest (List<PartialTree> forest) {
+    List<PartialTree> pruned = new LinkedList<PartialTree>();
 
-    for (IncompleteTree tree : forest) {
+    for (PartialTree tree : forest) {
       boolean dotStarResult = this.runDotStarTest(tree);
       boolean emptySetResult = this.runEmptySetTest(tree);
 

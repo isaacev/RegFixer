@@ -3,11 +3,11 @@ package edu.wisc.regfixer.fixer;
 import edu.wisc.regfixer.parser.HoleNode;
 import edu.wisc.regfixer.parser.RegexNode;
 
-public class IncompleteTree implements RegexNode {
+public class PartialTree implements RegexNode {
   private final RegexNode tree;
   private final HoleNode hole;
 
-  public IncompleteTree (RegexNode tree, HoleNode hole) {
+  public PartialTree (RegexNode tree, HoleNode hole) {
     this.tree = tree;
     this.hole = hole;
   }

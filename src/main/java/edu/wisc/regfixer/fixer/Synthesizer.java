@@ -5,8 +5,8 @@ import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.util.ReportStream;
 
 public class Synthesizer {
-  public static RegexNode synthesize (Job job, List<IncompleteTree> trees) {
-    for (IncompleteTree tree : trees) {
+  public static RegexNode synthesize (Job job, List<PartialTree> trees) {
+    for (PartialTree tree : trees) {
       RegexNode result = synthesizeTree(job, tree);
 
       if (result != null) {
@@ -17,9 +17,9 @@ public class Synthesizer {
     return null;
   }
 
-  public static RegexNode synthesize (Job job, List<IncompleteTree> trees, ReportStream report) {
+  public static RegexNode synthesize (Job job, List<PartialTree> trees, ReportStream report) {
     report.printHeader("Then synthesize character class replacements:");
-    for (IncompleteTree tree : trees) {
+    for (PartialTree tree : trees) {
       RegexNode result = synthesizeTree(job, tree);
       report.printRegexStatus((result != null), tree);
 
@@ -31,7 +31,7 @@ public class Synthesizer {
     return null;
   }
 
-  public static RegexNode synthesizeTree (Job job, IncompleteTree tree) {
+  public static RegexNode synthesizeTree (Job job, PartialTree tree) {
     // 1. assume all holes can be filled with a character class
     // 2. replace all holes with a character class (start with dot then refine)
     // 3. if class DOES NOT match all P, the hole must be more complex than
