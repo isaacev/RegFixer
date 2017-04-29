@@ -1,29 +1,32 @@
-package edu.wisc.regfixer.parser;
+package edu.wisc.regfixer.fixer;
 
-public class HoleNode implements RegexNode {
-  private RegexNode child;
+import edu.wisc.regfixer.parser.RegexNode;
 
-  public HoleNode () {
-    this.child = null;
+public class HoleNode implements RegexNode, Costable {
+  private final int removedNodes;
+  private final int addedNodes = 0;
+
+  public HoleNode (int removedNodes) {
+    this.removedNodes = removedNodes;
   }
 
-  public HoleNode (RegexNode child) {
-    this.child = child;
+  public int getRemovedNodes () {
+    return this.removedNodes;
   }
 
-  public void fill (RegexNode child) {
-    this.child = child;
+  public int getAddedNodes () {
+    return this.addedNodes;
   }
 
-  public void empty () {
-    this.child = null;
+  public int getCost () {
+    return this.getAddedNodes() - this.getRemovedNodes();
+  }
+
+  public int descendants () {
+    return 0;
   }
 
   public String toString () {
-    if (this.child == null) {
-      return "❑";
-    } else {
-      return this.child.toString();
-    }
+    return "❑";
   }
 }
