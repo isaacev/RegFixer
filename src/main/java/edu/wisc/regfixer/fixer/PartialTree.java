@@ -1,6 +1,5 @@
 package edu.wisc.regfixer.fixer;
 
-import edu.wisc.regfixer.parser.HoleNode;
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class PartialTree implements RegexNode {
