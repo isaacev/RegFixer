@@ -11,6 +11,10 @@ public class CharLiteralNode implements ConcreteCharClass {
     return this.ch;
   }
 
+  public int descendants () {
+    return 1;
+  }
+
   public String toString () {
     return String.format("%c", this.ch);
   }

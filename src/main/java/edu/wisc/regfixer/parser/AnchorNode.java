@@ -11,6 +11,10 @@ public class AnchorNode implements RegexNode {
     this.end = end;
   }
 
+  public int descendants () {
+    return 1 + this.child.descendants();
+  }
+
   public String toString () {
     return (
       ((this.start) ? "^" : "") +

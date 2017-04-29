@@ -13,6 +13,10 @@ public abstract class QuantifierNode implements RegexNode {
     return this.child;
   }
 
+  public int descendants () {
+    return 1 + this.child.descendants();
+  }
+
   public String toString () {
     return "(" + this.child + ")" + Character.toString(this.operator);
   }

@@ -23,6 +23,10 @@ public class CharClassSetNode implements CharClass {
     this.subClasses.add(subClass);
   }
 
+  public int descendants () {
+    return 1;
+  }
+
   public String toString () {
     String str = this.subClasses.stream()
       .map(elem -> elem.toString())

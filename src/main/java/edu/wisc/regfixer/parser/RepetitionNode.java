@@ -35,6 +35,10 @@ public class RepetitionNode implements RegexNode {
     return this.max;
   }
 
+  public int descendants () {
+    return 1 + this.child.descendants();
+  }
+
   public String toString () {
     if (this.hasMax) {
       if (this.min == this.max) {
