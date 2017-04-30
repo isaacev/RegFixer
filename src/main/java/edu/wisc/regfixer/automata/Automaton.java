@@ -164,17 +164,17 @@ public class Automaton extends automata.Automaton {
     return isFinalConfiguration(frontier);
   }
 
-  public Map<Integer, Set<Character>> crosses (String str) throws TimeoutException {
+  public List<Map<Integer, Set<Character>>> runs (String str) throws TimeoutException {
     List<Character> charList = new LinkedList<>();
 
     for (int i = 0; i < str.length(); i++) {
       charList.add(str.charAt(i));
     }
 
-    return crosses(charList);
+    return runs(charList);
   }
 
-  public Map<Integer, Set<Character>> crosses (List<Character> chars) throws TimeoutException {
+  public List<Map<Integer, Set<Character>>> runs (List<Character> chars) throws TimeoutException {
     List<State> frontier = getEpsClosure(new State(getInitialState()));
 
     for (Character ch : chars) {
@@ -186,13 +186,15 @@ public class Automaton extends automata.Automaton {
       }
     }
 
+    List<Map<Integer, Set<Character>>> runs = new LinkedList<>();
+
     for (State state : frontier) {
       if (isFinalState(state.getStateId())) {
-        return computeCrosses(state);
+        runs.add(computeCrosses(state));
       }
     }
 
-    return null;
+    return runs;
   }
 
   /**
