@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 
-import edu.wisc.regfixer.fixer.HoleNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
 import edu.wisc.regfixer.parser.ConcatNode;
+import edu.wisc.regfixer.parser.HoleNode;
 import edu.wisc.regfixer.parser.PlusNode;
 import edu.wisc.regfixer.parser.RegexNode;
 
@@ -15,8 +15,8 @@ public class Main {
   public static void main (String[] args) throws Exception {
     RegexNode regex = new ConcatNode(Arrays.asList(
       new PlusNode(new CharEscapedNode('w')),
-      new PlusNode(new HoleNode(0)),
-      new HoleNode(0)
+      new PlusNode(new HoleNode()),
+      new HoleNode()
     ));
     Automaton automaton = Converter.regexToAutomaton(regex);
 
