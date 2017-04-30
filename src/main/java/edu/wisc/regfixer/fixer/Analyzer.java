@@ -4,20 +4,20 @@ import java.util.List;
 import edu.wisc.regfixer.util.ReportStream;
 
 public class Analyzer {
-  public static List<IncompleteTree> analyze (Job job) {
+  public static List<PartialTree> analyze (Job job) {
     // Get a list of unique trees where each tree has 1 sub-expression replaced
     // by a hole that can be filled in the future by a synthesized expression.
-    List<IncompleteTree> forest = Termite.digest(job.getOriginalRegex());
+    List<PartialTree> forest = Termite.digest(job.getOriginalRegex());
 
     // The `pruneForest` method removes any incomplete trees (trees with at
     // least 1 hole) for which adding `.*` does NOT accept all positive examples
     // and for which adding `empty set` does NOT reject all negative examples.
-    List<IncompleteTree> pruned = job.getEvaluator().pruneForest(forest);
+    List<PartialTree> pruned = job.getEvaluator().pruneForest(forest);
 
     return pruned;
   }
 
-  public static List<IncompleteTree> analyze (Job job, ReportStream report) {
+  public static List<PartialTree> analyze (Job job, ReportStream report) {
     report.printHeader("Given the regular expression:");
     report.printRegex(job.getOriginalRegex());
 
@@ -37,10 +37,10 @@ public class Analyzer {
       report.printMatchStatus(isOK, range, match);
     }
 
-    List<IncompleteTree> pruned = analyze(job);
+    List<PartialTree> pruned = analyze(job);
 
     report.printHeader("Start by identifying promising sub-expressions:");
-    for (IncompleteTree tree : pruned) {
+    for (PartialTree tree : pruned) {
       report.printRegex(tree);
     }
 

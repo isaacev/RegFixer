@@ -26,23 +26,36 @@ public class ReportStream extends PrintStream {
     this.printf("\n%s\n\n", message);
   }
 
+  public ReportStream printf (String fmt, Object ...args) {
+    this.print(String.format(fmt, args));
+    return this;
+  }
+
+  public void greenPrintf (String fmt, Object ...args) {
+    this.print(Ansi.Green.sprintf("  " + fmt + "\n", args));
+  }
+
+  public void redPrintf (String fmt, Object ...args) {
+    this.print(Ansi.Red.sprintf("  " + fmt + "\n", args));
+  }
+
   public void printRegex (RegexNode regex) {
     this.printf(Ansi.Cyan.sprintf("  %s\n", regex));
   }
 
   public void printMatchStatus (boolean isOK, Range range, String match) {
     if (isOK) {
-      this.print(Ansi.Green.sprintf("  ✓ %-8s %s\n", range, match));
+      this.greenPrintf("✓ %-8s %s", range, match);
     } else {
-      this.printf(Ansi.Red.sprintf("  ✗ %-8s %s\n", range, match));
+      this.redPrintf("✗ %-8s %s", range, match);
     }
   }
 
   public void printRegexStatus (boolean isOK, RegexNode regex) {
     if (isOK) {
-      this.printf(Ansi.Green.sprintf("  ✓ %s\n", regex));
+      this.greenPrintf("✓ %s", regex);
     } else {
-      this.printf(Ansi.Red.sprintf("  ✗ %s\n", regex));
+      this.redPrintf("✗ %s", regex);
     }
   }
 }
