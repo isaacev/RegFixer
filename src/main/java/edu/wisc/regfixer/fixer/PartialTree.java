@@ -2,6 +2,7 @@ package edu.wisc.regfixer.fixer;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import edu.wisc.regfixer.parser.RegexNode;
 
@@ -40,5 +41,16 @@ public class PartialTree implements Costable {
 
   public int getCost () {
     return this.getHoles().stream().mapToInt(HoleNode::getCost).sum();
+  }
+
+  public Pattern toPattern (RegexNode fill) {
+    this.holes.stream().forEach(h -> h.fill(fill));
+    Pattern pattern = Pattern.compile(String.format("^%s$", this.tree));
+    this.holes.stream().forEach(HoleNode::clear);
+    return pattern;
+  }
+
+  public String toString () {
+    return this.tree.toString();
   }
 }

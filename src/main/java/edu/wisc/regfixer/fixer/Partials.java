@@ -14,6 +14,10 @@ import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 
 public class Partials {
+  public static List<PartialTree> slice (RegexNode node) {
+    return nodePartials(node);
+  }
+
   private static List<PartialTree> nodePartials (RegexNode node) {
          if (node instanceof ConcatNode)     { return concatPartials((ConcatNode) node); }
     else if (node instanceof UnionNode)      { return unionPartials((UnionNode) node); }
@@ -73,7 +77,6 @@ public class Partials {
       }
     }
 
-    partials.add(new PartialTree(new HoleNode(node.descendants())));
     return partials;
   }
 
