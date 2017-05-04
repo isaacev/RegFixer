@@ -7,7 +7,7 @@ import java.util.List;
 
 import edu.wisc.regfixer.parser.CharEscapedNode;
 import edu.wisc.regfixer.parser.ConcatNode;
-import edu.wisc.regfixer.parser.HoleNode;
+import edu.wisc.regfixer.fixer.HoleNode;
 import edu.wisc.regfixer.parser.PlusNode;
 import edu.wisc.regfixer.parser.RegexNode;
 
