@@ -1,4 +1,4 @@
-package edu.wisc.regfixer.fixer;
+package edu.wisc.regfixer.enumerate;
 
 public class BadRangeException extends Exception {
   public BadRangeException (String message) {

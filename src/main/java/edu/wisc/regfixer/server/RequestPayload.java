@@ -3,8 +3,8 @@ package edu.wisc.regfixer.server;
 import java.util.List;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.parser.Main;
-import edu.wisc.regfixer.fixer.Job;
-import edu.wisc.regfixer.fixer.Range;
+import edu.wisc.regfixer.enumerate.Job;
+import edu.wisc.regfixer.enumerate.Range;
 
 public class RequestPayload {
   private final String regex;

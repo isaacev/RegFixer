@@ -1,4 +1,4 @@
-package edu.wisc.regfixer.fixer;
+package edu.wisc.regfixer.enumerate;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -7,7 +7,7 @@ import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.parser.StarNode;
-import static edu.wisc.regfixer.fixer.SearchEngine.getMatchingStrings;
+import static edu.wisc.regfixer.enumerate.SearchEngine.getMatchingStrings;
 
 public class Evaluator {
   private String corpus;
@@ -68,22 +68,14 @@ public class Evaluator {
     return this.negativeExamples;
   }
 
-  public boolean runDotTest (PartialTree tree) {
-    RegexNode twig = new CharDotNode();
-    tree.completeWith(twig);
-    boolean didPass = Evaluator.matchesAllExamples(tree, this.positiveExamples);
-    tree.emptyHole();
-
-    return didPass;
+  public boolean passesDotTest (PartialTree tree) {
+    Pattern pattern = tree.toPattern(new CharDotNode());
+    return Evaluator.matchesAllExamples(pattern, this.positiveExamples);
   }
 
-  public boolean runDotStarTest (PartialTree tree) {
-    RegexNode twig = new StarNode(new CharDotNode());
-    tree.completeWith(twig);
-    boolean didPass = Evaluator.matchesAllExamples(tree, this.positiveExamples);
-    tree.emptyHole();
-
-    return didPass;
+  public boolean passesDotStarTest (PartialTree tree) {
+    Pattern pattern = tree.toPattern(new StarNode(new CharDotNode()));
+    return Evaluator.matchesAllExamples(pattern, this.positiveExamples);
   }
 
   /**
@@ -94,13 +86,9 @@ public class Evaluator {
    * finding a character not in the corpus. Some sort of searching system should
    * be used to find character candidates instead.
    */
-  public boolean runEmptySetTest (PartialTree tree) {
-    RegexNode twig = new CharLiteralNode('!');
-    tree.completeWith(twig);
-    boolean didPass = Evaluator.matchesAllExamples(tree, this.negativeExamples) == false;
-    tree.emptyHole();
-
-    return didPass;
+  public boolean passesEmptySetTest (PartialTree tree) {
+    Pattern pattern = tree.toPattern(new CharLiteralNode('!'));
+    return Evaluator.matchesAllExamples(pattern, this.negativeExamples);
   }
 
   public boolean passesPositiveExampleTest (RegexNode regex) {
@@ -115,8 +103,8 @@ public class Evaluator {
     List<PartialTree> pruned = new LinkedList<PartialTree>();
 
     for (PartialTree tree : forest) {
-      boolean dotStarResult = this.runDotStarTest(tree);
-      boolean emptySetResult = this.runEmptySetTest(tree);
+      boolean dotStarResult = this.passesDotStarTest(tree);
+      boolean emptySetResult = this.passesEmptySetTest(tree);
 
       if (dotStarResult && emptySetResult) {
         pruned.add(tree);
@@ -131,9 +119,12 @@ public class Evaluator {
     // the regular expression is tested against the entire example and not some
     // substring of the example.
     Pattern pt = Pattern.compile("^" + regex.toString() + "$");
+    return matchesAllExamples(pt, examples);
+  }
 
+  public static boolean matchesAllExamples (Pattern pattern, List<String> examples) {
     for (String example : examples) {
-      if (!pt.matcher(example).matches()) {
+      if (!pattern.matcher(example).matches()) {
         return false;
       }
     }

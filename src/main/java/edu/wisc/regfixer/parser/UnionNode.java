@@ -17,6 +17,10 @@ public class UnionNode implements RegexNode {
     return this.right;
   }
 
+  public int descendants () {
+    return 1 + this.left.descendants() + this.right.descendants();
+  }
+
   public String toString () {
     return String.format("%s|%s", this.left.toString(), this.right.toString());
   }
