@@ -54,7 +54,7 @@ public class Partials {
           midfixPartials.addAll(nodePartials(midfix.get(0)));
         } else {
           int descendants = midfix.stream().mapToInt(RegexNode::descendants).sum();
-          midfixPartials.add(new PartialTree(new HoleNode(descendants)));
+          midfixPartials.add(new PartialTree(new HoleNode(), descendants));
         }
 
         if (prefix.size() == 0 && suffix.size() == 0) {
@@ -71,7 +71,7 @@ public class Partials {
 
             ConcatNode partialNode = new ConcatNode(partialChildren);
             List<HoleNode> partialHoles = midfixPartial.getHoles();
-            partials.add(new PartialTree(partialNode, partialHoles));
+            partials.add(new PartialTree(partialNode, partialHoles, midfixPartial.getRemovedNodes()));
           }
         }
       }
@@ -85,15 +85,15 @@ public class Partials {
 
     for (PartialTree partial : nodePartials(node.getLeftChild())) {
       UnionNode branch = new UnionNode(partial.getTree(), node.getRightChild());
-      partials.add(new PartialTree(branch, partial.getHoles()));
+      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
     }
 
     for (PartialTree partial : nodePartials(node.getRightChild())) {
       UnionNode branch = new UnionNode(node.getLeftChild(), partial.getTree());
-      partials.add(new PartialTree(branch, partial.getHoles()));
+      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
     }
 
-    partials.add(new PartialTree(new HoleNode(node.descendants())));
+    partials.add(new PartialTree(new HoleNode(), node.descendants()));
     return partials;
   }
 
@@ -106,10 +106,10 @@ public class Partials {
 
     for (PartialTree partial : nodePartials(node.getChild())) {
       OptionalNode branch = new OptionalNode(partial.getTree());
-      partials.add(new PartialTree(branch, partial.getHoles()));
+      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
     }
 
-    partials.add(new PartialTree(new HoleNode(node.descendants())));
+    partials.add(new PartialTree(new HoleNode(), node.descendants()));
     return partials;
   }
 
@@ -118,10 +118,10 @@ public class Partials {
 
     for (PartialTree partial : nodePartials(node.getChild())) {
       StarNode branch = new StarNode(partial.getTree());
-      partials.add(new PartialTree(branch, partial.getHoles()));
+      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
     }
 
-    partials.add(new PartialTree(new HoleNode(node.descendants())));
+    partials.add(new PartialTree(new HoleNode(), node.descendants()));
     return partials;
   }
 
@@ -130,14 +130,14 @@ public class Partials {
 
     for (PartialTree partial : nodePartials(node.getChild())) {
       PlusNode branch = new PlusNode(partial.getTree());
-      partials.add(new PartialTree(branch, partial.getHoles()));
+      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
     }
 
-    partials.add(new PartialTree(new HoleNode(node.descendants())));
+    partials.add(new PartialTree(new HoleNode(), node.descendants()));
     return partials;
   }
 
   private static List<PartialTree> atomicPartials () {
-    return Arrays.asList(new PartialTree(new HoleNode(1)));
+    return Arrays.asList(new PartialTree(new HoleNode(), 1));
   }
 }

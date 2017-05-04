@@ -3,7 +3,6 @@ package edu.wisc.regfixer.fixer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.Comparator;
 import java.util.PriorityQueue;
 
 import edu.wisc.regfixer.parser.ConcatNode;
@@ -15,13 +14,11 @@ import edu.wisc.regfixer.parser.UnionNode;
 
 public class Enumerator {
   private final Job job;
-  private final Comparator<Costable> comparator;
   private final PriorityQueue<PartialTree> queue;
 
   public Enumerator (Job job) {
     this.job = job;
-    this.comparator = new CostableComparator();
-    this.queue = new PriorityQueue<PartialTree>(10, this.comparator);
+    this.queue = new PriorityQueue<PartialTree>();
     this.queue.addAll(Partials.slice(job.getOriginalRegex()));
   }
 
@@ -48,62 +45,58 @@ public class Enumerator {
     List<PartialTree> expansions = new LinkedList<>();
 
     for (HoleNode hole : parent.getHoles()) {
-      // expansions.add(expandUnion(parent, hole));
+      expansions.add(expandUnion(parent, hole));
       expansions.add(expandConcat(parent, hole));
       expansions.add(expandOptional(parent, hole));
       expansions.add(expandPlus(parent, hole));
       expansions.add(expandStar(parent, hole));
     }
 
-    return this.job.getEvaluator().pruneForest(expansions);
+    return expansions;
   }
 
   private PartialTree expandUnion (PartialTree parent, HoleNode hole) {
-    int removed = hole.getRemovedNodes();
-    int added = hole.getAddedNodes();
-    HoleNode leftHole = new HoleNode(removed, added + 1);
-    HoleNode rightHole = new HoleNode(removed, added + 1);
-    List<HoleNode> holes = Arrays.asList(leftHole, rightHole);
-
-    PartialTree twig = new PartialTree(new UnionNode(leftHole, rightHole), holes);
+    int removed = parent.getRemovedNodes();
+    int added = parent.getAddedNodes() + 1;
+    HoleNode left = new HoleNode();
+    HoleNode right = new HoleNode();
+    List<HoleNode> holes = Arrays.asList(left, right);
+    PartialTree twig = new PartialTree(new UnionNode(left, right), holes, removed, added);
     return Grafter.graft(parent, hole, twig);
   }
 
   private PartialTree expandConcat (PartialTree parent, HoleNode hole) {
-    int removed = hole.getRemovedNodes();
-    int added = hole.getAddedNodes();
-    HoleNode leftHole = new HoleNode(removed, added + 1);
-    HoleNode rightHole = new HoleNode(removed, added + 1);
-    List<HoleNode> holes = Arrays.asList(leftHole, rightHole);
-
-    PartialTree twig = new PartialTree(new ConcatNode(new LinkedList<RegexNode>(holes)), holes);
+    int removed = parent.getRemovedNodes();
+    int added = parent.getAddedNodes() + 1;
+    HoleNode left = new HoleNode();
+    HoleNode right = new HoleNode();
+    List<HoleNode> holes = Arrays.asList(left, right);
+    List<RegexNode> children = new LinkedList<>(holes);
+    PartialTree twig = new PartialTree(new ConcatNode(children), holes, removed, added);
     return Grafter.graft(parent, hole, twig);
   }
 
   private PartialTree expandOptional (PartialTree parent, HoleNode hole) {
-    int removed = hole.getRemovedNodes();
-    int added = hole.getAddedNodes();
-    HoleNode childHole = new HoleNode(removed, added + 1);
-
-    PartialTree twig = new PartialTree(new OptionalNode(childHole), childHole);
+    int removed = parent.getRemovedNodes();
+    int added = parent.getAddedNodes() + 1;
+    HoleNode child = new HoleNode();
+    PartialTree twig = new PartialTree(new OptionalNode(child), child, removed, added);
     return Grafter.graft(parent, hole, twig);
   }
 
   private PartialTree expandPlus (PartialTree parent, HoleNode hole) {
-    int removed = hole.getRemovedNodes();
-    int added = hole.getAddedNodes();
-    HoleNode childHole = new HoleNode(removed, added + 1);
-
-    PartialTree twig = new PartialTree(new PlusNode(childHole), childHole);
+    int removed = parent.getRemovedNodes();
+    int added = parent.getAddedNodes() + 1;
+    HoleNode child = new HoleNode();
+    PartialTree twig = new PartialTree(new PlusNode(child), child, removed, added);
     return Grafter.graft(parent, hole, twig);
   }
 
   private PartialTree expandStar (PartialTree parent, HoleNode hole) {
-    int removed = hole.getRemovedNodes();
-    int added = hole.getAddedNodes();
-    HoleNode childHole = new HoleNode(removed, added + 1);
-
-    PartialTree twig = new PartialTree(new StarNode(childHole), childHole);
+    int removed = parent.getRemovedNodes();
+    int added = parent.getAddedNodes() + 1;
+    HoleNode child = new HoleNode();
+    PartialTree twig = new PartialTree(new StarNode(child), child, removed, added);
     return Grafter.graft(parent, hole, twig);
   }
 }

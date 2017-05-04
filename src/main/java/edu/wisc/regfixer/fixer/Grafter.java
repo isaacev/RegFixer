@@ -22,8 +22,10 @@ public class Grafter {
     List<HoleNode> modifiedHoles = new LinkedList<>(original.getHoles());
     modifiedHoles.remove(hole);
     modifiedHoles.addAll(twig.getHoles());
+    int removed = original.getRemovedNodes();
+    int added = twig.getAddedNodes();
 
-    return new PartialTree(modifiedTree, modifiedHoles);
+    return new PartialTree(modifiedTree, modifiedHoles, removed, added);
   }
 
   private static RegexNode graftNode (RegexNode node, HoleNode hole, RegexNode twig) {

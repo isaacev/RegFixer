@@ -5,30 +5,14 @@ import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.CharLiteralNode;
 
-public class HoleNode implements RegexNode, Costable {
-  private final int removedNodes;
-  private final int addedNodes;
+public class HoleNode implements RegexNode, Comparable<HoleNode> {
+  private static int nextAge = 0;
+
   private RegexNode child = null;
+  private int age;
 
-  public HoleNode (int removedNodes) {
-    this(removedNodes, 0);
-  }
-
-  public HoleNode (int removedNodes, int addedNodes) {
-    this.removedNodes = removedNodes;
-    this.addedNodes = addedNodes;
-  }
-
-  public int getRemovedNodes () {
-    return this.removedNodes;
-  }
-
-  public int getAddedNodes () {
-    return this.addedNodes;
-  }
-
-  public int getCost () {
-    return -this.getAddedNodes() - this.getRemovedNodes();
+  public HoleNode () {
+    this.age = HoleNode.nextAge++;
   }
 
   public int descendants () {
@@ -41,6 +25,11 @@ public class HoleNode implements RegexNode, Costable {
 
   public void clear () {
     this.child = null;
+  }
+
+  @Override
+  public int compareTo (HoleNode other) {
+    return Integer.compare(this.age, other.age);
   }
 
   public String toString () {
