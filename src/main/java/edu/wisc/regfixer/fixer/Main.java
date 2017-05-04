@@ -31,10 +31,6 @@ public class Main {
       } else {
         PartialTree partial = enumerator.next();
         System.out.printf("%d\t%s", partial.getCost(), partial.toString());
-
-        if (job.getEvaluator().passesDotTest(partial)) {
-          System.out.print(" passes dot test");
-        }
       }
     }
 
