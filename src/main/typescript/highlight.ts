@@ -12,11 +12,9 @@ export class Highlight {
   private prev: Highlight = null
   private next: Highlight = null
   private pair: PointPair
-  private mark: CodeMirror.TextMarker
 
-  constructor (pair: PointPair, mark: CodeMirror.TextMarker) {
+  constructor (pair: PointPair) {
     this.pair = pair
-    this.mark = mark
   }
 
   getPair (): PointPair {
@@ -37,14 +35,6 @@ export class Highlight {
 
   setEnd (p: Point) {
     this.pair.end = p
-  }
-
-  getMark (): CodeMirror.TextMarker {
-    return this.mark
-  }
-
-  setMark (m: CodeMirror.TextMarker) {
-    this.mark = m
   }
 
   getPrev (): Highlight {
