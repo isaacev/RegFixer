@@ -1,9 +1,11 @@
 package edu.wisc.regfixer.enumerate;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.OptionalNode;
@@ -15,11 +17,13 @@ import edu.wisc.regfixer.parser.UnionNode;
 public class Enumerator {
   private final Job job;
   private final PriorityQueue<PartialTree> queue;
+  private final Set<String> filter;
 
   public Enumerator (Job job) {
     this.job = job;
     this.queue = new PriorityQueue<PartialTree>();
     this.queue.addAll(Partials.slice(job.getOriginalRegex()));
+    this.filter = new HashSet<String>();
   }
 
   public boolean isEmpty () {
@@ -43,16 +47,42 @@ public class Enumerator {
     }
 
     List<PartialTree> expansions = new LinkedList<>();
+    PartialTree expansion = null;
 
     for (HoleNode hole : parent.getHoles()) {
-      expansions.add(expandUnion(parent, hole));
-      expansions.add(expandConcat(parent, hole));
-      expansions.add(expandOptional(parent, hole));
-      expansions.add(expandPlus(parent, hole));
-      expansions.add(expandStar(parent, hole));
+      // Union node
+      expansion = expandUnion(parent, hole);
+      if (passesFilter(expansion)) expansions.add(expansion);
+
+      // Optional node
+      expansion = expandOptional(parent, hole);
+      if (passesFilter(expansion)) expansions.add(expansion);
+
+      // Star node
+      expansion = expandStar(parent, hole);
+      if (passesFilter(expansion)) expansions.add(expansion);
+
+      // Plus node
+      expansion = expandPlus(parent, hole);
+      if (passesFilter(expansion)) expansions.add(expansion);
+
+      // Concat node
+      expansion = expandConcat(parent, hole);
+      if (passesFilter(expansion)) expansions.add(expansion);
     }
 
     return expansions;
+  }
+
+  private boolean passesFilter (PartialTree expansion) {
+    String expansionString = expansion.toString();
+
+    if (this.filter.contains(expansionString)) {
+      return false;
+    } else {
+      this.filter.add(expansionString);
+      return true;
+    }
   }
 
   private PartialTree expandUnion (PartialTree parent, HoleNode hole) {
