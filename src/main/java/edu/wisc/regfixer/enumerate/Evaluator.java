@@ -1,4 +1,4 @@
-package edu.wisc.regfixer.fixer;
+package edu.wisc.regfixer.enumerate;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -7,7 +7,7 @@ import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.parser.StarNode;
-import static edu.wisc.regfixer.fixer.SearchEngine.getMatchingStrings;
+import static edu.wisc.regfixer.enumerate.SearchEngine.getMatchingStrings;
 
 public class Evaluator {
   private String corpus;

@@ -1,4 +1,4 @@
-package edu.wisc.regfixer.fixer;
+package edu.wisc.regfixer.enumerate;
 
 import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.RegexNode;

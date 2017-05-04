@@ -9,7 +9,7 @@ import edu.wisc.regfixer.parser.CharEscapedNode;
 import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.CharRangeNode;
 import edu.wisc.regfixer.parser.ConcatNode;
-import edu.wisc.regfixer.fixer.HoleNode;
+import edu.wisc.regfixer.enumerate.HoleNode;
 import edu.wisc.regfixer.parser.OptionalNode;
 import edu.wisc.regfixer.parser.PlusNode;
 import edu.wisc.regfixer.parser.RegexNode;

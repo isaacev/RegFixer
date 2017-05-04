@@ -1,4 +1,4 @@
-package edu.wisc.regfixer.fixer;
+package edu.wisc.regfixer.enumerate;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.regex.Matcher;
