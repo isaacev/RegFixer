@@ -13,7 +13,7 @@ import edu.wisc.regfixer.parser.RepetitionNode;
 import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 
-public class Partials {
+public class Slicer {
   public static List<PartialTree> slice (RegexNode node) {
     return nodePartials(node);
   }

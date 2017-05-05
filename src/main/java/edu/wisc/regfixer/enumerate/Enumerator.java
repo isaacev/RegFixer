@@ -22,7 +22,7 @@ public class Enumerator {
   public Enumerator (Job job) {
     this.job = job;
     this.queue = new PriorityQueue<PartialTree>();
-    this.queue.addAll(Partials.slice(job.getOriginalRegex()));
+    this.queue.addAll(Slicer.slice(job.getOriginalRegex()));
     this.filter = new HashSet<String>();
   }
 
