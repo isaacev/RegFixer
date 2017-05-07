@@ -71,7 +71,7 @@ public class Benchmark {
 
     // Print full corpus.
     pw.println(boundary);
-    pw.println(job.getCorpus().getWholeCorpus());
+    pw.println(job.getCorpus());
 
     pw.close();
   }

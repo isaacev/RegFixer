@@ -32,7 +32,7 @@ public class Corpus {
       .collect(Collectors.toSet());
   }
 
-  public String getcorpus () {
+  public String getCorpus () {
     return this.corpus;
   }
 
