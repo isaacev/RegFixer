@@ -47,6 +47,11 @@ public class Range implements Comparable<Range> {
     return false;
   }
 
+  @Override
+  public int hashCode () {
+    return this.leftIndex + this.rightIndex;
+  }
+
   public boolean startsBefore (Range other) {
     return (this.leftIndex < other.getLeftIndex());
   }
