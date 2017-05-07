@@ -6,8 +6,8 @@ import spark.template.freemarker.FreeMarkerEngine;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import edu.wisc.regfixer.parser.RegexNode;
-import edu.wisc.regfixer.fixer.Job;
-import edu.wisc.regfixer.fixer.Main;
+import edu.wisc.regfixer.enumerate.Job;
+import edu.wisc.regfixer.enumerate.Main;
 
 public class Server {
   public static void main(String[] args) {

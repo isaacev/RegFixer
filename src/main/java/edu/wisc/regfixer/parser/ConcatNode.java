@@ -13,6 +13,10 @@ public class ConcatNode implements RegexNode {
     return this.children;
   }
 
+  public int descendants () {
+    return this.children.stream().mapToInt(RegexNode::descendants).sum();
+  }
+
   public String toString () {
     String out = "";
 

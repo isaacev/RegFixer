@@ -26,6 +26,10 @@ public class CharRangeNode implements CharClass {
     return this.right;
   }
 
+  public int descendants () {
+    return 1;
+  }
+
   public String toString () {
     if (this.left == this.right) {
       return this.left.toString();

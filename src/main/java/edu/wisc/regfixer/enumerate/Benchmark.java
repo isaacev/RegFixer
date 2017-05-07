@@ -1,4 +1,4 @@
-package edu.wisc.regfixer.fixer;
+package edu.wisc.regfixer.enumerate;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 import edu.wisc.regfixer.parser.Main;
 import edu.wisc.regfixer.parser.RegexNode;
-import static edu.wisc.regfixer.fixer.SearchEngine.getMatchingRanges;
+import static edu.wisc.regfixer.enumerate.SearchEngine.getMatchingRanges;
 
 public class Benchmark {
   static String boundary = "---";

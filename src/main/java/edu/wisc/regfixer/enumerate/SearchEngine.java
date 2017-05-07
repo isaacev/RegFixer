@@ -1,4 +1,4 @@
-package edu.wisc.regfixer.fixer;
+package edu.wisc.regfixer.enumerate;
 
 import java.util.Collections;
 import java.util.LinkedList;
