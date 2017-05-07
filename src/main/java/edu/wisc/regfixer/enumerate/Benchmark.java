@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Benchmark {
   static String boundary = "---";

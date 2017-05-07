@@ -1,12 +1,12 @@
 package edu.wisc.regfixer.enumerate;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
-import java.io.IOException;
 
 import edu.wisc.regfixer.parser.RegexNode;
-import edu.wisc.regfixer.util.ReportStream;
 import edu.wisc.regfixer.synthesize.Synthesis;
+import edu.wisc.regfixer.util.ReportStream;
 
 public class Main {
   public static void main (String[] args) {
