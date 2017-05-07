@@ -1,11 +1,17 @@
 package edu.wisc.regfixer.enumerate;
 
 import edu.wisc.regfixer.parser.CharDotNode;
+import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.parser.StarNode;
-import edu.wisc.regfixer.parser.CharLiteralNode;
 
 public class HoleNode implements RegexNode, Comparable<HoleNode> {
+  public static enum FillType {
+    Dot,
+    DotStar,
+    EmptySet
+  }
+
   private static int nextAge = 0;
 
   private RegexNode child = null;
@@ -19,8 +25,19 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
     return 0;
   }
 
-  public void fill (RegexNode child) {
-    this.child = child;
+  public void fill (FillType type) {
+    switch (type) {
+      case Dot:
+        this.child = new CharDotNode();
+        break;
+      case DotStar:
+        this.child = new StarNode(new CharDotNode());
+        break;
+      case EmptySet:
+        // FIXME
+        this.child = new CharLiteralNode('!');
+        break;
+    }
   }
 
   public void clear () {

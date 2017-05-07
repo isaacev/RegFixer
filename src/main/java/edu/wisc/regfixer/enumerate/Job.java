@@ -1,49 +1,37 @@
 package edu.wisc.regfixer.enumerate;
 
-import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class Job {
-  private final RegexNode originalRegex;
-  private final List<Range> originalRanges;
-  private final List<Range> selectedRanges;
-  private final String corpus;
-  private final Evaluator evaluator;
+  private final RegexNode tree;
+  private final Corpus corpus;
 
-  public Job (RegexNode regex, List<Range> ranges, String corpus) {
-    this.originalRegex = regex;
-    this.selectedRanges = ranges;
-    this.corpus = corpus;
-
-    if (regex != null && ranges != null && corpus != null) {
-      // The Evaluator instance is has methods for taking a synthesized regex and
-      // testing it against the positive examples contained in `selectedRanges`
-      // and the `corpus` to determine how good of a match the regex is.
-      this.originalRanges = SearchEngine.getMatchingRanges(corpus, regex);
-      this.evaluator = new Evaluator(this.originalRanges, this.selectedRanges, this.corpus);
-    } else {
-      this.originalRanges = null;
-      this.evaluator = null;
+  public Job (String regex, String corpus, Set<Range> positives) {
+    try {
+      this.tree = edu.wisc.regfixer.parser.Main.parse(regex);
+    } catch (Exception ex) {
+      // FIXME
+      throw new RuntimeException("malformed regular expression");
     }
+
+    Pattern pattern = Pattern.compile(this.tree.toString());
+    Set<Range> negatives = Corpus.inferNegativeRanges(pattern, corpus, positives);
+    this.corpus = new Corpus(corpus, positives, negatives);
   }
 
-  public RegexNode getOriginalRegex() {
-    return this.originalRegex;
+  public Job (RegexNode tree, Corpus corpus) {
+    this.tree = tree;
+    this.corpus = corpus;
   }
 
-  public List<Range> getOriginalRanges () {
-    return this.originalRanges;
+  public RegexNode getTree () {
+    return this.tree;
   }
 
-  public List<Range> getSelectedRanges () {
-    return this.selectedRanges;
-  }
-
-  public String getCorpus () {
+  public Corpus getCorpus () {
     return this.corpus;
-  }
-
-  public Evaluator getEvaluator () {
-    return this.evaluator;
   }
 }

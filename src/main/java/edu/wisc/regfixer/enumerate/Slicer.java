@@ -14,18 +14,18 @@ import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 
 public class Slicer {
-  public static List<PartialTree> slice (RegexNode node) {
-    return nodePartials(node);
+  public static List<Enumerant> slice (RegexNode node) {
+    return sliceNode(node);
   }
 
-  private static List<PartialTree> nodePartials (RegexNode node) {
-         if (node instanceof ConcatNode)     { return concatPartials((ConcatNode) node); }
-    else if (node instanceof UnionNode)      { return unionPartials((UnionNode) node); }
-    else if (node instanceof RepetitionNode) { return repetitionPartials((RepetitionNode) node); }
-    else if (node instanceof OptionalNode)   { return optionalPartials((OptionalNode) node); }
-    else if (node instanceof StarNode)       { return starPartials((StarNode) node); }
-    else if (node instanceof PlusNode)       { return plusPartials((PlusNode) node); }
-    else if (node instanceof CharClass)      { return atomicPartials(); }
+  private static List<Enumerant> sliceNode (RegexNode node) {
+         if (node instanceof ConcatNode)     { return sliceConcat((ConcatNode) node); }
+    else if (node instanceof UnionNode)      { return sliceUnion((UnionNode) node); }
+    else if (node instanceof RepetitionNode) { return sliceRepetition((RepetitionNode) node); }
+    else if (node instanceof OptionalNode)   { return sliceOptional((OptionalNode) node); }
+    else if (node instanceof StarNode)       { return sliceStar((StarNode) node); }
+    else if (node instanceof PlusNode)       { return slicePlus((PlusNode) node); }
+    else if (node instanceof CharClass)      { return sliceAtomic(); }
     else {
       System.err.printf("Unknown AST class: %s\n", node.getClass().getName());
       System.exit(1);
@@ -33,8 +33,8 @@ public class Slicer {
     }
   }
 
-  private static List<PartialTree> concatPartials (ConcatNode node) {
-    List<PartialTree> partials = new LinkedList<>();
+  private static List<Enumerant> sliceConcat (ConcatNode node) {
+    List<Enumerant> partials = new LinkedList<>();
 
     List<RegexNode> children = node.getChildren();
     int totalChildren = children.size();
@@ -49,12 +49,12 @@ public class Slicer {
         // Collect nodes from i+n to end of list.
         List<RegexNode> suffix = new LinkedList<>(children.subList(i + w, totalChildren));
 
-        List<PartialTree> midfixPartials = new LinkedList<>();
+        List<Enumerant> midfixPartials = new LinkedList<>();
         if (midfix.size() == 1) {
-          midfixPartials.addAll(nodePartials(midfix.get(0)));
+          midfixPartials.addAll(sliceNode(midfix.get(0)));
         } else {
           int descendants = midfix.stream().mapToInt(RegexNode::descendants).sum();
-          midfixPartials.add(new PartialTree(new HoleNode(), descendants));
+          midfixPartials.add(new Enumerant(new HoleNode(), descendants));
         }
 
         if (prefix.size() == 0 && suffix.size() == 0) {
@@ -63,15 +63,14 @@ public class Slicer {
           // tree's structure.
           partials.addAll(midfixPartials);
         } else {
-          for (PartialTree midfixPartial : midfixPartials) {
+          for (Enumerant midfixPartial : midfixPartials) {
             List<RegexNode> partialChildren = new LinkedList<>();
             partialChildren.addAll(prefix);
             partialChildren.add(midfixPartial.getTree());
             partialChildren.addAll(suffix);
 
             ConcatNode partialNode = new ConcatNode(partialChildren);
-            List<HoleNode> partialHoles = midfixPartial.getHoles();
-            partials.add(new PartialTree(partialNode, partialHoles, midfixPartial.getRemovedNodes()));
+            partials.add(new Enumerant(partialNode, midfixPartial));
           }
         }
       }
@@ -80,64 +79,64 @@ public class Slicer {
     return partials;
   }
 
-  private static List<PartialTree> unionPartials (UnionNode node) {
-    List<PartialTree> partials = new LinkedList<>();
+  private static List<Enumerant> sliceUnion (UnionNode node) {
+    List<Enumerant> partials = new LinkedList<>();
 
-    for (PartialTree partial : nodePartials(node.getLeftChild())) {
+    for (Enumerant partial : sliceNode(node.getLeftChild())) {
       UnionNode branch = new UnionNode(partial.getTree(), node.getRightChild());
-      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
+      partials.add(new Enumerant(branch, partial));
     }
 
-    for (PartialTree partial : nodePartials(node.getRightChild())) {
+    for (Enumerant partial : sliceNode(node.getRightChild())) {
       UnionNode branch = new UnionNode(node.getLeftChild(), partial.getTree());
-      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
+      partials.add(new Enumerant(branch, partial));
     }
 
-    partials.add(new PartialTree(new HoleNode(), node.descendants()));
+    partials.add(new Enumerant(new HoleNode(), node.descendants()));
     return partials;
   }
 
-  private static List<PartialTree> repetitionPartials (RepetitionNode node) {
+  private static List<Enumerant> sliceRepetition (RepetitionNode node) {
     return null;
   }
 
-  private static List<PartialTree> optionalPartials (OptionalNode node) {
-    List<PartialTree> partials = new LinkedList<>();
+  private static List<Enumerant> sliceOptional (OptionalNode node) {
+    List<Enumerant> partials = new LinkedList<>();
 
-    for (PartialTree partial : nodePartials(node.getChild())) {
+    for (Enumerant partial : sliceNode(node.getChild())) {
       OptionalNode branch = new OptionalNode(partial.getTree());
-      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
+      partials.add(new Enumerant(branch, partial));
     }
 
-    partials.add(new PartialTree(new HoleNode(), node.descendants()));
+    partials.add(new Enumerant(new HoleNode(), node.descendants()));
     return partials;
   }
 
-  private static List<PartialTree> starPartials (StarNode node) {
-    List<PartialTree> partials = new LinkedList<>();
+  private static List<Enumerant> sliceStar (StarNode node) {
+    List<Enumerant> partials = new LinkedList<>();
 
-    for (PartialTree partial : nodePartials(node.getChild())) {
+    for (Enumerant partial : sliceNode(node.getChild())) {
       StarNode branch = new StarNode(partial.getTree());
-      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
+      partials.add(new Enumerant(branch, partial));
     }
 
-    partials.add(new PartialTree(new HoleNode(), node.descendants()));
+    partials.add(new Enumerant(new HoleNode(), node.descendants()));
     return partials;
   }
 
-  private static List<PartialTree> plusPartials (PlusNode node) {
-    List<PartialTree> partials = new LinkedList<>();
+  private static List<Enumerant> slicePlus (PlusNode node) {
+    List<Enumerant> partials = new LinkedList<>();
 
-    for (PartialTree partial : nodePartials(node.getChild())) {
+    for (Enumerant partial : sliceNode(node.getChild())) {
       PlusNode branch = new PlusNode(partial.getTree());
-      partials.add(new PartialTree(branch, partial.getHoles(), partial.getRemovedNodes()));
+      partials.add(new Enumerant(branch, partial));
     }
 
-    partials.add(new PartialTree(new HoleNode(), node.descendants()));
+    partials.add(new Enumerant(new HoleNode(), node.descendants()));
     return partials;
   }
 
-  private static List<PartialTree> atomicPartials () {
-    return Arrays.asList(new PartialTree(new HoleNode(), 1));
+  private static List<Enumerant> sliceAtomic () {
+    return Arrays.asList(new Enumerant(new HoleNode(), 1));
   }
 }
