@@ -6,7 +6,7 @@
 //
 
 import { Component } from 'react'
-import { PopoverZone } from './popover-zone'
+import { MouseoverZone } from './mouseover-zone'
 import { Highlight } from './highlight'
 import { HighlightList } from './highlight-list'
 
@@ -14,7 +14,7 @@ const CM_PADDING = 4
 
 interface Props {
   highlightList: HighlightList
-  onNewPopoverZone: (zone: PopoverZone, highlight: Highlight) => void
+  onNewPopoverZone: (zone: MouseoverZone, highlight: Highlight) => void
 }
 
 export class Underlay extends Component<Props, {}> {
@@ -39,7 +39,7 @@ export class Underlay extends Component<Props, {}> {
         let w = end.left - x
         let h = end.bottom - y
         this.ctx.fillRect(x, y, w, h)
-        let zone = new PopoverZone(x, y, w, h)
+        let zone = new MouseoverZone(x, y, w, h)
         this.props.onNewPopoverZone(zone, highlight)
       } else {
         let x = start.left

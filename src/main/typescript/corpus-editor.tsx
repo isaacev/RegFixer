@@ -4,9 +4,6 @@
 //
 // Created on 4/7/17
 //
-// BUG: "add highlight" popovers can't be re-opened after use has ignored new
-//      selection for at least 500ms
-//
 
 import 'codemirror'
 import { Component, ReactNode, MouseEvent } from 'react'
@@ -14,7 +11,8 @@ import { Overlay } from './overlay'
 import { Underlay } from './underlay'
 import { StartGrip, EndGrip } from './grip'
 import { Popover } from './popover'
-import { PopoverZone } from './popover-zone'
+import { MouseoverZone } from './mouseover-zone'
+import { MouseoverField } from './mouseover-field'
 import { Button } from './button'
 import { PointPair, Point } from './point'
 import { Highlight } from './highlight'
@@ -45,9 +43,9 @@ export class CorpusEditor extends Component<Props, State> {
   private highlights: HighlightList
   private isDragging: boolean = false
   private popover: ReactNode = null
-  private popoverZones: PopoverZone[] = []
-  private activeZone: PopoverZone = null
   private popoverTimeout: number
+
+  private mouseoverField: MouseoverField = new MouseoverField()
 
   constructor (props) {
     super(props)
@@ -64,6 +62,7 @@ export class CorpusEditor extends Component<Props, State> {
     this.instance.on('change', this.handleEditorChange.bind(this))
     this.instance.on('cursorActivity', this.handleCursorActivity.bind(this))
     this.resetHighlights()
+    this.document.setSelection({line: 0, ch: 5}, {line: 0, ch: 1})
   }
 
   componentWillReceiveProps (nextProps: Props): void {
@@ -73,7 +72,7 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   componentWillUpdate () {
-    this.popoverZones = []
+    this.mouseoverField.clearHighlightZones()
   }
 
   componentDidUpdate (prevProps: Props, prevState: State) {
@@ -97,30 +96,42 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   private handleCursorActivity () {
+    this.mouseoverField.clearSelectionZones()
+    this.hideAllPopovers()
+
     if (this.document.somethingSelected()) {
-      let selections = this.document.listSelections()
-      let lastSelection = selections[selections.length - 1]
+      this.document.listSelections().forEach((selection) => {
+        let startPos = selection.anchor
+        let endPos = selection.head
 
-      let startPos = lastSelection.anchor
-      let endPos = lastSelection.head
+        if (util.lessThanPosition(endPos, startPos)) {
+          startPos = selection.head
+          endPos = selection.anchor
+        }
 
-      if (util.lessThanPosition(endPos, startPos)) {
-        startPos = lastSelection.head
-        endPos = lastSelection.anchor
-      }
+        let startIndex = this.document.indexFromPos(startPos)
+        let startCoords = this.instance.charCoords(startPos, CM_COORD_SYSTEM)
+        let startPoint = { index: startIndex, pos: startPos, coords: startCoords }
 
-      let startIndex  = this.document.indexFromPos(startPos)
-      let startCoords = this.instance.charCoords(startPos, CM_COORD_SYSTEM)
-      let start       = { index: startIndex, pos: startPos, coords: startCoords }
+        let endIndex = this.document.indexFromPos(endPos)
+        let endCoords = this.instance.charCoords(endPos, CM_COORD_SYSTEM)
+        let endPoint = { index: endIndex, pos: endPos, coords: endCoords }
 
-      let endIndex    = this.document.indexFromPos(endPos)
-      let endCoords   = this.instance.charCoords(endPos, CM_COORD_SYSTEM)
-      let end         = { index: endIndex, pos: endPos, coords: endCoords }
+        let pair: PointPair = { start: startPoint, end: endPoint }
 
-      this.hideAllPopovers()
-      this.showAddPopover({ start: start, end: end })
-    } else {
-      this.hideAllPopovers()
+        let x = startCoords.left
+        let y = startCoords.top
+        let w = endCoords.left - x
+        let h = endCoords.bottom - y
+        let zone = new MouseoverZone(x, y, w, h)
+        zone.on('over', () => {
+          zone.on('over', this.showAddPopover.bind(this, pair))
+          zone.on('out', this.delayHideAllPopovers.bind(this))
+          this.mouseoverField.addZone('highlight', zone)
+        })
+
+        this.mouseoverField.addZone('selection', zone)
+      })
     }
   }
 
@@ -129,58 +140,24 @@ export class CorpusEditor extends Component<Props, State> {
     let y = event.clientY - this.root.offsetTop
 
     if (event.type === 'mousemove') {
-      for (let i = 0; i < this.popoverZones.length; i++) {
-        let zone = this.popoverZones[i]
-        let inZone = zone.contains(x, y)
-
-        if (inZone && zone.equals(this.activeZone) === false) {
-          if (this.activeZone !== null) {
-            this.activeZone.out()
-            this.activeZone = null
-          }
-
-          this.activeZone = zone
-          zone.over()
-          return
-        }
-
-        if (inZone) {
-          if (zone.equals(this.activeZone) === false) {
-            if (this.activeZone !== null) {
-              this.activeZone.out()
-            }
-          }
-
-          this.activeZone = zone
-          this.activeZone.over()
-          return
-        }
-      }
-
-      if (this.activeZone !== null && this.activeZone.contains(x, y) === false) {
-        this.activeZone.out()
-        this.activeZone = null
-      }
+      this.mouseoverField.trigger('move', x, y)
     } else if (event.type === 'mouseout') {
-      if (this.activeZone !== null && this.activeZone.contains(x, y) === false) {
-        this.activeZone.out()
-        this.activeZone = null
-      }
+      this.mouseoverField.trigger('out', x, y)
     }
   }
 
-  private handleNewPopoverZone (zone: PopoverZone, h: Highlight): void {
+  private handleNewPopoverZone (zone: MouseoverZone, h: Highlight): void {
     zone.on('over', this.showRemovePopover.bind(this, h))
     zone.on('out', this.delayHideAllPopovers.bind(this))
-    this.popoverZones.push(zone)
+    this.mouseoverField.addZone('highlight', zone)
   }
 
   private showPopover (pair: PointPair, child: ReactNode): void {
     if (this.isDragging === false) {
       let cancelHideAllPopovers = this.cancelHideAllPopovers.bind(this)
       let delayHideAllPopovers = this.delayHideAllPopovers.bind(this)
+      this.cancelHideAllPopovers()
 
-      this.hideAllPopovers()
       this.popover = (
         <Popover
           pair={pair}
@@ -189,6 +166,7 @@ export class CorpusEditor extends Component<Props, State> {
           {child}
         </Popover>
       )
+
       this.forceUpdate()
     }
   }
