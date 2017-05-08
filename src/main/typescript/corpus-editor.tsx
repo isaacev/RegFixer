@@ -124,8 +124,11 @@ export class CorpusEditor extends Component<Props, State> {
         let w = endCoords.left - x
         let h = endCoords.bottom - y
         let zone = new MouseoverZone(x, y, w, h)
+
         zone.on('over', () => {
-          zone.on('over', this.showAddPopover.bind(this, pair))
+          zone.on('over', this.showAddPopover.bind(this, pair, () => {
+            this.document.setCursor(this.document.getCursor())
+          }))
           zone.on('out', this.delayHideAllPopovers.bind(this))
           this.mouseoverField.addZone('highlight', zone)
         })
@@ -185,7 +188,7 @@ export class CorpusEditor extends Component<Props, State> {
     ))
   }
 
-  private showAddPopover (pair: PointPair) {
+  private showAddPopover (pair: PointPair, callback: () => void) {
     this.showPopover(pair, (
       <Button
         glyph="\u2713"
@@ -194,6 +197,7 @@ export class CorpusEditor extends Component<Props, State> {
         onClick={() => {
           this.hideAllPopovers()
           this.addHighlight(pair)
+          callback.apply(this, [])
         }} />
     ))
   }
