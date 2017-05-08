@@ -136,10 +136,6 @@
         </executions>
         <configuration>
           <mainClass>edu.wisc.regfixer.server.Server</mainClass>
-          <arguments>
-            <argument>foo</argument>
-            <argument>bar</argument>
-          </arguments>
         </configuration>
       </plugin>
 
