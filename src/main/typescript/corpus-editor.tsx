@@ -62,7 +62,6 @@ export class CorpusEditor extends Component<Props, State> {
     this.instance.on('change', this.handleEditorChange.bind(this))
     this.instance.on('cursorActivity', this.handleCursorActivity.bind(this))
     this.resetHighlights()
-    this.document.setSelection({line: 0, ch: 5}, {line: 0, ch: 1})
   }
 
   componentWillReceiveProps (nextProps: Props): void {
