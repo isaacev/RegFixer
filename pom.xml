@@ -135,7 +135,7 @@
           </execution>
         </executions>
         <configuration>
-          <mainClass>edu.wisc.regfixer.server.Server</mainClass>
+          <mainClass>edu.wisc.regfixer.enumerate.Main</mainClass>
         </configuration>
       </plugin>
 
