@@ -18,24 +18,24 @@ import edu.wisc.regfixer.automata.Route;
  */
 
 public class CharClassSolver {
-  public static HashMap<String, String> cfg = new HashMap<>();
-  public static Context ctx = new Context(cfg);
-  public static Solver solver = ctx.mkSolver();
-  public static Map<BoolExpr, Boolean> table = new HashMap<>();
-
   public static void solve (List<Set<Route>> positives, List<Set<Route>> negatives) {
+    HashMap<String, String> cfg = new HashMap<>();
+    Context ctx = new Context(cfg);
+    Solver solver = ctx.mkSolver();
+    Map<BoolExpr, Boolean> table = new HashMap<>();
+
     for (Set<Route> positive : positives) {
-      solver.add(buildFormula(true, positive));
+      solver.add(buildFormula(ctx, table, true, positive));
     }
 
     for (Set<Route> negative : negatives) {
-      solver.add(buildFormula(false, negative));
+      solver.add(buildFormula(ctx, table, false, negative));
     }
 
-    solveFormula();
+    solveFormula(solver, table);
   }
 
-  private static void solveFormula () {
+  private static void solveFormula (Solver solver, Map<BoolExpr, Boolean> table) {
     System.out.println("=== FORMULA ===");
     System.out.println(solver.toString());
 
@@ -51,9 +51,9 @@ public class CharClassSolver {
     }
   }
 
-  private static BoolExpr buildFormula (boolean isPositive, Set<Route> routes) {
+  private static BoolExpr buildFormula (Context ctx, Map<BoolExpr, Boolean> table, boolean isPositive, Set<Route> routes) {
     return routes.stream()
-      .map(route -> buildRunExpr(isPositive, route))
+      .map(route -> buildRunExpr(ctx, table, isPositive, route))
       .reduce(null, (accum, expr) -> {
         if (accum == null) {
           return expr;
@@ -65,9 +65,9 @@ public class CharClassSolver {
       });
   }
 
-  private static BoolExpr buildRunExpr (boolean isPositive, Route route) {
+  private static BoolExpr buildRunExpr (Context ctx, Map<BoolExpr, Boolean> table, boolean isPositive, Route route) {
     return route.getSpans().entrySet().stream()
-      .map(entry -> buildHoleExpr(isPositive, entry))
+      .map(entry -> buildHoleExpr(ctx, table, isPositive, entry))
       .reduce(null, (accum, expr) -> {
         if (accum == null) {
           return expr;
@@ -79,7 +79,7 @@ public class CharClassSolver {
       });
   }
 
-  private static BoolExpr buildHoleExpr (boolean isPositive, Map.Entry<Integer, Set<Character>> hole) {
+  private static BoolExpr buildHoleExpr (Context ctx, Map<BoolExpr, Boolean> table, boolean isPositive, Map.Entry<Integer, Set<Character>> hole) {
     return hole.getValue().stream()
       .map(ch -> ctx.mkBoolConst(String.format("H%d_C%c", hole.getKey(), ch)))
       .reduce(null, (accum, expr) -> {
