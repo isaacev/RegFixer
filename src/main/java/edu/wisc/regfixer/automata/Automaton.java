@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import automata.Move;
 import automata.sfa.SFA;
@@ -143,7 +144,7 @@ public class Automaton extends automata.Automaton {
     return false;
   }
 
-  private Map<Integer, Set<Character>> computeCrosses (State endState) {
+  private Route traceFromState (State endState) {
     Map<Integer, Set<Character>> crosses = new TreeMap<>();
 
     State currState = endState;
@@ -162,7 +163,7 @@ public class Automaton extends automata.Automaton {
       currState = currState.getParent();
     }
 
-    return crosses;
+    return new Route(crosses);
   }
 
   public boolean accepts (String str) throws TimeoutException {
@@ -190,31 +191,11 @@ public class Automaton extends automata.Automaton {
     return isFinalConfiguration(frontier);
   }
 
-  public Map<String, List<Map<Integer, Set<Character>>>> computeRuns (Collection<String> examples) throws TimeoutException {
-    Map<String, List<Map<Integer, Set<Character>>>> runs = new HashMap<>();
-
-    for (String example : examples) {
-      runs.put(example, this.computeRuns(example));
-    }
-
-    return runs;
-  }
-
-  public List<Map<Integer, Set<Character>>> computeRuns (String str) throws TimeoutException {
-    List<Character> charList = new LinkedList<>();
-
-    for (int i = 0; i < str.length(); i++) {
-      charList.add(str.charAt(i));
-    }
-
-    return computeRuns(charList);
-  }
-
-  public List<Map<Integer, Set<Character>>> computeRuns (List<Character> chars) throws TimeoutException {
+  public Set<Route> trace (String source) throws TimeoutException {
     List<State> frontier = getEpsClosure(new State(getInitialState()));
 
-    for (Character ch : chars) {
-      frontier = getNextState(frontier, ch);
+    for (int i = 0; i < source.length(); i++) {
+      frontier = getNextState(frontier, source.charAt(i));
       frontier = getEpsClosure(frontier);
 
       if (frontier.isEmpty()) {
@@ -222,15 +203,10 @@ public class Automaton extends automata.Automaton {
       }
     }
 
-    List<Map<Integer, Set<Character>>> runs = new LinkedList<>();
-
-    for (State state : frontier) {
-      if (isFinalState(state.getStateId())) {
-        runs.add(computeCrosses(state));
-      }
-    }
-
-    return runs;
+    return frontier.stream()
+      .filter(s -> isFinalState(s.getStateId()))
+      .map(s -> traceFromState(s))
+      .collect(Collectors.toSet());
   }
 
   /**

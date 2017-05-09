@@ -3,11 +3,11 @@ package edu.wisc.regfixer.enumerate;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import edu.wisc.regfixer.automata.Automaton;
+import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.OptionalNode;
 import edu.wisc.regfixer.parser.PlusNode;
@@ -126,11 +126,17 @@ public class Enumerant implements Comparable<Enumerant> {
       throw new SynthesisFailure(String.format(fmt, this.tree));
     }
 
-    Map<String, List<Map<Integer, Set<Character>>>> positiveRuns, negativeRuns;
+    List<Set<Route>> positiveRuns = new LinkedList<>();
+    List<Set<Route>> negativeRuns = new LinkedList<>();
 
     try {
-      positiveRuns = automaton.computeRuns(corpus.getPositiveExamples());
-      negativeRuns = automaton.computeRuns(corpus.getNegativeExamples());
+      for (String source : corpus.getPositiveExamples()) {
+        positiveRuns.add(automaton.trace(source));
+      }
+
+      for (String source : corpus.getNegativeExamples()) {
+        negativeRuns.add(automaton.trace(source));
+      }
     } catch (TimeoutException ex) {
       String fmt = "timed-out computing runs for `%s`";
       throw new SynthesisFailure(String.format(fmt, this.tree));

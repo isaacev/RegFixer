@@ -5,12 +5,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class Synthesis {
   private RegexNode tree;
 
-  public Synthesis (RegexNode tree, Map<String, List<Map<Integer, Set<Character>>>> positiveRuns, Map<String, List<Map<Integer, Set<Character>>>> negativeRuns) throws SynthesisFailure {
+  public Synthesis (RegexNode tree, List<Set<Route>> positiveRuns, List<Set<Route>> negativeRuns) throws SynthesisFailure {
     this.tree = tree;
   }
 
