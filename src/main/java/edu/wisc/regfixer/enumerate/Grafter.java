@@ -1,7 +1,8 @@
 package edu.wisc.regfixer.enumerate;
 
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.ConcatNode;
@@ -13,19 +14,20 @@ import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 
 public class Grafter {
-  public static PartialTree graft (PartialTree original, HoleNode hole, PartialTree twig) {
+  public static Enumerant graft (Enumerant original, HoleNode hole, Enumerant twig) {
     if (original.getHoles().contains(hole) == false) {
       throw new IllegalArgumentException("hole object must be in the partial tree");
     }
 
-    RegexNode modifiedTree = graftNode(original.getTree(), hole, twig.getTree());
-    List<HoleNode> modifiedHoles = new LinkedList<>(original.getHoles());
-    modifiedHoles.remove(hole);
-    modifiedHoles.addAll(twig.getHoles());
-    int removed = original.getRemovedNodes();
-    int added = twig.getAddedNodes();
+    RegexNode graftedTree = graftNode(original.getTree(), hole, twig.getTree());
+    List<HoleNode> graftedHoles = original.getHoles()
+      .stream()
+      .filter(h -> h == hole)
+      .collect(Collectors.toList());
+    graftedHoles.addAll(twig.getHoles());
+    int graftedCost = original.getCost() + twig.getCost();
 
-    return new PartialTree(modifiedTree, modifiedHoles, removed, added);
+    return new Enumerant(graftedTree, graftedHoles, graftedCost);
   }
 
   private static RegexNode graftNode (RegexNode node, HoleNode hole, RegexNode twig) {

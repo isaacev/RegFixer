@@ -142,11 +142,7 @@
           </execution>
         </executions>
         <configuration>
-          <mainClass>edu.wisc.regfixer.server.Server</mainClass>
-          <arguments>
-            <argument>foo</argument>
-            <argument>bar</argument>
-          </arguments>
+          <mainClass>edu.wisc.regfixer.enumerate.Main</mainClass>
         </configuration>
       </plugin>
 

@@ -4,15 +4,15 @@
 //
 // Created on 4/7/17
 //
-// BUG: "add highlight" popovers can't be re-opened after use has ignored new
-//      selection for at least 500ms
-//
 
 import 'codemirror'
-import { Component, ReactNode } from 'react'
+import { Component, ReactNode, MouseEvent } from 'react'
 import { Overlay } from './overlay'
+import { Underlay } from './underlay'
 import { StartGrip, EndGrip } from './grip'
 import { Popover } from './popover'
+import { MouseoverZone } from './mouseover-zone'
+import { MouseoverField } from './mouseover-field'
 import { Button } from './button'
 import { PointPair, Point } from './point'
 import { Highlight } from './highlight'
@@ -20,7 +20,6 @@ import { HighlightList } from './highlight-list'
 import * as util from './util'
 
 const CM_COORD_SYSTEM = 'local'
-const CM_HIGHLIGHT_CLASS = 'marked-highlight'
 
 interface Props {
   regex: string
@@ -37,13 +36,16 @@ interface State {
 }
 
 export class CorpusEditor extends Component<Props, State> {
+  private root: HTMLDivElement
   private textarea: HTMLTextAreaElement
   private instance: CodeMirror.Editor
   private document: CodeMirror.Doc
   private highlights: HighlightList
   private isDragging: boolean = false
-  private popovers: ReactNode[] = []
+  private popover: ReactNode = null
   private popoverTimeout: number
+
+  private mouseoverField: MouseoverField = new MouseoverField()
 
   constructor (props) {
     super(props)
@@ -68,6 +70,10 @@ export class CorpusEditor extends Component<Props, State> {
     })
   }
 
+  componentWillUpdate () {
+    this.mouseoverField.clearHighlightZones()
+  }
+
   componentDidUpdate (prevProps: Props, prevState: State) {
     if (prevState.regex  !== this.state.regex) {
       this.resetHighlights()
@@ -89,83 +95,86 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   private handleCursorActivity () {
+    this.mouseoverField.clearSelectionZones()
+    this.hideAllPopovers()
+
     if (this.document.somethingSelected()) {
-      let selections = this.document.listSelections()
-      let lastSelection = selections[selections.length - 1]
+      this.document.listSelections().forEach((selection) => {
+        let startPos = selection.anchor
+        let endPos = selection.head
 
-      let startPos = lastSelection.anchor
-      let endPos = lastSelection.head
+        if (util.lessThanPosition(endPos, startPos)) {
+          startPos = selection.head
+          endPos = selection.anchor
+        }
 
-      if (util.lessThanPosition(endPos, startPos)) {
-        startPos = lastSelection.head
-        endPos = lastSelection.anchor
-      }
+        let startIndex = this.document.indexFromPos(startPos)
+        let startCoords = this.instance.charCoords(startPos, CM_COORD_SYSTEM)
+        let startPoint = { index: startIndex, pos: startPos, coords: startCoords }
 
-      let startIndex  = this.document.indexFromPos(startPos)
-      let startCoords = this.instance.charCoords(startPos, CM_COORD_SYSTEM)
-      let start       = { index: startIndex, pos: startPos, coords: startCoords }
+        let endIndex = this.document.indexFromPos(endPos)
+        let endCoords = this.instance.charCoords(endPos, CM_COORD_SYSTEM)
+        let endPoint = { index: endIndex, pos: endPos, coords: endCoords }
 
-      let endIndex    = this.document.indexFromPos(endPos)
-      let endCoords   = this.instance.charCoords(endPos, CM_COORD_SYSTEM)
-      let end         = { index: endIndex, pos: endPos, coords: endCoords }
+        let pair: PointPair = { start: startPoint, end: endPoint }
 
-      this.hideAllPopovers()
-      this.showAddPopover({ start: start, end: end })
-    } else {
-      this.hideAllPopovers()
-    }
-  }
+        let x = startCoords.left
+        let y = startCoords.top
+        let w = endCoords.left - x
+        let h = endCoords.bottom - y
+        let zone = new MouseoverZone(x, y, w, h)
 
-  // Draws CodeMirror text markers from an existing list of highlights.
-  private drawMarkers (): void {
-    if (this.highlights) {
-      this.highlights.forEach((h) => {
-        let mark = this.markTextWithPointPair(h.getPair())
-        h.setMark(mark)
+        zone.on('over', () => {
+          zone.on('over', this.showAddPopover.bind(this, pair, () => {
+            this.document.setCursor(this.document.getCursor())
+          }))
+          zone.on('out', this.delayHideAllPopovers.bind(this))
+          this.mouseoverField.addZone('highlight', zone)
+        })
+
+        this.mouseoverField.addZone('selection', zone)
       })
     }
   }
 
-  private attachMarkerListeners (): void {
-    /**
-     * The `setTimeout` call is used because *I THINK* that it takes some time
-     * to update the CodeMirror DOM with the appropriate text marking <span>s
-     * and the callback with a delay of 0 milliseconds places this callback in
-     * the event queue so it doesn't immediately but waits until all pending
-     * operations have completed. It's also possible I'm being an idiot and
-     * this is just a horrible hack that's obscuring a deeper bug.
-     */
-    setTimeout(() => {
-      let elems = document.querySelectorAll('.' + CM_HIGHLIGHT_CLASS)
+  private handleMouseActivity (event: MouseEvent<HTMLDivElement>) {
+    let x = event.clientX - this.root.offsetLeft
+    let y = event.clientY - this.root.offsetTop
 
-      this.highlights.forEach((h, i) => {
-        let elem = elems[i]
-        elem.addEventListener('mouseover', this.showRemovePopover.bind(this, h))
-        elem.addEventListener('mouseout', this.delayHideAllPopovers.bind(this))
-      })
-    }, 0)
+    if (event.type === 'mousemove') {
+      this.mouseoverField.trigger('move', x, y)
+    } else if (event.type === 'mouseout') {
+      this.mouseoverField.trigger('out', x, y)
+    }
+  }
+
+  private handleNewPopoverZone (zone: MouseoverZone, h: Highlight): void {
+    zone.on('over', this.showRemovePopover.bind(this, h))
+    zone.on('out', this.delayHideAllPopovers.bind(this))
+    this.mouseoverField.addZone('highlight', zone)
   }
 
   private showPopover (pair: PointPair, child: ReactNode): void {
     if (this.isDragging === false) {
       let cancelHideAllPopovers = this.cancelHideAllPopovers.bind(this)
-      let delayHideAllPopovers  = this.delayHideAllPopovers.bind(this)
+      let delayHideAllPopovers = this.delayHideAllPopovers.bind(this)
+      this.cancelHideAllPopovers()
 
-      this.hideAllPopovers()
-      this.popovers.push(
+      this.popover = (
         <Popover
-          key={this.popovers.length}
           pair={pair}
           onMouseOver={cancelHideAllPopovers}
           onMouseOut={delayHideAllPopovers}>
           {child}
         </Popover>
       )
+
       this.forceUpdate()
     }
   }
 
   private showRemovePopover (h: Highlight) {
+    setTimeout(this.cancelHideAllPopovers.bind(this), 0)
     this.showPopover(h.getPair(), (
       <Button
         glyph="\u2717"
@@ -178,7 +187,7 @@ export class CorpusEditor extends Component<Props, State> {
     ))
   }
 
-  private showAddPopover (pair: PointPair) {
+  private showAddPopover (pair: PointPair, callback: () => void) {
     this.showPopover(pair, (
       <Button
         glyph="\u2713"
@@ -187,11 +196,13 @@ export class CorpusEditor extends Component<Props, State> {
         onClick={() => {
           this.hideAllPopovers()
           this.addHighlight(pair)
+          callback.apply(this, [])
         }} />
     ))
   }
 
   private delayHideAllPopovers () {
+    this.cancelHideAllPopovers()
     this.popoverTimeout = setTimeout(this.hideAllPopovers.bind(this), 500)
   }
 
@@ -200,17 +211,14 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   private hideAllPopovers () {
-    this.popovers = []
+    this.popover = null
     this.cancelHideAllPopovers()
     this.forceUpdate()
   }
 
   private removeHighlight (h: Highlight) {
     if (this.highlights) {
-      this.clearMarkers()
       this.highlights.remove(h)
-      this.drawMarkers()
-      this.attachMarkerListeners()
       this.props.onMatchesChange(this.highlights.getMatches())
       this.forceUpdate()
     }
@@ -221,34 +229,21 @@ export class CorpusEditor extends Component<Props, State> {
       this.highlights = new HighlightList()
     }
 
-    let mark = this.markTextWithPointPair(pair)
-    let highlight = new Highlight(pair, mark)
+    let highlight = new Highlight(pair)
 
     try {
       this.highlights.insert(highlight)
     } catch (err) {
-      mark.clear()
       alert('matches cannot overlap')
       return
     }
 
-    this.attachMarkerListeners()
     this.props.onMatchesChange(this.highlights.getMatches())
     this.forceUpdate()
   }
 
-  // Removes just the text markers within CodeMirror.
-  private clearMarkers (): void {
-    if (this.highlights) {
-      this.highlights.forEach((h) => {
-        h.getMark().clear()
-      })
-    }
-  }
-
   // Removes text markers and data structure tracking highlights in corpus.
   private clearHighlights (): void {
-    this.clearMarkers()
     this.highlights = null
   }
 
@@ -265,13 +260,11 @@ export class CorpusEditor extends Component<Props, State> {
     if (pairs !== undefined) {
       // Create new Highlight and add it to the global list of Highlights.
       this.highlights = pairs.reduce((list, pair, i) => {
-        let mark = this.markTextWithPointPair(pair)
-        let highlight = new Highlight(pair, mark)
+        let highlight = new Highlight(pair)
         return list.insert(highlight)
       }, new HighlightList())
 
       // Listen for mouse-over events on the text marker elements.
-      this.attachMarkerListeners()
       this.props.onMatchesChange(this.highlights.getMatches())
     }
 
@@ -344,22 +337,15 @@ export class CorpusEditor extends Component<Props, State> {
     return points
   }
 
-  // Given a point pair, create a CodeMirror text marker over that span.
-  private markTextWithPointPair (pair: PointPair): CodeMirror.TextMarker {
-    return this.document.markText(pair.start.pos, pair.end.pos, {
-      className: CM_HIGHLIGHT_CLASS,
-    })
-  }
-
   // Initialize event listeners for managing the lifecycle of a Grip drag.
   private handleDragStart (h: Highlight, isStart: boolean, offset: [number, number]) {
     let cursor: CodeMirror.Position = null
 
-    const handleDragWrapper = ((event: MouseEvent) => {
+    const handleDragWrapper = ((event: MouseEvent<HTMLDivElement>) => {
       this.handleDrag(h, isStart, event.pageX, event.pageY)
     }).bind(this)
 
-    const handleDragStopWrapper = ((event: MouseEvent) => {
+    const handleDragStopWrapper = ((event: MouseEvent<HTMLDivElement>) => {
       this.handleDragStop(cursor, event.pageX, event.pageY)
       util.offEvent(window.document.body, 'mousemove', handleDragWrapper)
     }).bind(this)
@@ -414,9 +400,6 @@ export class CorpusEditor extends Component<Props, State> {
         h.setEnd({ index: index, pos: newPos, coords: coords })
       }
 
-      this.clearMarkers()
-      this.drawMarkers()
-      this.attachMarkerListeners()
       this.forceUpdate()
     }
   }
@@ -469,13 +452,23 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   render () {
+    let handleMouseActivity = this.handleMouseActivity.bind(this)
+    let handleNewPopoverZone = this.handleNewPopoverZone.bind(this)
+
     return (
-      <div className="corpus-editor">
+      <div
+        className="corpus-editor"
+        ref={(input) => { this.root = input}}
+        onMouseMove={handleMouseActivity}
+        onMouseOut={handleMouseActivity}>
         <Overlay>
-          {this.popovers}
+          {this.popover}
           {this.collectGrips()}
         </Overlay>
         <textarea ref={(input) => { this.textarea = input }} />
+        <Underlay
+          highlightList={this.highlights}
+          onNewPopoverZone={handleNewPopoverZone} />
       </div>
     )
   }

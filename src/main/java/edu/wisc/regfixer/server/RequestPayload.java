@@ -1,17 +1,18 @@
 package edu.wisc.regfixer.server;
 
-import java.util.List;
+import java.util.Set;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.parser.Main;
 import edu.wisc.regfixer.enumerate.Job;
+import edu.wisc.regfixer.enumerate.Corpus;
 import edu.wisc.regfixer.enumerate.Range;
 
 public class RequestPayload {
   private final String regex;
-  private final List<Range> ranges;
+  private final Set<Range> ranges;
   private final String corpus;
 
-  public RequestPayload (String regex, List<Range> ranges, String corpus) {
+  public RequestPayload (String regex, Set<Range> ranges, String corpus) {
     this.regex = regex;
     this.ranges = ranges;
     this.corpus = corpus;
@@ -21,7 +22,7 @@ public class RequestPayload {
     return this.regex;
   }
 
-  public List<Range> getRanges () {
+  public Set<Range> getRanges () {
     return this.ranges;
   }
 
@@ -30,14 +31,6 @@ public class RequestPayload {
   }
 
   public Job toJob () throws Exception {
-    RegexNode parsedRegex = null;
-
-    try {
-      parsedRegex = Main.parse(this.regex);
-    } catch (Exception ex) {
-      throw new Exception(ex.toString());
-    }
-
-    return new Job(parsedRegex, this.ranges, this.corpus);
+    return new Job(this.regex, this.corpus, this.ranges);
   }
 }

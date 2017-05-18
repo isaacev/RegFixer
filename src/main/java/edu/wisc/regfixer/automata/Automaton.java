@@ -2,6 +2,7 @@ package edu.wisc.regfixer.automata;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -13,6 +14,19 @@ import automata.Move;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
+import edu.wisc.regfixer.enumerate.HoleNode;
+import edu.wisc.regfixer.parser.CharClassSetNode;
+import edu.wisc.regfixer.parser.CharDotNode;
+import edu.wisc.regfixer.parser.CharEscapedNode;
+import edu.wisc.regfixer.parser.CharLiteralNode;
+import edu.wisc.regfixer.parser.CharRangeNode;
+import edu.wisc.regfixer.parser.ConcatNode;
+import edu.wisc.regfixer.parser.OptionalNode;
+import edu.wisc.regfixer.parser.PlusNode;
+import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.parser.RepetitionNode;
+import edu.wisc.regfixer.parser.StarNode;
+import edu.wisc.regfixer.parser.UnionNode;
 import org.sat4j.specs.TimeoutException;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
@@ -30,8 +44,15 @@ public class Automaton extends automata.Automaton {
   private final SFA<CharPred, Character> sfa;
   private int totalHoles = 0;
 
+  private static int nextHoleId = 0;
+
+  public Automaton (RegexNode tree) throws TimeoutException {
+    Automaton.nextHoleId = 0;
+    this.sfa = nodeToAutomaton(tree).sfa;
+  }
+
   public Automaton (CharPred predicate) throws TimeoutException {
-    this.sfa = Automaton.predicateToSFA(predicate);
+    this.sfa = predicateToSFA(predicate);
   }
 
   public void setTotalHoles (int totalHoles) {
@@ -164,17 +185,27 @@ public class Automaton extends automata.Automaton {
     return isFinalConfiguration(frontier);
   }
 
-  public List<Map<Integer, Set<Character>>> runs (String str) throws TimeoutException {
+  public Map<String, List<Map<Integer, Set<Character>>>> computeRuns (Collection<String> examples) throws TimeoutException {
+    Map<String, List<Map<Integer, Set<Character>>>> runs = new HashMap<>();
+
+    for (String example : examples) {
+      runs.put(example, this.computeRuns(example));
+    }
+
+    return runs;
+  }
+
+  public List<Map<Integer, Set<Character>>> computeRuns (String str) throws TimeoutException {
     List<Character> charList = new LinkedList<>();
 
     for (int i = 0; i < str.length(); i++) {
       charList.add(str.charAt(i));
     }
 
-    return runs(charList);
+    return computeRuns(charList);
   }
 
-  public List<Map<Integer, Set<Character>>> runs (List<Character> chars) throws TimeoutException {
+  public List<Map<Integer, Set<Character>>> computeRuns (List<Character> chars) throws TimeoutException {
     List<State> frontier = getEpsClosure(new State(getInitialState()));
 
     for (Character ch : chars) {
@@ -236,7 +267,7 @@ public class Automaton extends automata.Automaton {
 
   public static Automaton concatenate (List<Automaton> automata) throws TimeoutException {
     if (automata.size() == 0) {
-      return Automaton.empty();
+      return empty();
     }
 
     Automaton whole = null;
@@ -245,7 +276,7 @@ public class Automaton extends automata.Automaton {
       if (whole == null) {
         whole = next;
       } else {
-        whole = Automaton.concatenate(whole, next);
+        whole = concatenate(whole, next);
       }
     }
 
@@ -300,5 +331,154 @@ public class Automaton extends automata.Automaton {
 
   public static Automaton empty () throws TimeoutException {
     return new Automaton(SFA.getEmptySFA(Automaton.solver));
+  }
+
+  /**
+   * METHODS FOR CONVERTING FROM REGEX -> AUTOMATON
+   */
+
+  private static Automaton nodeToAutomaton (RegexNode node) throws TimeoutException {
+         if (node instanceof ConcatNode)       return concatToAutomaton((ConcatNode) node);
+    else if (node instanceof UnionNode)        return unionToAutomaton((UnionNode) node);
+    else if (node instanceof RepetitionNode)   return repetitionToAutomaton((RepetitionNode) node);
+    else if (node instanceof OptionalNode)     return optionalToAutomaton((OptionalNode) node);
+    else if (node instanceof StarNode)         return starToAutomaton((StarNode) node);
+    else if (node instanceof PlusNode)         return plusToAutomaton((PlusNode) node);
+    else if (node instanceof HoleNode)         return holeToAutomaton((HoleNode) node);
+    else if (node instanceof CharClassSetNode) return charClassSetToAutomaton((CharClassSetNode) node);
+    else if (node instanceof CharDotNode)      return charDotToAutomaton((CharDotNode) node);
+    else if (node instanceof CharEscapedNode)  return charEscapedToAutomaton((CharEscapedNode) node);
+    else if (node instanceof CharLiteralNode)  return charLiteralToAutomaton((CharLiteralNode) node);
+    else {
+      System.err.printf("Unknown AST class: %s\n", node.getClass().getName());
+      System.exit(-1);
+      return null;
+    }
+  }
+
+  private static Automaton concatToAutomaton (ConcatNode node) throws TimeoutException {
+    List<Automaton> automata = new LinkedList<>();
+
+    for (RegexNode child : node.getChildren()) {
+      automata.add(nodeToAutomaton(child));
+    }
+
+    return concatenate(automata);
+  }
+
+  private static Automaton unionToAutomaton (UnionNode node) throws TimeoutException {
+    Automaton left  = nodeToAutomaton(node.getLeftChild());
+    Automaton right = nodeToAutomaton(node.getRightChild());
+    return union(left, right);
+  }
+
+  private static Automaton repetitionToAutomaton (RepetitionNode node) throws TimeoutException {
+    if (node.hasMax() && node.getMax() == 0) {
+      return empty();
+    }
+
+    Automaton sub = nodeToAutomaton(node.getChild());
+    Automaton min = empty();
+
+    for (int i = 0; i < node.getMin(); i++) {
+      if (i == 0) {
+        min = sub;
+      } else {
+        min = concatenate(min, sub);
+      }
+    }
+
+    if (node.hasMax() == false) {
+      // min to infinite
+      Automaton star = star(sub);
+      return concatenate(min, star);
+    } else if (node.getMin() < node.getMax()) {
+      // min to max
+      Automaton union = min;
+      Automaton whole = min;
+
+      for (int i = node.getMin(); i < node.getMax(); i++) {
+        union = concatenate(union, sub);
+        whole = union(whole, union);
+      }
+
+      return whole;
+    } else {
+      // just min
+      return min;
+    }
+  }
+
+  private static Automaton optionalToAutomaton (OptionalNode node) throws TimeoutException {
+    return union(nodeToAutomaton(node.getChild()), empty());
+  }
+
+  private static Automaton starToAutomaton (StarNode node) throws TimeoutException {
+    return star(nodeToAutomaton(node.getChild()));
+  }
+
+  private static Automaton plusToAutomaton (PlusNode node) throws TimeoutException {
+    Automaton sub = nodeToAutomaton(node.getChild());
+    return concatenate(sub, star(sub));
+  }
+
+  private static Automaton holeToAutomaton (HoleNode node) throws TimeoutException {
+    return fromHolePredicate(Automaton.nextHoleId++);
+  }
+
+  private static Automaton charClassSetToAutomaton (CharClassSetNode node) throws TimeoutException {
+    List<CharPred> predicates = new LinkedList<>();
+
+    for (CharRangeNode charClass : node.getSubClasses()) {
+      if (charClass.isSingle()) {
+        char ch = charClass.getLeftChild().getChar();
+        if (charClass.getLeftChild() instanceof CharEscapedNode) {
+          predicates.add(predicateFromMetaChar(ch));
+        } else {
+          predicates.add(new CharPred(ch));
+        }
+      } else {
+        char leftCh  = charClass.getLeftChild().getChar();
+        char rightCh = charClass.getRightChild().getChar();
+        predicates.add(new CharPred(leftCh, rightCh));
+      }
+    }
+
+    if (node.isInverted()) {
+      return fromInversePredicates(predicates);
+    } else {
+      return fromPredicates(predicates);
+    }
+  }
+
+  private static Automaton charDotToAutomaton (CharDotNode node) throws TimeoutException {
+    return fromTruePredicate();
+  }
+
+  private static Automaton charEscapedToAutomaton (CharEscapedNode node) throws TimeoutException {
+    return fromPredicate(predicateFromMetaChar(node.getChar()));
+  }
+
+  private static Automaton charLiteralToAutomaton (CharLiteralNode node) throws TimeoutException {
+    return fromPredicate(node.getChar());
+  }
+
+  private static CharPred predicateFromMetaChar (char ch) {
+    switch (ch) {
+      case 't': return new CharPred('\t');
+      case 'n': return new CharPred('\n');
+      case 'r': return new CharPred('\r');
+      case 'f': return new CharPred('\f');
+      case 'd': return Automaton.Num;
+      case 'D': return Automaton.NotNum;
+      case 's': return Automaton.Spaces;
+      case 'S': return Automaton.NotSpaces;
+      case 'w': return Automaton.Word;
+      case 'W': return Automaton.NotWord;
+      case 'v': throw new UnsupportedOperationException();
+      case 'b': throw new UnsupportedOperationException();
+      case 'B': throw new UnsupportedOperationException();
+      default:  return new CharPred(ch);
+    }
   }
 }

@@ -34,11 +34,22 @@ public class Range implements Comparable<Range> {
     return this.rightIndex;
   }
 
-  public boolean equals (Range other) {
-    boolean leftIsEqual = (this.leftIndex == other.getLeftIndex());
-    boolean rightIsEqual = (this.rightIndex == other.getRightIndex());
+  @Override
+  public boolean equals (Object other) {
+    if (other instanceof Range) {
+      Range otherRange = (Range) other;
+      boolean leftIsEqual = (this.leftIndex == otherRange.getLeftIndex());
+      boolean rightIsEqual = (this.rightIndex == otherRange.getRightIndex());
 
-    return leftIsEqual && rightIsEqual;
+      return leftIsEqual && rightIsEqual;
+    }
+
+    return false;
+  }
+
+  @Override
+  public int hashCode () {
+    return this.leftIndex + this.rightIndex;
   }
 
   public boolean startsBefore (Range other) {

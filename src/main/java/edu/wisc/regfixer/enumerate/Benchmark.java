@@ -3,19 +3,16 @@ package edu.wisc.regfixer.enumerate;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Scanner;
-import edu.wisc.regfixer.parser.Main;
-import edu.wisc.regfixer.parser.RegexNode;
-import static edu.wisc.regfixer.enumerate.SearchEngine.getMatchingRanges;
+import java.util.Set;
 
 public class Benchmark {
   static String boundary = "---";
 
   public static Job readFromFile (String filename) throws IOException {
-    RegexNode originalRegex = null;
-    List<Range> selectedRanges = new LinkedList<Range>();
+    String regex = "";
+    Set<Range> selectedRanges = new HashSet<Range>();
     String corpus = "";
 
     Scanner sc = new Scanner(new File(filename));
@@ -25,11 +22,7 @@ public class Benchmark {
       String line = sc.nextLine();
       lineNum++;
 
-      try {
-        originalRegex = Main.parse(line);
-      } catch (Exception ex) {
-        throw new IOException(ex.toString());
-      }
+      regex = line;
 
       // Digest boundary.
       if (!sc.hasNextLine() || !sc.nextLine().equals(boundary)) {
@@ -61,19 +54,19 @@ public class Benchmark {
       lineNum++;
     }
 
-    return new Job(originalRegex, selectedRanges, corpus);
+    return new Job(regex, corpus, selectedRanges);
   }
 
   public static void saveToFile (Job job, String filename) throws IOException {
     PrintWriter pw = new PrintWriter(filename, "UTF-8");
 
     // Print regex string.
-    pw.println(job.getOriginalRegex());
+    pw.println(job.getTree());
 
     // Print range indices.
     pw.println(boundary);
-    for (Range m : job.getSelectedRanges()) {
-      pw.println(m.toString());
+    for (Range range : job.getCorpus().getPositiveRanges()) {
+      pw.println(range.toString());
     }
 
     // Print full corpus.
