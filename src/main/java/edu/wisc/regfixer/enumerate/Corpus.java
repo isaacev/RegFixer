@@ -98,32 +98,49 @@ public class Corpus {
     Collections.sort(newRanges);
 
     Set<Range> negatives = new HashSet<>();
+
     int oldIndex = 0;
     int newIndex = 0;
 
-    outerLoop:
     while (true) {
-      boolean exhaustedOldRanges = (oldIndex >= oldRanges.size());
-      boolean exhaustedNewRanges = (newIndex >= newRanges.size());
-      if (exhaustedOldRanges || exhaustedNewRanges) {
-        break outerLoop;
+      if (oldIndex >= oldRanges.size()) {
+        break;
       }
 
-      Range oldRange = oldRanges.get(oldIndex++);
-      Range newRange = newRanges.get(newIndex++);
+      if (newIndex >= newRanges.size()) {
+        negatives.add(oldRanges.get(oldIndex++));
+        continue;
+      }
 
-      // Ignore "old" ranges that don't intersect the current "new" ranges and
-      // that comre before the current "new" range.
-      while (oldRange.endsBefore(newRange)) {
-        if (oldIndex >= oldRanges.size()) {
-          break outerLoop;
+      Range oldRange = oldRanges.get(oldIndex);
+      Range newRange = newRanges.get(newIndex);
+
+      if (newRange.getLeftIndex() == oldRange.getLeftIndex()) {
+        if (newRange.equals(oldRange) == false) {
+          negatives.add(oldRange);
         }
-      }
 
-      if (oldRange.startsBefore(newRange) && oldRange.intersects(newRange)) {
-        int from = newRange.getLeftIndex();
-        int to = oldRange.getRightIndex();
-        negatives.add(new Range(from, to));
+        if (oldRange.length() <= newRange.length()) {
+          oldIndex++;
+        }
+
+        if (newRange.length() <= oldRange.length()) {
+          newIndex++;
+        }
+      } else if (newRange.getLeftIndex() < oldRange.getLeftIndex()) {
+        if (newRange.endsBefore(oldRange) || newRange.intersects(oldRange)) {
+          newIndex++;
+        } else {
+          oldIndex++;
+        }
+      } else if (newRange.getLeftIndex() > oldRange.getLeftIndex()) {
+        negatives.add(oldRange);
+
+        if (oldRange.endsBefore(newRange) || oldRange.intersects(newRange)) {
+          oldIndex++;
+        } else {
+          newIndex++;
+        }
       }
     }
 
