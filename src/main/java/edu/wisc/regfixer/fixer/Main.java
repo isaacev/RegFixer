@@ -39,9 +39,10 @@ public class Main {
         List<Map<Integer, Set<Character>>> runs4 = automaton.computeRuns(pos4);
         List<Map<Integer, Set<Character>>> runs5 = automaton.computeRuns(neg1);
 
-//        print(regex2.toString(),runs2, pos2);
-//        print(regex2.toString(),runs3, pos3);
+        print(regex2.toString(),runs2, pos2);
+        print(regex2.toString(),runs3, pos3);
 //        print(regex2.toString(),runs4, pos4);
+        print(regex2.toString(),runs5, neg1);
 
         SATSolver solver = new SATSolver(regex2);
 //        if(!runs1.isEmpty()) {
@@ -53,9 +54,9 @@ public class Main {
         if(!runs3.isEmpty()) {
             solver.makeFormula(runs3, true);
         }
-        if(!runs4.isEmpty()) {
-            solver.makeFormula(runs4, true);
-        }
+//        if(!runs4.isEmpty()) {
+//            solver.makeFormula(runs4, true);
+//        }
         if(!runs5.isEmpty()) {
             solver.makeFormula(runs5, false);
         }
