@@ -6,3 +6,4 @@ src/main/resources/dist/*.js
 src/main/resources/dist/*.map
 libz3.dylib
 libz3java.dylib
+classes
