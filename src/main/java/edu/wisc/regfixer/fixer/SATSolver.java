@@ -71,7 +71,6 @@ public class SATSolver {
                     boolean insertedCharClasses = false;
                     if(charCount > 2) {
                         opt.AssertSoft(exprPred, 5, "MAX_SAT");   // Soft-Constraint \w = 7
-                        opt.AssertSoft(exprPred, 5, "MAX_SAT");   // Soft-Constraint \w = 7
                         insertedCharClasses = true;
                     }
                     opt.AssertSoft(exprChar, -2, "MAX_SAT");
@@ -130,7 +129,7 @@ public class SATSolver {
 
 
     public RegexNode solveFormula() {
-        System.out.println("SAT formula to solve is...\n" + opt.toString());
+//        System.out.println("SAT formula to solve is...\n" + opt.toString());
         Status status = opt.Check();
         RegexNode newRegex = null;
 
