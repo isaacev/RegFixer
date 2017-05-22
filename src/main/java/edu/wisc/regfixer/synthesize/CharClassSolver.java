@@ -18,8 +18,8 @@ import edu.wisc.regfixer.automata.Route;
  */
 
 public class CharClassSolver {
-  public static void solve (List<Set<Route>> positives, List<Set<Route>> negatives) {
-    HashMap<String, String> cfg = new HashMap<>();
+  public static Map<Integer, String> solve (List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
+    Map<String, String> cfg = new HashMap<>();
     Context ctx = new Context(cfg);
     Solver solver = ctx.mkSolver();
     Map<BoolExpr, Boolean> table = new HashMap<>();
@@ -32,22 +32,15 @@ public class CharClassSolver {
       solver.add(buildFormula(ctx, table, false, negative));
     }
 
-    solveFormula(solver, table);
+    return solveFormula(solver, table);
   }
 
-  private static void solveFormula (Solver solver, Map<BoolExpr, Boolean> table) {
-    System.out.println("=== FORMULA ===");
-    System.out.println(solver.toString());
-
-    Status status = solver.check();
-    if (status == Status.UNSATISFIABLE) {
-      System.out.println("=== FAILURE ===");
+  private static Map<Integer, String> solveFormula (Solver solver, Map<BoolExpr, Boolean> table) throws SynthesisFailure {
+    if (solver.check() == Status.UNSATISFIABLE) {
+      throw new SynthesisFailure("cannot derrive character classes");
     } else {
-      System.out.println("=== SOLUTION ===");
-      Model model = solver.getModel();
-      for (BoolExpr key : table.keySet()) {
-        System.out.println(key.toString() + " : " + model.evaluate(key, false));
-      }
+      // return synthesizeClasses(solver.getModel(), table);
+      return null;
     }
   }
 
