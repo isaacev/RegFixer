@@ -33,7 +33,12 @@ public class Route {
     String accum = "";
 
     for (Map.Entry<Integer, Set<Character>> entry : this.spans.entrySet()) {
-      accum += String.format("\tH%d {", entry.getKey());
+      if (accum.equals("") == false) {
+        accum += "\n  ";
+      }
+
+      accum += String.format(" H%d {", entry.getKey());
+
       for (Character ch : entry.getValue()) {
         accum += String.format(" %c", ch);
       }
