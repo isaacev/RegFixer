@@ -14,7 +14,7 @@ import edu.wisc.regfixer.enumerate.Benchmark;
 import edu.wisc.regfixer.enumerate.HoleNode;
 import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.ConcatNode;
-import edu.wisc.regfixer.parser.PlusNode;
+import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.synthesize.CharClassSolver;
 import edu.wisc.regfixer.synthesize.SynthesisFailure;
@@ -23,29 +23,17 @@ public class Main {
   public static void main (String[] args) throws Exception {
     RegexNode regex = new ConcatNode(Arrays.asList(
       new CharLiteralNode('a'),
-      new PlusNode(
-        new ConcatNode(Arrays.asList(
-          new HoleNode(),
-          new HoleNode(),
-          new HoleNode()
-        ))
-      )
+      new StarNode(new ConcatNode(Arrays.asList(
+        new HoleNode(),
+        new HoleNode(),
+        new HoleNode()
+      )))
     ));
 
-    Job job = Benchmark.readFromFile("benchmarks/repeat.txt");
-    System.out.printf("pos: %d\n", job.getCorpus().getPositiveExamples().size());
-    for (String pos : job.getCorpus().getPositiveExamples()) {
-      System.out.println(pos);
-    }
-
-    System.out.printf("neg: %d\n", job.getCorpus().getNegativeExamples().size());
-    for (String neg : job.getCorpus().getNegativeExamples()) {
-      System.out.println(neg);
-    }
-
-    /*
     Set<String> positives = new HashSet<>();
     positives.add("axyz");
+    positives.add("axyzxyz");
+    positives.add("axyzxyzxyz");
 
     Set<String> negatives = new HashSet<>();
     negatives.add("azyzyyz");
@@ -53,7 +41,6 @@ public class Main {
     negatives.add("axyyxyx");
 
     experiment(regex, positives, negatives);
-    */
   }
 
   private static void experiment (RegexNode regex, Collection<String> pos, Collection<String> neg) throws Exception {
@@ -65,35 +52,44 @@ public class Main {
     List<Set<Route>> negRoutes = new LinkedList<>();
     for (String str : negList) { negRoutes.add(automaton.trace(str)); }
 
-    System.out.println("=== REGEX ===");
-    System.out.println(regex);
+    System.out.printf("Current Regex = %s\n", regex);
     System.out.println();
 
-    System.out.println("=== TRACES ===");
-    for (int i = 0; i < pos.size(); i++) { printRouteSet(posList.get(i), posRoutes.get(i)); }
-    for (int i = 0; i < neg.size(); i++) { printRouteSet(negList.get(i), negRoutes.get(i)); }
+    // Print positive ranges
+    for (int i = 0; i < pos.size(); i++) {
+      System.out.printf("%s apply \"%s\"\n", regex, posList.get(i));
+      printRouteSet(posRoutes.get(i));
+    }
 
-    CharClassSolver.solve(posRoutes, negRoutes);
+    // Print negative ranges
+    for (int i = 0; i < neg.size(); i++) {
+      System.out.printf("%s apply \"%s\"\n", regex, negList.get(i));
+      printRouteSet(negRoutes.get(i));
+    }
+
+    // Print positive and negative examples
+    System.out.printf("Positives:%s\n", posList.stream().reduce("", (a, s) -> a + " " + s));
+    System.out.printf("Negatives:%s\n", negList.stream().reduce("", (a, s) -> a + " " + s));
+    System.out.println();
 
     Map<Integer, String> solution = null;
 
     try {
       solution = CharClassSolver.solve(posRoutes, negRoutes);
     } catch (SynthesisFailure ex) {
-      System.out.println("=== FAILURE ===");
+      System.out.println("Failed to synthesize a result");
+      System.exit(1);
     }
 
-    System.out.println("=== SUCCESS ===");
     System.out.println(solution);
   }
 
-  private static void printRouteSet (String source, Set<Route> routes) {
+  private static void printRouteSet (Set<Route> routes) {
     if (routes == null) {
       System.out.println("ROUTES == NULL");
       return;
     }
 
-    System.out.printf("\"%s\"\n", source);
     int i = 0;
     for (Route route : routes) {
       System.out.printf("R%d", i++);
