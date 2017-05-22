@@ -1,3 +1,5 @@
+.idea
+*.iml
 bin
 target
 node_modules
