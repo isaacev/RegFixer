@@ -5,6 +5,11 @@ public class CharDotNode implements CharClass {
     return 1;
   }
 
+  @Override
+  public boolean equals (CharClass other) {
+    return (other instanceof CharDotNode);
+  }
+
   public String toString () {
     return ".";
   }

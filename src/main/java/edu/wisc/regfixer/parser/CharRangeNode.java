@@ -30,6 +30,18 @@ public class CharRangeNode implements CharClass {
     return 1;
   }
 
+  @Override
+  public boolean equals (CharClass other) {
+    if (other instanceof CharRangeNode) {
+      CharRangeNode cast = (CharRangeNode) other;
+      boolean sameLeft = this.left.equals(cast.getLeftChild());
+      boolean sameRight = this.right.equals(cast.getRightChild());
+      return (sameLeft && sameRight);
+    }
+
+    return false;
+  }
+
   public String toString () {
     if (this.left == this.right) {
       return this.left.toString();

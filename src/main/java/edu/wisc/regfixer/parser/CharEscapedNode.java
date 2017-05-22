@@ -15,6 +15,15 @@ public class CharEscapedNode implements ConcreteCharClass {
     return 1;
   }
 
+  @Override
+  public boolean equals (CharClass other) {
+    if (other instanceof CharEscapedNode) {
+      return (this.ch == ((CharEscapedNode) other).getChar());
+    }
+
+    return false;
+  }
+
   public String toString () {
     return String.format("\\%c", this.ch);
   }
