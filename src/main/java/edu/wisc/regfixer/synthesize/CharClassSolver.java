@@ -37,11 +37,11 @@ public class CharClassSolver {
   }
 
   private static class InnerState {
-    public Context ctx;
-    public Optimize opt;
-    public Set<BoolExpr> vars;
-    public Map<BoolExpr, Integer> varToHoleId;
-    public Map<BoolExpr, String> varToCharClass;
+    Context ctx;
+    Optimize opt;
+    Set<BoolExpr> vars;
+    Map<BoolExpr, Integer> varToHoleId;
+    Map<BoolExpr, String> varToCharClass;
 
     public InnerState () {
       this.ctx = new Context();
@@ -53,14 +53,14 @@ public class CharClassSolver {
   }
 
   private static class ExprPredPair {
-    public BoolExpr expr;
-    public BoolExpr pred;
+    BoolExpr expr;
+    BoolExpr pred;
 
-    public ExprPredPair () {
+    ExprPredPair () {
       this(null, null);
     }
 
-    public ExprPredPair (BoolExpr expr, BoolExpr pred) {
+    ExprPredPair (BoolExpr expr, BoolExpr pred) {
       this.expr = expr;
       this.pred = pred;
     }
