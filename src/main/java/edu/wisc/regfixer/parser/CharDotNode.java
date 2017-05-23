@@ -10,6 +10,11 @@ public class CharDotNode implements CharClass {
     return (other instanceof CharDotNode);
   }
 
+  @Override
+  public boolean equals (String other) {
+    return other.equals(".");
+  }
+
   public String toString () {
     return ".";
   }

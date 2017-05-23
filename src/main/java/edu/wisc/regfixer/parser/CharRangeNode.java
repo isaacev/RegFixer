@@ -42,6 +42,11 @@ public class CharRangeNode implements CharClass {
     return false;
   }
 
+  @Override
+  public boolean equals (String other) {
+    return this.toString().equals(other);
+  }
+
   public String toString () {
     if (this.left == this.right) {
       return this.left.toString();

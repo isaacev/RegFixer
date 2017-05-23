@@ -24,6 +24,11 @@ public class CharEscapedNode implements ConcreteCharClass {
     return false;
   }
 
+  @Override
+  public boolean equals (String other) {
+    return this.toString().equals(other);
+  }
+
   public String toString () {
     return String.format("\\%c", this.ch);
   }

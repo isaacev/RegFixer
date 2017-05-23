@@ -41,6 +41,11 @@ public class CharClassSetNode implements CharClass {
     return false;
   }
 
+  @Override
+  public boolean equals (String other) {
+    return this.toString().equals(other);
+  }
+
   public String toString () {
     String str = this.subClasses.stream()
       .map(elem -> elem.toString())
