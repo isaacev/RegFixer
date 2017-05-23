@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -16,9 +17,12 @@ import com.microsoft.z3.Model;
 import com.microsoft.z3.Optimize;
 import com.microsoft.z3.Status;
 import edu.wisc.regfixer.automata.Route;
+import edu.wisc.regfixer.parser.CharClass;
+import edu.wisc.regfixer.parser.CharEscapedNode;
+import edu.wisc.regfixer.parser.CharLiteralNode;
 
 public class CharClassSolver {
-  public static Map<Integer, String> solve (List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
+  public static Map<Integer, CharClass> solve (List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
     InnerState state = new InnerState();
 
     for (Set<Route> routes : positives) {
@@ -41,7 +45,7 @@ public class CharClassSolver {
     Optimize opt;
     Set<BoolExpr> vars;
     Map<BoolExpr, Integer> varToHoleId;
-    Map<BoolExpr, String> varToCharClass;
+    Map<BoolExpr, CharClass> varToCharClass;
 
     public InnerState () {
       this.ctx = new Context();
@@ -66,41 +70,40 @@ public class CharClassSolver {
     }
   }
 
-  private static Map<Integer, String> solveFormula (InnerState state) throws SynthesisFailure {
+  private static Map<Integer, CharClass> solveFormula (InnerState state) throws SynthesisFailure {
     if (state.opt.Check() == Status.UNSATISFIABLE) {
       throw new SynthesisFailure("failed to solve formula");
     }
 
     Model model = state.opt.getModel();
+    System.out.println(state.opt.toString());
     System.out.println(model.toString());
-
-    Map<Integer, Set<String>> candidates = new HashMap<>();
+    Map<Integer, Set<CharClass>> candidates = new HashMap<>();
     for (BoolExpr var : state.vars) {
       if (model.evaluate(var, false).isTrue()) {
         Integer holeId = state.varToHoleId.get(var);
-        String charClass = state.varToCharClass.get(var);
+        CharClass charClass = state.varToCharClass.get(var);
 
         if (candidates.containsKey(holeId) == false) {
-          candidates.put(holeId, new HashSet<String>());
+          candidates.put(holeId, new HashSet<CharClass>());
         }
 
         candidates.get(holeId).add(charClass);
       }
     }
 
-    Map<Integer, String> solution = new HashMap<>();
+    Map<Integer, CharClass> solution = new HashMap<>();
     for (Integer holeId : candidates.keySet()) {
-      Set<String> charClasses = candidates.get(holeId);
+      Set<CharClass> charClasses = candidates.get(holeId);
 
       if (charClasses.contains("\\w")) {
-        solution.put(holeId, "\\w");
+        solution.put(holeId, new CharEscapedNode('w'));
       } else {
-        String charClass = String.join("", charClasses);
-        solution.put(holeId, charClass);
+        String charClass = String.format("[%s]", String.join("", charClasses.stream().map(c -> c.toString()).collect(Collectors.toList())));
+        solution.put(holeId, new CharLiteralNode('w'));
       }
     }
 
-    System.out.println(candidates);
     return solution;
   }
 
@@ -157,8 +160,8 @@ public class CharClassSolver {
   private static ExprPredPair buildHoleFormula (InnerState state, Entry<Integer, Set<Character>> hole, boolean isPositive) {
     final Function<Character, ExprPredPair> charToFormula = (ch) -> {
       Integer holeId = hole.getKey();
-      BoolExpr expr = registerVariable(state, holeId, ch.toString());
-      BoolExpr pred = registerVariable(state, holeId, "\\w");
+      BoolExpr expr = registerVariable(state, holeId, new CharLiteralNode(ch));
+      BoolExpr pred = registerVariable(state, holeId, new CharEscapedNode('w'));
       return new ExprPredPair(expr, pred);
     };
 
@@ -199,8 +202,8 @@ public class CharClassSolver {
                .reduce(new ExprPredPair(), mergeFormulae);
   }
 
-  private static BoolExpr registerVariable (InnerState state, Integer holeId, String charClass) {
-    String name = String.format("H%d_C%s", holeId, charClass);
+  private static BoolExpr registerVariable (InnerState state, Integer holeId, CharClass charClass) {
+    String name = String.format("H%d_C%s", holeId, charClass.toString());
     BoolExpr expr = state.ctx.mkBoolConst(name);
 
     state.vars.add(expr);
