@@ -29,6 +29,18 @@ public class CharClassSetNode implements CharClass {
     return 1;
   }
 
+  @Override
+  public boolean equals (CharClass other) {
+    if (other instanceof CharClassSetNode) {
+      CharClassSetNode cast = (CharClassSetNode) other;
+      boolean sameSubClasses = this.subClasses.equals(cast.getSubClasses());
+      boolean sameNegation = (this.not == cast.isInverted());
+      return (sameSubClasses && sameNegation);
+    }
+
+    return false;
+  }
+
   public String toString () {
     String str = this.subClasses.stream()
       .map(elem -> elem.toString())
