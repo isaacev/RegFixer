@@ -14,6 +14,10 @@ public class Route {
     return this.spans;
   }
 
+  public boolean isEmpty () {
+    return this.spans.isEmpty();
+  }
+
   @Override
   public boolean equals (Object other) {
     if (other instanceof Route) {

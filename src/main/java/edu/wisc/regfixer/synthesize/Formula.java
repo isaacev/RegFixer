@@ -95,11 +95,15 @@ public class Formula {
     Formula frm = new Formula();
 
     for (Set<Route> routes : positives) {
-      buildExampleFormula(frm, routes, true);
+      if (routes.stream().anyMatch(r -> !r.isEmpty())) {
+        buildExampleFormula(frm, routes, true);
+      }
     }
 
     for (Set<Route> routes : negatives) {
-      buildExampleFormula(frm, routes, false);
+      if (routes.stream().anyMatch(r -> !r.isEmpty())) {
+        buildExampleFormula(frm, routes, false);
+      }
     }
 
     System.out.println(frm.opt.toString());
@@ -126,6 +130,7 @@ public class Formula {
     };
 
     ExprPredPair pair = routes.stream()
+      .filter(route -> !route.isEmpty())
       .map(route -> buildRouteFormula(frm, route, isPosExample))
       .reduce(new ExprPredPair(), mergeFormulae);
 
