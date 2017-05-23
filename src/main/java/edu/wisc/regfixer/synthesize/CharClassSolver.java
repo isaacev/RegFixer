@@ -24,5 +24,55 @@ import edu.wisc.regfixer.parser.CharRangeNode;
 import edu.wisc.regfixer.parser.ConcreteCharClass;
 
 public class CharClassSolver {
-  // ...
+  public static Map<Integer, CharClass> solve (Formula formula) throws SynthesisFailure {
+    if (formula.isUnSatisfiable()) {
+      throw new SynthesisFailure("failed to solve formula");
+    }
+
+    Map<Integer, Set<CharClass>> candidates = new HashMap<>();
+    for (BoolExpr var : formula.getVariables()) {
+      if (formula.variableEvaluatesTrue(var)) {
+        Integer holeId = formula.getHoleIdForVariable(var);
+        CharClass charClass = formula.getCharClassForVariable(var);
+
+        if (candidates.containsKey(holeId) == false) {
+          candidates.put(holeId, new HashSet<CharClass>());
+        }
+
+        candidates.get(holeId).add(charClass);
+      }
+    }
+
+    Map<Integer, CharClass> solution = new HashMap<>();
+    for (Integer holeId : candidates.keySet()) {
+      solution.put(holeId, maximizeCharClasses(candidates.get(holeId)));
+    }
+
+    return solution;
+  }
+
+  private static CharClass maximizeCharClasses (Set<CharClass> classes) throws SynthesisFailure {
+    if (classes.contains("\\d")) { return new CharEscapedNode('d'); }
+    if (classes.contains("\\D")) { return new CharEscapedNode('D'); }
+    if (classes.contains("\\s")) { return new CharEscapedNode('s'); }
+    if (classes.contains("\\S")) { return new CharEscapedNode('S'); }
+    if (classes.contains("\\w")) { return new CharEscapedNode('w'); }
+    if (classes.contains("\\W")) { return new CharEscapedNode('W'); }
+
+    if (classes.size() > 1) {
+      if (classes.stream().noneMatch(c -> c instanceof ConcreteCharClass)) {
+        throw new SynthesisFailure("cannot combine into a single character class");
+      }
+
+      List<CharRangeNode> ranges = classes.stream()
+        .map(c -> new CharRangeNode((ConcreteCharClass) c))
+        .collect(Collectors.toList());
+
+      return new CharClassSetNode(false, ranges);
+    } else if (classes.size() == 1) {
+      return (new LinkedList<>(classes)).get(0);
+    }
+
+    throw new SynthesisFailure("no character classes");
+  }
 }
