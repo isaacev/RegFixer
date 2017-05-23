@@ -16,6 +16,8 @@ import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.parser.CharClass;
+import edu.wisc.regfixer.synthesize.Formula;
 import edu.wisc.regfixer.synthesize.CharClassSolver;
 import edu.wisc.regfixer.synthesize.SynthesisFailure;
 
@@ -31,7 +33,7 @@ public class Main {
     ));
 
     Set<String> positives = new HashSet<>();
-    positives.add("axyz");
+    positives.add("axyb");
     positives.add("axyzxyz");
     positives.add("axyzxyzxyz");
 
@@ -72,10 +74,11 @@ public class Main {
     System.out.printf("Negatives:%s\n", negList.stream().reduce("", (a, s) -> a + " " + s));
     System.out.println();
 
-    Map<Integer, String> solution = null;
+    Formula formula = Formula.build(posRoutes, negRoutes);
+    Map<Integer, CharClass> solution = null;
 
     try {
-      solution = CharClassSolver.solve(posRoutes, negRoutes);
+      solution = CharClassSolver.solve(formula);
     } catch (SynthesisFailure ex) {
       System.out.println("Failed to synthesize a result");
       System.exit(1);
