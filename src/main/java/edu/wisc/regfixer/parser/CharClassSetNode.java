@@ -1,21 +1,23 @@
 package edu.wisc.regfixer.parser;
 
-import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collection;
 
 public class CharClassSetNode implements CharClass {
   private boolean not;
-  private List<CharRangeNode> subClasses;
+  private Set<CharRangeNode> subClasses;
 
-  public CharClassSetNode (boolean not, List<CharRangeNode> subClasses) {
+  public CharClassSetNode (boolean not, Collection<CharRangeNode> subClasses) {
     this.not = not;
-    this.subClasses = subClasses;
+    this.subClasses = new HashSet<>(subClasses);
   }
 
   public boolean isInverted () {
     return this.not;
   }
 
-  public List<CharRangeNode> getSubClasses () {
+  public Set<CharRangeNode> getSubClasses () {
     return this.subClasses;
   }
 
