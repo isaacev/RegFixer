@@ -97,28 +97,37 @@ public class Corpus {
   }
 
   public static Set<Range> inferNegativeRanges (Pattern pattern, String corpus, Set<Range> positives) {
-    List<Range> oldRanges = new LinkedList<>(getMatchingRanges(pattern, corpus));
-    List<Range> newRanges = new LinkedList<>(positives);
-    Collections.sort(oldRanges);
-    Collections.sort(newRanges);
+    Set<Range> found = getMatchingRanges(pattern, corpus);
+    return inferNegativeRanges(found, positives);
+  }
 
+  public static Set<Range> inferNegativeRanges (Set<Range> found, Set<Range> expected) {
+    List<Range> foundList = new LinkedList<>(found);
+    List<Range> expectedList = new LinkedList<>(expected);
+    return inferNegativeRanges(foundList, expectedList);
+  }
+
+  public static Set<Range> inferNegativeRanges (List<Range> found, List<Range> expected) {
     Set<Range> negatives = new HashSet<>();
+
+    Collections.sort(found);
+    Collections.sort(expected);
 
     int oldIndex = 0;
     int newIndex = 0;
 
     while (true) {
-      if (oldIndex >= oldRanges.size()) {
+      if (oldIndex >= found.size()) {
         break;
       }
 
-      if (newIndex >= newRanges.size()) {
-        negatives.add(oldRanges.get(oldIndex++));
+      if (newIndex >= expected.size()) {
+        negatives.add(found.get(oldIndex++));
         continue;
       }
 
-      Range oldRange = oldRanges.get(oldIndex);
-      Range newRange = newRanges.get(newIndex);
+      Range oldRange = found.get(oldIndex);
+      Range newRange = expected.get(newIndex);
 
       if (newRange.getLeftIndex() == oldRange.getLeftIndex()) {
         if (newRange.equals(oldRange) == false) {
