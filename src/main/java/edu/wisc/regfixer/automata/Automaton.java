@@ -73,6 +73,7 @@ public class Automaton extends automata.Automaton {
 
   private List<State> getEpsClosure (List<State> frontier) {
     List<State> reached = new LinkedList<>(frontier);
+    Set<State> seen = new HashSet<>(frontier);
     LinkedList<State> toVisit = new LinkedList<>(frontier);
 
     while (toVisit.size() > 0) {
@@ -81,7 +82,11 @@ public class Automaton extends automata.Automaton {
         if (move.isEpsilonTransition()) {
           State newState = new State(move.to, currState);
           reached.add(newState);
-          toVisit.add(newState);
+
+          if (false == seen.contains(newState)) {
+            toVisit.add(newState);
+            seen.add(newState);
+          }
         }
       }
     }
