@@ -22,7 +22,7 @@ public class Synthesis {
     Map<HoleId, CharClass> holeSolutions = CharClassSolver.solve(formula);
 
     if (holeSolutions.size() != enumerant.getHoles().size()) {
-      throw new SynthesisFailure("failed to solve formula");
+      throw new SynthesisFailure("no solution for some holes");
     }
 
     RegexNode solution = enumerant.getTree();

@@ -27,7 +27,7 @@ import edu.wisc.regfixer.parser.ConcreteCharClass;
 public class CharClassSolver {
   public static Map<HoleId, CharClass> solve (Formula formula) throws SynthesisFailure {
     if (formula.isUnSatisfiable()) {
-      throw new SynthesisFailure("failed to solve formula");
+      throw new SynthesisFailure("unsatisfiable SAT formula");
     }
 
     Map<HoleId, Set<CharClass>> candidates = new HashMap<>();
