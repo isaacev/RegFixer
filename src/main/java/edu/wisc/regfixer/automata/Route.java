@@ -43,7 +43,7 @@ public class Route {
         accum += "\n  ";
       }
 
-      accum += String.format(" H%d {", entry.getKey());
+      accum += String.format(" %s {", entry.getKey());
 
       for (Character ch : entry.getValue()) {
         accum += String.format(" %c", ch);
