@@ -1,18 +1,39 @@
 package edu.wisc.regfixer.synthesize;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import edu.wisc.regfixer.automata.Route;
+import edu.wisc.regfixer.enumerate.Enumerant;
+import edu.wisc.regfixer.enumerate.Grafter;
+import edu.wisc.regfixer.enumerate.HoleNode;
+import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class Synthesis {
   private RegexNode tree;
 
-  public Synthesis (RegexNode tree, List<Set<Route>> positiveRuns, List<Set<Route>> negativeRuns) throws SynthesisFailure {
-    this.tree = tree;
+  public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
+    Formula formula = Formula.build(positives, negatives);
+    Map<Integer, CharClass> holeSolutions = CharClassSolver.solve(formula);
+
+    if (holeSolutions.size() != enumerant.getHoles().size()) {
+      throw new SynthesisFailure("failed to solve formula");
+    }
+
+    RegexNode solution = enumerant.getTree();
+
+    System.out.println(holeSolutions);
+    for (Entry<Integer, CharClass> holeSolution : holeSolutions.entrySet()) {
+      HoleNode hole = enumerant.getHoles().get(holeSolution.getKey());
+      RegexNode twig = holeSolution.getValue();
+      solution = Grafter.graft(solution, hole, twig);
+    }
+
+    this.tree = solution;
   }
 
   public Pattern toPattern (boolean withAnchors) {
