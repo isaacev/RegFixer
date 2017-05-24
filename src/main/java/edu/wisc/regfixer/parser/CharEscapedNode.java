@@ -23,17 +23,12 @@ public class CharEscapedNode implements ConcreteCharClass {
   }
 
   @Override
-  public boolean equals (CharClass other) {
-    if (other instanceof CharEscapedNode) {
-      return (this.ch == ((CharEscapedNode) other).getChar());
+  public boolean equals (Object obj) {
+    if (obj instanceof CharEscapedNode) {
+      return (this.ch == ((CharEscapedNode) obj).getChar());
     }
 
     return false;
-  }
-
-  @Override
-  public boolean equals (String other) {
-    return this.toString().equals(other);
   }
 
   public String toString () {

@@ -23,17 +23,12 @@ public class CharLiteralNode implements ConcreteCharClass {
   }
 
   @Override
-  public boolean equals (CharClass other) {
-    if (other instanceof CharLiteralNode) {
-      return (this.ch == ((CharLiteralNode) other).getChar());
+  public boolean equals (Object obj) {
+    if (obj instanceof CharLiteralNode) {
+      return (this.ch == ((CharLiteralNode) obj).getChar());
     }
 
     return false;
-  }
-
-  @Override
-  public boolean equals (String other) {
-    return this.toString().equals(other);
   }
 
   public String toString () {

@@ -13,13 +13,8 @@ public class CharDotNode implements CharClass {
   }
 
   @Override
-  public boolean equals (CharClass other) {
-    return (other instanceof CharDotNode);
-  }
-
-  @Override
-  public boolean equals (String other) {
-    return other.equals(".");
+  public boolean equals (Object obj) {
+    return (obj instanceof CharDotNode);
   }
 
   public String toString () {
