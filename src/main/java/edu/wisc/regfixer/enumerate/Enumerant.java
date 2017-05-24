@@ -142,7 +142,7 @@ public class Enumerant implements Comparable<Enumerant> {
       throw new SynthesisFailure(String.format(fmt, this.tree));
     }
 
-    return new Synthesis(this.tree, positiveRuns, negativeRuns);
+    return new Synthesis(this, positiveRuns, negativeRuns);
   }
 
   @Override
