@@ -81,8 +81,8 @@ public class Corpus {
   }
 
   public Set<Range> findUnexpectedMatches (Synthesis synthesis) {
-    // TODO
-    return null;
+    Set<Range> found = getMatchingRanges(synthesis.toPattern(), this.corpus);
+    return Corpus.inferNegativeRanges(found, this.positiveRanges);
   }
 
   private boolean matchesStrings (Pattern pattern, Set<String> strings) {
