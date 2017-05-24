@@ -121,7 +121,7 @@ public class Formula {
 
       if (accum.pred == null) {
         accum.pred = pair.pred;
-      } else {
+      } else if (pair.pred != null) {
         accum.pred = frm.ctx.mkAnd(accum.pred, pair.pred);
       }
 
@@ -134,7 +134,10 @@ public class Formula {
       .reduce(new ExprPredPair(), mergeFormulae);
 
     frm.opt.Add(pair.expr);
-    frm.opt.Add(pair.pred);
+
+    if (pair.pred != null) {
+      frm.opt.Add(pair.pred);
+    }
   }
 
   private static ExprPredPair buildRouteFormula (Formula frm, Route route, boolean isPosExample) {
@@ -149,7 +152,7 @@ public class Formula {
 
       if (accum.pred == null) {
         accum.pred = pair.pred;
-      } else {
+      } else if (pair.pred != null) {
         accum.pred = frm.ctx.mkAnd(accum.pred, pair.pred);
       }
 
@@ -167,14 +170,21 @@ public class Formula {
     final Function<Character, ExprPredPair> charToFormula = (ch) -> {
       HoleId holeId = hole.getKey();
       BoolExpr expr = frm.registerVariable(holeId, new CharLiteralNode(ch));
-      BoolExpr pred = frm.registerVariable(holeId, new CharEscapedNode('w'));
-      return new ExprPredPair(expr, pred);
+      return new ExprPredPair(expr, null);
     };
 
     AtomicInteger index = new AtomicInteger();
     final BinaryOperator<ExprPredPair> mergeFormulae = (accum, pair) -> {
       if (index.getAndIncrement() > 1) {
-        frm.opt.AssertSoft(pair.pred, 5, "MAX_SAT");
+        HoleId holeId = hole.getKey();
+        BoolExpr pred = frm.registerVariable(holeId, new CharEscapedNode('w'));
+        frm.opt.AssertSoft(pred, 5, "MAX_SAT");
+
+        if (accum.pred == null) {
+          accum.pred = frm.ctx.mkOr(frm.ctx.mkNot(pred), pair.expr);
+        } else if (pred != null) {
+          accum.pred = frm.ctx.mkAnd(accum.pred, frm.ctx.mkOr(frm.ctx.mkNot(pred), pair.expr));
+        }
       }
 
       frm.opt.AssertSoft(pair.expr, -2, "MAX_SAT");
@@ -191,13 +201,6 @@ public class Formula {
         } else {
           accum.expr = frm.ctx.mkOr(accum.expr, frm.ctx.mkNot(pair.expr));
         }
-      }
-
-      BoolExpr pred = frm.ctx.mkOr(frm.ctx.mkNot(pair.pred), pair.expr);
-      if (accum.pred == null) {
-        accum.pred = pred;
-      } else {
-        accum.pred = frm.ctx.mkAnd(accum.pred, pred);
       }
 
       return accum;
