@@ -24,7 +24,6 @@ public class Corpus {
     this.negativeRanges = new HashSet<Range>(negatives);
 
     this.positiveExamples = this.positiveRanges.stream()
-      .map(r -> this.corpus.substring(r.getLeftIndex(), r.getRightIndex()))
       .map(r -> this.getSubstring(r))
       .collect(Collectors.toSet());
 
