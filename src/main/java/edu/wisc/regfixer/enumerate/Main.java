@@ -6,6 +6,7 @@ import java.util.*;
 import edu.wisc.regfixer.automata.Automaton;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.synthesize.Synthesis;
+import edu.wisc.regfixer.synthesize.SynthesisFailure;
 import edu.wisc.regfixer.util.ReportStream;
 import org.sat4j.specs.TimeoutException;
 
@@ -13,8 +14,10 @@ public class Main {
   public static void main (String[] args) {
     Job job = null;
 
+    String filename = "benchmarks/repeat.txt";
+
     try {
-      job = Benchmark.readFromFile("benchmarks/repeat.txt");
+      job = Benchmark.readFromFile(args.length > 0 ? args[0] : filename);
     } catch (IOException ex) {
       System.err.println("could not read benchmark file");
       System.exit(1);
@@ -25,45 +28,60 @@ public class Main {
     Enumerant enumerant = null;
     Synthesis synthesis = null;
 
+    // Scanner stdin = new Scanner(System.in);
 
-    Scanner stdin = new Scanner(System.in);
-
+    System.out.println("Cost:   Enumerant:      Repair:         Error:");
+    System.out.println("--------------------------------------------------------");
     while ((enumerant = enumerants.poll()) != null) {
-      stdin.nextLine();
-      System.out.printf("%d\t%s", enumerant.getCost(), enumerant);
+      System.out.printf("%-7d %-16s", enumerant.getCost(), enumerant);
 
-      /*
       if (corpus.passesDotTest(enumerant)) {
-        if ((synthesis = enumerant.synthesize(corpus)) != null) {
-          if (corpus.noUnexpectedMatches(synthesis)) {
-            System.out.println("=== FIN ===");
-            System.out.println(synthesis);
-            System.out.println("=== === ===");
-          } else {
-            enumerants.restart(corpus.findUnexpectedMatches(synthesis));
-          }
+        // if ((synthesis = enumerant.synthesize(corpus)) != null) {
+        //   if (corpus.noUnexpectedMatches(synthesis)) {
+        //     System.out.println("=== FIN ===");
+        //     System.out.println(synthesis);
+        //     System.out.println("=== === ===");
+        //   } else {
+        //     enumerants.restart(corpus.findUnexpectedMatches(synthesis));
+        //   }
+        // }
+
+        try {
+          synthesis = enumerant.synthesize(corpus);
+        } catch (SynthesisFailure ex) {
+          System.out.printf("%16s%s", "", ex.getMessage());
+          synthesis = null;
         }
-      }
-      */
 
-      // Testing Begins here
+        if (synthesis != null) {
+          if (corpus.noUnexpectedMatches(synthesis)) {
+            System.out.println("perfect match");
+          } else {
+            System.out.println("broken match");
+            System.out.print("[");
+            for (Range missing : corpus.findUnexpectedMatches(synthesis)) {
+              System.out.printf(" %s", missing.toString());
+            }
+            System.out.println(" ]");
+            System.out.print("[");
+            for (Range missing : corpus.findUnexpectedMatches(synthesis)) {
+              System.out.printf(" %s", corpus.getSubstring(missing));
+            }
+            System.out.println(" ]");
+          }
 
-      // if putting a DOT into a hole is possible, return it with that
-
-      // else, start dotStar and emptySet test
-      if(!corpus.passesDotStarTest(enumerant)) {
-        // TODO: handle Empty Set test later with negative examples
-        continue;
+          System.out.printf("%s", synthesis.toString());
+        }
       } else {
-        enumerant.toPattern(HoleNode.FillType.Dot);
-
-
-        RegexNode regexNode = synthesize(job);
-        System.out.println("New regex is " + regexNode.toString());
+        System.out.printf("%16s%s", "", "failed dot test");
       }
 
+      if (enumerant.getCost() > 3) {
+        break;
+      }
+
+      System.out.println();
     }
-    stdin.close();
   }
 
   public static RegexNode synthesize (Job job) {
