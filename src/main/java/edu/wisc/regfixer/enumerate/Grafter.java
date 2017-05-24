@@ -30,6 +30,10 @@ public class Grafter {
     return new Enumerant(graftedTree, graftedHoles, graftedCost);
   }
 
+  public static RegexNode graft (RegexNode original, HoleNode hole, RegexNode twig) {
+    return graftNode(original, hole, twig);
+  }
+
   private static RegexNode graftNode (RegexNode node, HoleNode hole, RegexNode twig) {
          if (node instanceof HoleNode)       { return graftHole((HoleNode) node, hole, twig); }
     else if (node instanceof ConcatNode)     { return graftConcat((ConcatNode) node, hole, twig); }
