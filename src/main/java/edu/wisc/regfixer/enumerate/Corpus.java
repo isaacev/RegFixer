@@ -25,15 +25,20 @@ public class Corpus {
 
     this.positiveExamples = this.positiveRanges.stream()
       .map(r -> this.corpus.substring(r.getLeftIndex(), r.getRightIndex()))
+      .map(r -> this.getSubstring(r))
       .collect(Collectors.toSet());
 
     this.negativeExamples = this.negativeRanges.stream()
-      .map(r -> this.corpus.substring(r.getLeftIndex(), r.getRightIndex()))
+      .map(r -> this.getSubstring(r))
       .collect(Collectors.toSet());
   }
 
   public String getCorpus () {
     return this.corpus;
+  }
+
+  public String getSubstring (Range range) {
+    return this.corpus.substring(range.getLeftIndex(), range.getRightIndex());
   }
 
   public Set<Range> getPositiveRanges () {
