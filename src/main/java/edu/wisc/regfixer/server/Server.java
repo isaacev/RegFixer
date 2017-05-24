@@ -1,13 +1,13 @@
 package edu.wisc.regfixer.server;
 
-import static spark.Spark.*;
-import spark.ModelAndView;
-import spark.template.freemarker.FreeMarkerEngine;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.enumerate.Job;
 import edu.wisc.regfixer.enumerate.Main;
+import edu.wisc.regfixer.parser.RegexNode;
+import spark.ModelAndView;
+import spark.template.freemarker.FreeMarkerEngine;
+import static spark.Spark.*;
 
 public class Server {
   public static void main(String[] args) {
