@@ -8,6 +8,7 @@ class State {
   private final State parent;
   private final Character value;
   private final Integer holeId;
+  private final int hash;
 
   public State (int stateId) {
     this(stateId, null, null, null);
@@ -26,6 +27,12 @@ class State {
     this.parent = parent;
     this.value = value;
     this.holeId = holeId;
+
+    if (this.parent != null) {
+      this.hash = (this.stateId * this.stateId) + this.parent.hashCode();
+    } else {
+      this.hash = (this.stateId * this.stateId);
+    }
   }
 
   public int getStateId () {
@@ -42,6 +49,24 @@ class State {
 
   public Integer getHoleId () {
     return this.holeId;
+  }
+
+  @Override
+  public boolean equals (Object obj) {
+    if (obj instanceof State) {
+      State cast = (State) obj;
+      boolean sameStateId = (this.stateId == cast.stateId);
+      boolean sameParent  = (this.parent == cast.parent);
+
+      return (sameStateId && sameParent);
+    }
+
+    return false;
+  }
+
+  @Override
+  public int hashCode () {
+    return this.hash;
   }
 
   public String toString () {
