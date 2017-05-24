@@ -52,7 +52,6 @@ public class Formula {
   public boolean variableEvaluatesTrue (BoolExpr var) {
     if (this.model == null) {
       this.model = this.opt.getModel();
-      System.out.println(this.model.toString());
     }
 
     return this.model.evaluate(var, false).isTrue();
@@ -106,7 +105,6 @@ public class Formula {
       }
     }
 
-    System.out.println(frm.opt.toString());
     return frm;
   }
 
