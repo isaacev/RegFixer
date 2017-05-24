@@ -19,12 +19,13 @@ import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
+import edu.wisc.regfixer.enumerate.HoleId;
 
 public class Formula {
   private Context ctx;
   private Optimize opt;
   private Set<BoolExpr> vars;
-  private Map<BoolExpr, Integer> varToHoleId;
+  private Map<BoolExpr, HoleId> varToHoleId;
   private Map<BoolExpr, CharClass> varToCharClass;
   private Model model;
 
@@ -57,7 +58,7 @@ public class Formula {
     return this.model.evaluate(var, false).isTrue();
   }
 
-  public Integer getHoleIdForVariable (BoolExpr var) {
+  public HoleId getHoleIdForVariable (BoolExpr var) {
     return this.varToHoleId.get(var);
   }
 
@@ -65,8 +66,8 @@ public class Formula {
     return this.varToCharClass.get(var);
   }
 
-  public BoolExpr registerVariable (Integer holeId, CharClass charClass) {
-    String varName = String.format("H%d_C%s", holeId, charClass);
+  public BoolExpr registerVariable (HoleId holeId, CharClass charClass) {
+    String varName = String.format("%s_C%s", holeId, charClass);
     BoolExpr varExpr = this.ctx.mkBoolConst(varName);
 
     this.vars.add(varExpr);
@@ -162,9 +163,9 @@ public class Formula {
                 .reduce(new ExprPredPair(), mergeFormulae);
   }
 
-  private static ExprPredPair buildHoleFormula (Formula frm, Entry<Integer, Set<Character>> hole, boolean isPositive) {
+  private static ExprPredPair buildHoleFormula (Formula frm, Entry<HoleId, Set<Character>> hole, boolean isPositive) {
     final Function<Character, ExprPredPair> charToFormula = (ch) -> {
-      Integer holeId = hole.getKey();
+      HoleId holeId = hole.getKey();
       BoolExpr expr = frm.registerVariable(holeId, new CharLiteralNode(ch));
       BoolExpr pred = frm.registerVariable(holeId, new CharEscapedNode('w'));
       return new ExprPredPair(expr, pred);

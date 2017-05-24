@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import edu.wisc.regfixer.enumerate.Job;
 import edu.wisc.regfixer.enumerate.Benchmark;
+import edu.wisc.regfixer.enumerate.HoleId;
 import edu.wisc.regfixer.enumerate.HoleNode;
 import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.ConcatNode;
@@ -75,7 +76,7 @@ public class Main {
     System.out.println();
 
     Formula formula = Formula.build(posRoutes, negRoutes);
-    Map<Integer, CharClass> solution = null;
+    Map<HoleId, CharClass> solution = null;
 
     try {
       solution = CharClassSolver.solve(formula);

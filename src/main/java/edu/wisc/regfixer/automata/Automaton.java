@@ -3,7 +3,6 @@ package edu.wisc.regfixer.automata;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.TreeMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +15,7 @@ import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import edu.wisc.regfixer.enumerate.HoleNode;
+import edu.wisc.regfixer.enumerate.HoleId;
 import edu.wisc.regfixer.parser.CharClassSetNode;
 import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
@@ -45,10 +45,7 @@ public class Automaton extends automata.Automaton {
   private final SFA<CharPred, Character> sfa;
   private int totalHoles = 0;
 
-  private static int nextHoleId = 0;
-
   public Automaton (RegexNode tree) throws TimeoutException {
-    Automaton.nextHoleId = 0;
     this.sfa = nodeToAutomaton(tree).sfa;
   }
 
@@ -121,7 +118,7 @@ public class Automaton extends automata.Automaton {
 
             if (moveCast.guard instanceof HolePred) {
               HolePred predCast = (HolePred) moveCast.guard;
-              int holdId = predCast.getHoleId();
+              HoleId holdId = predCast.getHoleId();
               newState = new State(move.to, parent, ch, holdId);
             }
           }
@@ -145,13 +142,13 @@ public class Automaton extends automata.Automaton {
   }
 
   private Route traceFromState (State endState) {
-    Map<Integer, Set<Character>> crosses = new TreeMap<>();
+    Map<HoleId, Set<Character>> crosses = new HashMap<>();
 
     State currState = endState;
     while (currState != null) {
       if (currState.getValue() != null && currState.getHoleId() != null) {
         char value = currState.getValue();
-        int holeId = currState.getHoleId();
+        HoleId holeId = currState.getHoleId();
 
         if (crosses.containsKey(holeId) == false) {
           crosses.put(holeId, new HashSet<>());
@@ -288,7 +285,7 @@ public class Automaton extends automata.Automaton {
     return fromPredicate(StdCharPred.TRUE);
   }
 
-  public static Automaton fromHolePredicate (int holeId) throws TimeoutException {
+  public static Automaton fromHolePredicate (HoleId holeId) throws TimeoutException {
     return fromPredicate(new HolePred(holeId));
   }
 
@@ -404,7 +401,7 @@ public class Automaton extends automata.Automaton {
   }
 
   private static Automaton holeToAutomaton (HoleNode node) throws TimeoutException {
-    return fromHolePredicate(Automaton.nextHoleId++);
+    return fromHolePredicate(node.getHoleId());
   }
 
   private static Automaton charClassSetToAutomaton (CharClassSetNode node) throws TimeoutException {

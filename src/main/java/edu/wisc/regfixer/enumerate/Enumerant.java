@@ -1,8 +1,12 @@
 package edu.wisc.regfixer.enumerate;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -20,11 +24,11 @@ import org.sat4j.specs.TimeoutException;
 
 public class Enumerant implements Comparable<Enumerant> {
   private final RegexNode tree;
-  private final List<HoleNode> holes;
+  private final Map<HoleId, HoleNode> holes;
   private final int cost;
 
   public Enumerant (RegexNode tree, Enumerant other) {
-    this(tree, other.holes, other.cost);
+    this(tree, other.holes.values(), other.cost);
   }
 
   public Enumerant (HoleNode hole, int cost) {
@@ -35,7 +39,19 @@ public class Enumerant implements Comparable<Enumerant> {
     this(tree, Arrays.asList(hole), cost);
   }
 
-  public Enumerant (RegexNode tree, List<HoleNode> holes, int cost) {
+  public Enumerant (RegexNode tree, Collection<HoleNode> holes, int cost) {
+    Map<HoleId, HoleNode> map = new HashMap<>();
+
+    for (HoleNode hole : holes) {
+      map.put(hole.getHoleId(), hole);
+    }
+
+    this.tree = tree;
+    this.holes = map;
+    this.cost = cost;
+  }
+
+  public Enumerant (RegexNode tree, Map<HoleId, HoleNode> holes, int cost) {
     this.tree = tree;
     this.holes = holes;
     this.cost = cost;
@@ -45,8 +61,20 @@ public class Enumerant implements Comparable<Enumerant> {
     return this.tree;
   }
 
-  public List<HoleNode> getHoles () {
-    return this.holes;
+  public Set<HoleNode> getHoles () {
+    return new HashSet<HoleNode>(this.holes.values());
+  }
+
+  public HoleNode getHole (HoleId holeId) {
+    return this.holes.get(holeId);
+  }
+
+  public boolean hasHole (HoleNode hole) {
+    return this.hasHole(hole.getHoleId());
+  }
+
+  public boolean hasHole (HoleId holeId) {
+    return this.holes.containsKey(holeId);
   }
 
   public int getCost () {
@@ -54,13 +82,13 @@ public class Enumerant implements Comparable<Enumerant> {
   }
 
   public Pattern toPattern (HoleNode.FillType type) {
-    for (HoleNode hole : this.holes) {
+    for (HoleNode hole : this.holes.values()) {
       hole.fill(type);
     }
 
     Pattern pattern = Pattern.compile(String.format("^%s$", this.tree));
 
-    for (HoleNode hole : this.holes) {
+    for (HoleNode hole : this.holes.values()) {
       hole.clear();
     }
 
@@ -70,7 +98,7 @@ public class Enumerant implements Comparable<Enumerant> {
   public List<Enumerant> expand () {
     List<Enumerant> expansions = new LinkedList<>();
 
-    for (HoleNode hole : this.holes) {
+    for (HoleNode hole : this.holes.values()) {
       expansions.add(this.expandWithUnion(hole));
       expansions.add(this.expandWithOptional(hole));
       expansions.add(this.expandWithStar(hole));

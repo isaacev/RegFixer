@@ -14,6 +14,7 @@ import com.microsoft.z3.Model;
 import com.microsoft.z3.Optimize;
 import com.microsoft.z3.Status;
 import edu.wisc.regfixer.automata.Route;
+import edu.wisc.regfixer.enumerate.HoleId;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.CharClassSetNode;
 import edu.wisc.regfixer.parser.CharDotNode;
@@ -24,15 +25,15 @@ import edu.wisc.regfixer.parser.CharRangeNode;
 import edu.wisc.regfixer.parser.ConcreteCharClass;
 
 public class CharClassSolver {
-  public static Map<Integer, CharClass> solve (Formula formula) throws SynthesisFailure {
+  public static Map<HoleId, CharClass> solve (Formula formula) throws SynthesisFailure {
     if (formula.isUnSatisfiable()) {
       throw new SynthesisFailure("failed to solve formula");
     }
 
-    Map<Integer, Set<CharClass>> candidates = new HashMap<>();
+    Map<HoleId, Set<CharClass>> candidates = new HashMap<>();
     for (BoolExpr var : formula.getVariables()) {
       if (formula.variableEvaluatesTrue(var)) {
-        Integer holeId = formula.getHoleIdForVariable(var);
+        HoleId holeId = formula.getHoleIdForVariable(var);
         CharClass charClass = formula.getCharClassForVariable(var);
 
         if (candidates.containsKey(holeId) == false) {
@@ -43,8 +44,8 @@ public class CharClassSolver {
       }
     }
 
-    Map<Integer, CharClass> solution = new HashMap<>();
-    for (Integer holeId : candidates.keySet()) {
+    Map<HoleId, CharClass> solution = new HashMap<>();
+    for (HoleId holeId : candidates.keySet()) {
       solution.put(holeId, maximizeCharClasses(candidates.get(holeId)));
     }
 
