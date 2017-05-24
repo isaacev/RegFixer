@@ -1,5 +1,7 @@
 package edu.wisc.regfixer.parser;
 
+import java.util.Objects;
+
 public class CharLiteralNode implements ConcreteCharClass {
   private char ch;
 
@@ -13,6 +15,11 @@ public class CharLiteralNode implements ConcreteCharClass {
 
   public int descendants () {
     return 1;
+  }
+
+  @Override
+  public int hashCode () {
+    return Objects.hash(this.ch);
   }
 
   @Override

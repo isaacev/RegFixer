@@ -1,8 +1,15 @@
 package edu.wisc.regfixer.parser;
 
+import java.util.Objects;
+
 public class CharDotNode implements CharClass {
   public int descendants () {
     return 1;
+  }
+
+  @Override
+  public int hashCode () {
+    return Objects.hash(".");
   }
 
   @Override

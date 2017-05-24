@@ -30,6 +30,11 @@ public class CharClassSetNode implements CharClass {
   }
 
   @Override
+  public int hashCode () {
+    return this.subClasses.stream().mapToInt(c -> c.hashCode()).sum();
+  }
+
+  @Override
   public boolean equals (CharClass other) {
     if (other instanceof CharClassSetNode) {
       CharClassSetNode cast = (CharClassSetNode) other;
