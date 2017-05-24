@@ -22,7 +22,7 @@ public class Grafter {
     RegexNode graftedTree = graftNode(original.getTree(), hole, twig.getTree());
     List<HoleNode> graftedHoles = original.getHoles()
       .stream()
-      .filter(h -> h == hole)
+      .filter(h -> h != hole)
       .collect(Collectors.toList());
     graftedHoles.addAll(twig.getHoles());
     int graftedCost = original.getCost() + twig.getCost();
