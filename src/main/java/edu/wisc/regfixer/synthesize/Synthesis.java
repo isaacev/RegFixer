@@ -27,7 +27,6 @@ public class Synthesis {
 
     RegexNode solution = enumerant.getTree();
 
-    System.out.println(holeSolutions);
     for (Entry<HoleId, CharClass> holeSolution : holeSolutions.entrySet()) {
       HoleNode hole = enumerant.getHole(holeSolution.getKey());
       RegexNode twig = holeSolution.getValue();
