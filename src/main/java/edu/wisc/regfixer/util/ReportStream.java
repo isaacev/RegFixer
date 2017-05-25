@@ -26,6 +26,36 @@ public class ReportStream extends PrintStream {
     this.printf("\n%s\n\n", message);
   }
 
+  public void printSearchTableHeader () {
+    this.println("  Cost:   Enumerant:      Repair:         Error:");
+    this.println("  --------------------------------------------------------");
+  }
+
+  public void printEnumerant (int cost, String enumerant) {
+    this.print(Ansi.White.sprintf("  %-8d", cost));
+    this.print(Ansi.Cyan.sprintf("%-16s", enumerant));
+  }
+
+  public void printEnumerantRepair (boolean newline, String repair) {
+    this.print(Ansi.Cyan.sprintf("%-16s", repair));
+
+    if (newline) {
+      this.printf("\n");
+    }
+  }
+
+  public void printEnumerantError (boolean padded, String message) {
+    if (padded) {
+      this.printf("%16s", "");
+    }
+
+    this.print(Ansi.White.sprintf("%s\n", message));
+  }
+
+  public void printEnumerantBadMatch (Range range, String example) {
+    this.print(Ansi.Red.sprintf("  %24s%-8s\"%s\"\n", "", range, example));
+  }
+
   public ReportStream printf (String fmt, Object ...args) {
     this.print(String.format(fmt, args));
     return this;
