@@ -36,6 +36,10 @@ public class Synthesis {
     this.tree = solution;
   }
 
+  public RegexNode getTree () {
+    return this.tree;
+  }
+
   public Pattern toPattern (boolean withAnchors) {
     if (withAnchors) {
       return Pattern.compile(String.format("^%s$", this.tree));
