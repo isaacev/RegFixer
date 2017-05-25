@@ -10,7 +10,7 @@ import { Editor } from './editor'
 
 interface Props {
   regex: string
-  onRegexChange: () => void
+  onRegexChange: (newRegex: string) => void
 }
 
 export class RegexEditor extends Component<Props, {}> {

@@ -14,6 +14,7 @@ const CM_PADDING = 4
 
 interface Props {
   highlightList: HighlightList
+  colors: string[]
   onNewPopoverZone: (zone: MouseoverZone, highlight: Highlight) => void
 }
 
@@ -26,10 +27,13 @@ export class Underlay extends Component<Props, {}> {
   }
 
   componentWillReceiveProps (newProps: Props) {
-    this.ctx.clearRect(0, 0, 500, 200)
-    this.ctx.fillStyle = 'red'
+    let colorIndex = 0
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     newProps.highlightList.forEach((highlight) => {
+      this.ctx.fillStyle = this.props.colors[colorIndex]
+      colorIndex = (colorIndex + 1) % this.props.colors.length
+
       let start = highlight.getStart().coords
       let end = highlight.getEnd().coords
 
@@ -66,7 +70,7 @@ export class Underlay extends Component<Props, {}> {
   render () {
     return (
       <div className="corpus-editor-underlay">
-        <canvas className="canvas" ref={(elem) => {
+        <canvas className="canvas" width="1000" height="500" ref={(elem) => {
           this.canvas = elem
         }} />
       </div>
