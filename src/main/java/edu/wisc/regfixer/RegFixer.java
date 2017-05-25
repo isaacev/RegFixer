@@ -36,8 +36,9 @@ public class RegFixer {
     Enumerant enumerant = null;
     Synthesis synthesis = null;
 
+    int i = 0;
     while ((enumerant = enumerants.poll()) != null) {
-      report.printEnumerant(enumerant.getCost(), enumerant.toString());
+      report.printEnumerant(++i, enumerant.getCost(), enumerant.toString());
 
       if (job.getCorpus().passesDotTest(enumerant)) {
         try {

@@ -32,12 +32,12 @@ public class ReportStream extends PrintStream {
   }
 
   public void printSearchTableHeader () {
-    this.println("  Cost:   Enumerant:      Repair:         Error:");
+    this.println("  Order:  Cost:   Enumerant:      Repair:         Error:");
     this.println("  --------------------------------------------------------");
   }
 
-  public void printEnumerant (int cost, String enumerant) {
-    this.print(Ansi.White.sprintf("  %-8d", cost));
+  public void printEnumerant (int order, int cost, String enumerant) {
+    this.print(Ansi.White.sprintf("  %-8d%-8d", order, cost));
     this.print(Ansi.Cyan.sprintf("%-16s", enumerant));
   }
 
@@ -58,7 +58,7 @@ public class ReportStream extends PrintStream {
   }
 
   public void printEnumerantBadMatch (Range range, String example) {
-    this.print(Ansi.Red.sprintf("  %24s%-8s\"%s\"\n", "", range, example));
+    this.print(Ansi.Red.sprintf("  %32s%-8s\"%s\"\n", "", range, example));
   }
 
   public ReportStream printf (String fmt, Object ...args) {
