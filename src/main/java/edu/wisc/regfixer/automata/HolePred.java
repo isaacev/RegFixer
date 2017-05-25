@@ -1,7 +1,7 @@
 package edu.wisc.regfixer.automata;
 
-import theory.characters.StdCharPred;
 import theory.characters.CharPred;
+import theory.characters.StdCharPred;
 
 public class HolePred extends CharPred {
   protected Integer holeId = null;

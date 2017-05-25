@@ -44,6 +44,21 @@ class State {
     return this.holeId;
   }
 
+  @Override
+  public boolean equals (Object obj) {
+    if (obj instanceof State) {
+      State cast = (State) obj;
+      return (this.stateId == cast.stateId);
+    }
+
+    return false;
+  }
+
+  @Override
+  public int hashCode () {
+    return this.stateId;
+  }
+
   public String toString () {
     return String.format("%d%s%s <- %s",
       this.stateId,

@@ -1,11 +1,12 @@
 package edu.wisc.regfixer.server;
 
 import java.util.Set;
-import edu.wisc.regfixer.parser.RegexNode;
-import edu.wisc.regfixer.parser.Main;
-import edu.wisc.regfixer.enumerate.Job;
+
 import edu.wisc.regfixer.enumerate.Corpus;
+import edu.wisc.regfixer.enumerate.Job;
 import edu.wisc.regfixer.enumerate.Range;
+import edu.wisc.regfixer.parser.Main;
+import edu.wisc.regfixer.parser.RegexNode;
 
 public class RequestPayload {
   private final String regex;

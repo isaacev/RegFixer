@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e069af8a-f770-4afa-919e-77b3de9bc5f9" name="Default" comment="" />
+    <list default="true" id="e069af8a-f770-4afa-919e-77b3de9bc5f9" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/mvn/com/microsoft/z3/4.5.0/com.microsoft.z3.jar" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/automata/Automaton.java" afterPath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/automata/Automaton.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/automata/HolePred.java" afterPath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/automata/HolePred.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/automata/State.java" afterPath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/automata/State.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/parser/Main.java" afterPath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/parser/Main.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/server/RequestPayload.java" afterPath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/server/RequestPayload.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/server/Server.java" afterPath="$PROJECT_DIR$/src/main/java/edu/wisc/regfixer/server/Server.java" />
+    </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -1049,12 +1058,12 @@
       <workItem from="1495476823484" duration="8729000" />
       <workItem from="1495509286384" duration="7442000" />
       <workItem from="1495566278491" duration="5945000" />
-      <workItem from="1495656033703" duration="12925000" />
+      <workItem from="1495656033703" duration="12999000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="110161000" />
+    <option name="totallyTimeSpent" value="110235000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
