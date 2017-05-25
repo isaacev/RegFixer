@@ -1,9 +1,11 @@
 package edu.wisc.regfixer.enumerate;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
 
-import edu.wisc.regfixer.automata.Automaton;
+import edu.wisc.regfixer.enumerate.Range;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.synthesize.Synthesis;
 import edu.wisc.regfixer.synthesize.SynthesisFailure;
@@ -28,59 +30,44 @@ public class Main {
     Enumerant enumerant = null;
     Synthesis synthesis = null;
 
-    // Scanner stdin = new Scanner(System.in);
+    final int costPadding = 8;
+    final int enumerantPadding = 16;
+    final int repairPadding = 16;
+
+    String enumerantFmt = "%-8d%-16s";
+    String repairFmt = "%-16s";
+    String errorFmt = "%16s%s\n";
+    String badMatchFmt = "%40s%-8s\"%s\"\n";
 
     System.out.println("Cost:   Enumerant:      Repair:         Error:");
     System.out.println("--------------------------------------------------------");
-    while ((enumerant = enumerants.poll()) != null) {
-      System.out.printf("%-7d %-16s", enumerant.getCost(), enumerant);
+    while ((enumerant = enumerants.poll()) != null && enumerant.getCost() < 4) {
+      System.out.printf(enumerantFmt, enumerant.getCost(), enumerant);
 
       if (corpus.passesDotTest(enumerant)) {
-        // if ((synthesis = enumerant.synthesize(corpus)) != null) {
-        //   if (corpus.noUnexpectedMatches(synthesis)) {
-        //     System.out.println("=== FIN ===");
-        //     System.out.println(synthesis);
-        //     System.out.println("=== === ===");
-        //   } else {
-        //     enumerants.restart(corpus.findUnexpectedMatches(synthesis));
-        //   }
-        // }
-
         try {
           synthesis = enumerant.synthesize(corpus);
         } catch (SynthesisFailure ex) {
-          System.out.printf("%16s%s", "", ex.getMessage());
-          synthesis = null;
+          System.out.printf(errorFmt, "", ex.getMessage());
+          continue;
         }
 
-        if (synthesis != null) {
-          if (corpus.noUnexpectedMatches(synthesis)) {
-            System.out.println("perfect match");
-          } else {
-            System.out.println("broken match");
-            System.out.print("[");
-            for (Range missing : corpus.findUnexpectedMatches(synthesis)) {
-              System.out.printf(" %s", missing.toString());
-            }
-            System.out.println(" ]");
-            System.out.print("[");
-            for (Range missing : corpus.findUnexpectedMatches(synthesis)) {
-              System.out.printf(" %s", corpus.getSubstring(missing));
-            }
-            System.out.println(" ]");
-          }
+        System.out.printf(repairFmt, synthesis.toString());
 
-          System.out.printf("%s", synthesis.toString());
+        if (corpus.isPerfectMatch(synthesis)) {
+          System.out.printf("perfect match\n");
+          return;
+        } else {
+          System.out.printf("matched more than positive examples:\n");
+          for (Range match : corpus.getBadMatches(synthesis)) {
+            System.out.printf(badMatchFmt, "", match, corpus.getSubstring(match));
+          }
+          continue;
         }
       } else {
-        System.out.printf("%16s%s", "", "failed dot test");
+        System.out.printf(errorFmt, "", "failed dot test");
+        continue;
       }
-
-      if (enumerant.getCost() > 3) {
-        break;
-      }
-
-      System.out.println();
     }
   }
 
