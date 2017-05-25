@@ -1,73 +1,129 @@
 package edu.wisc.regfixer.fixer;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
+import java.util.*;
 
 import edu.wisc.regfixer.automata.Automaton;
 import edu.wisc.regfixer.parser.*;
 import edu.wisc.regfixer.enumerate.HoleNode;
+import org.sat4j.specs.TimeoutException;
 
 /**
  * Created by sangyunpark on 5/19/17.
  */
 public class Main {
     public static void main (String[] args) throws Exception {
+//        testRepeat();
+//        testTwoHoles();
+        testDigitAndLetters();
+    }
+
+    public static void testDigitAndLetters() {
+        String reg = "(❑)+a(❑)+";
         RegexNode regex = new ConcatNode(Arrays.asList(
-                new HoleNode(),
-                new StarNode(new CharEscapedNode('w'))
+                new PlusNode(new HoleNode()),
+                new CharLiteralNode('a'),
+                new PlusNode(new HoleNode())
         ));
-        RegexNode regex2 = new ConcatNode(Arrays.asList(
+        List<String> posExamples = new ArrayList<>();
+        posExamples.add("123a23");
+        posExamples.add("abca23");
+
+        List<String> negExamples = new ArrayList<>();
+        negExamples.add("ccca1");
+        negExamples.add("bbba1");
+
+        performTest(regex, posExamples, negExamples);
+    }
+
+    public static void testRepeat() {
+        String reg = "a(❑)*";
+        RegexNode regex = new ConcatNode(Arrays.asList(
+                new CharLiteralNode('a'),
+//                new HoleNode(),
+                new StarNode(new HoleNode())
+        ));
+        List<String> posExamples = new ArrayList<>();
+        posExamples.add("a");
+        posExamples.add("azyx");
+        posExamples.add("axyzxyz");
+        posExamples.add("axyzxyzxyz");
+
+        List<String> negExamples = new ArrayList<>();
+        negExamples.add("a123");
+
+        performTest(regex, posExamples, negExamples);
+    }
+
+    public static void testTwoHoles() {
+        String reg = "a❑(❑)*";
+        try {
+//            RegexNode regex= edu.wisc.regfixer.parser.Main.parse(reg);
+        RegexNode regex = new ConcatNode(Arrays.asList(
                 new CharLiteralNode('a'),
                 new HoleNode(),
                 new StarNode(new HoleNode())
         ));
+            List<String> posExamples = new ArrayList<>();
+//            posExamples.add("a4");
+            posExamples.add("a2zxy");
+            posExamples.add("a3yyzxyz");
+            posExamples.add("a4zyzxyzxyz");
 
-        Automaton automaton = new Automaton(regex2);
-        System.out.println("Current Regex = " + regex2.toString());
+            List<String> negExamples = new ArrayList<>();
+            negExamples.add("awww");
 
-//        String pos1 = "a";
-        String pos2 = "axyz";
-        String pos3 = "axyzxyz";
-        String pos4 = "axyzxyzxyz";
-        String neg1 = "abbbb";
-
-//        List<Map<Integer, Set<Character>>> runs1 = automaton.computeRuns(pos1);
-        List<Map<Integer, Set<Character>>> runs2 = automaton.computeRuns(pos2);
-        List<Map<Integer, Set<Character>>> runs3 = automaton.computeRuns(pos3);
-        List<Map<Integer, Set<Character>>> runs4 = automaton.computeRuns(pos4);
-        List<Map<Integer, Set<Character>>> runs5 = automaton.computeRuns(neg1);
-
-        print(regex2.toString(),runs2, pos2);
-        print(regex2.toString(),runs3, pos3);
-//        print(regex2.toString(),runs4, pos4);
-        print(regex2.toString(),runs5, neg1);
-
-        SATSolver solver = new SATSolver(regex2);
-//        if(!runs1.isEmpty()) {
-//            solver.makeFormula(runs1, true);
-//        }
-        if(!runs2.isEmpty()) {
-            solver.makeFormula(runs2, true);
+            performTest(regex, posExamples, negExamples);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        if(!runs3.isEmpty()) {
-            solver.makeFormula(runs3, true);
-        }
-//        if(!runs4.isEmpty()) {
-//            solver.makeFormula(runs4, true);
-//        }
-        if(!runs5.isEmpty()) {
-            solver.makeFormula(runs5, false);
-        }
-//        System.out.printf("\nPositives: %s %s %s %s\n", pos1, pos2, pos3, pos4);
-        System.out.printf("\nPositives: %s %s %s\n", pos2, pos3, pos4);
-        System.out.printf("Negatives: %s\n", neg1);
-        RegexNode newRegex = solver.solveFormula();
     }
 
 
+    public static void performTest(RegexNode regex, List<String> posExamples, List<String> negExamples) {
+
+        try {
+            System.out.println("Current Regex = " + regex.toString());
+
+            Automaton automaton = new Automaton(regex);
+            List<List<Map<Integer, Set<Character>>>> allRunsPos = new ArrayList<>();
+            List<List<Map<Integer, Set<Character>>>> allRunsNeg = new ArrayList<>();
+
+            System.out.print("Positives: ");
+            for(int i = 0; i < posExamples.size(); i ++) {
+                String pos =  posExamples.get(i);
+                allRunsPos.add(automaton.computeRuns(pos));
+                print(regex.toString(), allRunsPos.get(i), pos);
+            }
+            System.out.print("\nNegatives: ");
+            for(int i = 0; i < negExamples.size(); i ++) {
+                String neg  = negExamples.get(i);
+//                System.out.print(neg + " ");
+                allRunsNeg.add(automaton.computeRuns(neg));
+                print(regex.toString(), allRunsNeg.get(i), neg);
+            }
+            System.out.println();
+            SATSolver solver = new SATSolver(regex);
+            for(List<Map<Integer, Set<Character>>> posRun : allRunsPos) {
+                if(!posRun.isEmpty()) {
+                    solver.makeFormula(posRun, true);
+                }
+            }
+            for(List<Map<Integer, Set<Character>>> negRun : allRunsNeg) {
+                if(!negRun.isEmpty()) {
+                    solver.makeFormula(negRun, false);
+                }
+            }
+            solver.encodePredConstraint();
+            RegexNode newRegex = solver.solveFormula();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
     public static void print(String regex, List<Map<Integer, Set<Character>>> runs, String ex) {
+        if (runs.isEmpty())
+            return;
         System.out.printf("\n%s apply \"%s\"\n", regex, ex);
         for (int i = 0; i < runs.size(); i++) {
             System.out.printf("R%d", i);
