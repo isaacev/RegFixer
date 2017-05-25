@@ -8,6 +8,8 @@ import edu.wisc.regfixer.util.ReportStream;
 
 public class CLI {
   public static void main (String[] args) {
+    boolean useColor = CLI.hasFlag("--color", args);
+
     if (args.length < 1) {
       System.err.println("Usage: regfixer [options] <benchmark>");
       System.exit(1);
@@ -22,7 +24,7 @@ public class CLI {
       System.exit(1);
     }
 
-    ReportStream report = new ReportStream(System.out, true);
+    ReportStream report = new ReportStream(System.out, useColor);
     RegFixer.fix(job, report);
   }
 
