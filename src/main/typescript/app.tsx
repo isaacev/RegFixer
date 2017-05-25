@@ -43,6 +43,16 @@ export class App extends Component<Props, State> {
       inError: false,
       message: '',
     }
+
+    this.handleRegexChange     = this.handleRegexChange.bind(this)
+    this.handleRequestFix      = this.handleRequestFix.bind(this)
+    this.handleAcceptFix       = this.handleAcceptFix.bind(this)
+    this.handleRejectFix       = this.handleRejectFix.bind(this)
+    this.handleCorpusChange    = this.handleCorpusChange.bind(this)
+    this.handleMatchesChange   = this.handleMatchesChange.bind(this)
+    this.handleEmptyRegex      = this.handleEmptyRegex.bind(this)
+    this.handleInfiniteMatches = this.handleInfiniteMatches.bind(this)
+    this.handleBrokenRegex     = this.handleBrokenRegex.bind(this)
   }
 
   handleRegexChange (newRegex: string): void {
@@ -131,29 +141,19 @@ export class App extends Component<Props, State> {
   }
 
   render () {
-    let handleRegexChange     = this.handleRegexChange.bind(this)
-    let handleRequestFix      = this.handleRequestFix.bind(this)
-    let handleAcceptFix       = this.handleAcceptFix.bind(this)
-    let handleRejectFix       = this.handleRejectFix.bind(this)
-    let handleCorpusChange    = this.handleCorpusChange.bind(this)
-    let handleMatchesChange   = this.handleMatchesChange.bind(this)
-    let handleEmptyRegex      = this.handleEmptyRegex.bind(this)
-    let handleInfiniteMatches = this.handleInfiniteMatches.bind(this)
-    let handleBrokenRegex     = this.handleBrokenRegex.bind(this)
-
     return (
       <div>
-        <RegexEditor regex={this.state.regex} onRegexChange={handleRegexChange}>
+        <RegexEditor regex={this.state.regex} onRegexChange={this.handleRegexChange}>
           <RegexEditorControls>
-            <Button glyph="?" color="blue" onClick={handleRequestFix} />
+            <Button glyph="?" color="blue" onClick={this.handleRequestFix} />
             <RegexEditorStatus inError={this.state.inError}>
               {this.state.message}
             </RegexEditorStatus>
           </RegexEditorControls>
           {(this.state.hasFix) && (
             <FixModal regex={this.state.fixedRegex}>
-              <Button glyph="\u2713" color="green" onClick={handleAcceptFix} />
-              <Button glyph="\u2717" color="red" onClick={handleRejectFix} />
+              <Button glyph="\u2713" color="green" onClick={this.handleAcceptFix} />
+              <Button glyph="\u2717" color="red" onClick={this.handleRejectFix} />
             </FixModal>
           )}
         </RegexEditor>
@@ -161,11 +161,11 @@ export class App extends Component<Props, State> {
           regex={this.state.regex}
           corpus={this.state.corpus}
           colors={this.props.colors}
-          onCorpusChange={handleCorpusChange}
-          onMatchesChange={handleMatchesChange}
-          onEmptyRegex={handleEmptyRegex}
-          onInfiniteMatches={handleInfiniteMatches}
-          onBrokenRegex={handleBrokenRegex} />
+          onCorpusChange={this.handleCorpusChange}
+          onMatchesChange={this.handleMatchesChange}
+          onEmptyRegex={this.handleEmptyRegex}
+          onInfiniteMatches={this.handleInfiniteMatches}
+          onBrokenRegex={this.handleBrokenRegex} />
       </div>
     )
   }
