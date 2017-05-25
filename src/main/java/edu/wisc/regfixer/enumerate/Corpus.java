@@ -80,6 +80,11 @@ public class Corpus {
     return this.positiveRanges.containsAll(ranges);
   }
 
+  public boolean isPerfectMatch (Synthesis synthesis) {
+    Set<Range> ranges = getMatchingRanges(synthesis.toPattern(), this.corpus);
+    return ranges.equals(this.positiveRanges);
+  }
+
   public Set<Range> findUnexpectedMatches (Synthesis synthesis) {
     Set<Range> found = getMatchingRanges(synthesis.toPattern(), this.corpus);
     return Corpus.inferNegativeRanges(found, this.positiveRanges);
