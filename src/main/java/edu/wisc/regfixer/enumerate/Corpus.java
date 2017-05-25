@@ -85,6 +85,12 @@ public class Corpus {
     return ranges.equals(this.positiveRanges);
   }
 
+  public Set<Range> getBadMatches (Synthesis synthesis) {
+    Set<Range> ranges = getMatchingRanges(synthesis.toPattern(), this.corpus);
+    ranges.removeAll(this.positiveRanges);
+    return ranges;
+  }
+
   public Set<Range> findUnexpectedMatches (Synthesis synthesis) {
     Set<Range> found = getMatchingRanges(synthesis.toPattern(), this.corpus);
     return Corpus.inferNegativeRanges(found, this.positiveRanges);
