@@ -53,12 +53,12 @@ public class CharClassSolver {
   }
 
   private static CharClass maximizeCharClasses (Set<CharClass> classes) throws SynthesisFailure {
-    if (classes.contains("\\d")) { return new CharEscapedNode('d'); }
-    if (classes.contains("\\D")) { return new CharEscapedNode('D'); }
-    if (classes.contains("\\s")) { return new CharEscapedNode('s'); }
-    if (classes.contains("\\S")) { return new CharEscapedNode('S'); }
-    if (classes.contains("\\w")) { return new CharEscapedNode('w'); }
-    if (classes.contains("\\W")) { return new CharEscapedNode('W'); }
+    if (classes.contains(new CharEscapedNode('d'))) { return new CharEscapedNode('d'); }
+    if (classes.contains(new CharEscapedNode('D'))) { return new CharEscapedNode('D'); }
+    if (classes.contains(new CharEscapedNode('s'))) { return new CharEscapedNode('s'); }
+    if (classes.contains(new CharEscapedNode('S'))) { return new CharEscapedNode('S'); }
+    if (classes.contains(new CharEscapedNode('w'))) { return new CharEscapedNode('w'); }
+    if (classes.contains(new CharEscapedNode('W'))) { return new CharEscapedNode('W'); }
 
     if (classes.size() > 1) {
       if (classes.stream().noneMatch(c -> c instanceof ConcreteCharClass)) {
