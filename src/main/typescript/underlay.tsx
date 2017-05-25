@@ -28,7 +28,7 @@ export class Underlay extends Component<Props, {}> {
 
   componentWillReceiveProps (newProps: Props) {
     let colorIndex = 0
-    this.ctx.clearRect(0, 0, 500, 200)
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     newProps.highlightList.forEach((highlight) => {
       this.ctx.fillStyle = this.props.colors[colorIndex]
@@ -70,7 +70,7 @@ export class Underlay extends Component<Props, {}> {
   render () {
     return (
       <div className="corpus-editor-underlay">
-        <canvas className="canvas" ref={(elem) => {
+        <canvas className="canvas" width="1000" height="500" ref={(elem) => {
           this.canvas = elem
         }} />
       </div>
