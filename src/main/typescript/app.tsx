@@ -17,6 +17,7 @@ import { Button } from './button'
 interface Props {
   regex: string
   corpus: string
+  colors: string[]
 }
 
 interface State {
@@ -159,6 +160,7 @@ export class App extends Component<Props, State> {
         <CorpusEditor
           regex={this.state.regex}
           corpus={this.state.corpus}
+          colors={this.props.colors}
           onCorpusChange={handleCorpusChange}
           onMatchesChange={handleMatchesChange}
           onEmptyRegex={handleEmptyRegex}

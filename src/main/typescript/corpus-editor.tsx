@@ -24,6 +24,7 @@ const CM_COORD_SYSTEM = 'local'
 interface Props {
   regex: string
   corpus: string
+  colors: string[]
   onCorpusChange: (newCorpus: string) => void
   onMatchesChange: (matches: { start: number, end: number }[]) => void
   onEmptyRegex: () => void
@@ -468,6 +469,7 @@ export class CorpusEditor extends Component<Props, State> {
         <textarea ref={(input) => { this.textarea = input }} />
         <Underlay
           highlightList={this.highlights}
+          colors={this.props.colors}
           onNewPopoverZone={handleNewPopoverZone} />
       </div>
     )

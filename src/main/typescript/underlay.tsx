@@ -14,6 +14,7 @@ const CM_PADDING = 4
 
 interface Props {
   highlightList: HighlightList
+  colors: string[]
   onNewPopoverZone: (zone: MouseoverZone, highlight: Highlight) => void
 }
 
@@ -26,10 +27,13 @@ export class Underlay extends Component<Props, {}> {
   }
 
   componentWillReceiveProps (newProps: Props) {
+    let colorIndex = 0
     this.ctx.clearRect(0, 0, 500, 200)
-    this.ctx.fillStyle = 'red'
 
     newProps.highlightList.forEach((highlight) => {
+      this.ctx.fillStyle = this.props.colors[colorIndex]
+      colorIndex = (colorIndex + 1) % this.props.colors.length
+
       let start = highlight.getStart().coords
       let end = highlight.getEnd().coords
 
