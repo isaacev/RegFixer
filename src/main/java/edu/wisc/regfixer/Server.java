@@ -6,8 +6,12 @@ import edu.wisc.regfixer.server.RequestError;
 import edu.wisc.regfixer.server.RequestPayload;
 import edu.wisc.regfixer.server.ResponseError;
 import edu.wisc.regfixer.server.ResponsePayload;
+import spark.ModelAndView;
+import spark.template.freemarker.FreeMarkerEngine;
+import static spark.Spark.get;
 import static spark.Spark.port;
 import static spark.Spark.post;
+import static spark.Spark.staticFileLocation;
 
 public class Server {
   public static void main (String[] args) {
@@ -24,6 +28,12 @@ public class Server {
       System.err.println("Usage: PORT=<NUMBER> regfixer");
       System.exit(1);
     }
+
+    staticFileLocation("/dist");
+
+    get("/", (req, res) -> {
+      return new ModelAndView(null, "frontend.html");
+    }, new FreeMarkerEngine());
 
     post("/api/fix", (req, res) -> {
       RequestPayload request = null;
