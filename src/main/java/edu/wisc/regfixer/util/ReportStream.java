@@ -1,6 +1,7 @@
 package edu.wisc.regfixer.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
@@ -8,6 +9,10 @@ import edu.wisc.regfixer.enumerate.Range;
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class ReportStream extends PrintStream {
+  public ReportStream () {
+    this(new NullOutputStream());
+  }
+
   public ReportStream (OutputStream out) {
     this(out, false);
   }
@@ -87,5 +92,12 @@ public class ReportStream extends PrintStream {
     } else {
       this.redPrintf("✗ %s", regex);
     }
+  }
+
+  private static class NullOutputStream extends OutputStream {
+    public NullOutputStream () {}
+    public void write (final int i) throws IOException {}
+    public void write (final byte[] bytes) throws IOException {}
+    public void write (final byte[] bytes, final int off, final int len) throws IOException {}
   }
 }
