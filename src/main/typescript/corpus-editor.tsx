@@ -244,7 +244,7 @@ export class CorpusEditor extends Component<Props, State> {
 
   // Removes text markers and data structure tracking highlights in corpus.
   private clearHighlights (): void {
-    this.highlights = null
+    this.highlights = new HighlightList()
   }
 
   // Removes any existing highlights & text markers, re-computes matches from
