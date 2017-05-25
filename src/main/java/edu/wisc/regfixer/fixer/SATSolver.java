@@ -25,15 +25,13 @@ public class SATSolver {
     private Solver solver;
     private Optimize opt;
     private RegexNode regex;
-    //    private Map<String, Boolean> table;
-    private Map<Integer, Map<String, Boolean>> table;
-    private Map<Integer, Map<String, Integer>> countTable;
+    private Map<Integer, Map<String, Boolean>> table;   // table manages <Hole#, <Hole#_Character, T/F>
+    private Map<Integer, Map<String, Integer>> countTable;  // counting table for <Hole#, <CharClasses, Count>>
 
     SATSolver(RegexNode regex) {
         this.cfg = new HashMap<String, String>();
         this.ctx = new Context(cfg);
         this.solver = ctx.mkSolver();     // actual solver for SAT
-//        this.table = new HashMap<>();
         this.table = new HashMap<>();
         this.opt = ctx.mkOptimize();    // optimizer for MAX-SAT
         this.regex = regex;
@@ -50,12 +48,11 @@ public class SATSolver {
 
         for(Map<Integer, Set<Character>> run : runs) {
             BoolExpr exprRun = null;
-            BoolExpr predRun = null;
 
             // iterate each holes
             for(Integer holeNum : run.keySet()) {
 
-                // initialize countTable for each holeNum
+                // initialize countTable and table for each holeNum
                 if(!countTable.containsKey(holeNum)) {
                     initializeCountTable(countTable, holeNum);
                 }
@@ -67,13 +64,10 @@ public class SATSolver {
 
                 // iterate over chars
                 for(Character charVal : run.get(holeNum)) {
-
-                    // make each variable by  "HOLE#_CHARACTER"
+                    // make each variable by  "HOLE#_CHARACTER", and each character costs -2
                     String var = holeNum.toString() + '_' + charVal.toString();
-                    // make each character variable costs -2
                     BoolExpr exprChar = ctx.mkBoolConst(var);
                     opt.AssertSoft(exprChar, -2, "MAX_SAT");
-
                     // 1. merging different chars
                     if(posFlag) {
                         if(exprChars == null) { exprChars = exprChar; }
@@ -113,21 +107,25 @@ public class SATSolver {
                 else { exprFinal = ctx.mkAnd(exprFinal, exprRun); }
             }
         }   // runs For Loop ends
-
-        // positive ones can be added at the end as one formula
         opt.Add(exprFinal);
     }
 
     public void encodePredConstraint() {
 
+        // iterating each hole
         for(Integer holeNum : countTable.keySet()) {
+            // iterating each predicate (e.g. \w, \d, \s...)
             for(String pred : countTable.get(holeNum).keySet()) {
                 BoolExpr exprPreds = null;
+                // encode hard-constraint for each predicate if their count is more than 2
                 if(countTable.get(holeNum).get(pred) > 2) {
+
                     String predVar = holeNum.toString() + '_' + pred;
                     BoolExpr exprPred = ctx.mkBoolConst(predVar);
                     table.get(holeNum).put(predVar,false);
-                    if(pred.equals("\\w") || pred.equals("\\W")) {
+
+                    // soft-constraint: each predicate gets a value
+                    if (pred.equals("\\w") || pred.equals("\\W")) {
                         opt.AssertSoft(exprPred,5,"MAX_SAT");
                     } else if(pred.equals("\\d") || pred.equals("\\D")) {
                         opt.AssertSoft(exprPred,4,"MAX_SAT");
@@ -135,18 +133,17 @@ public class SATSolver {
                         opt.AssertSoft(exprPred,3,"MAX_SAT");
                     }
 
+                    // iterating character exists with corresponding holeNum
                     for(String var : table.get(holeNum).keySet()) {
                         String check = var.substring(var.indexOf('_') + 1);
                         BoolExpr exprChar = null;
                         boolean encode = true;
 
-//                        System.out.println(pred + " is pred " + check.charAt(check.length()-1) + " is charAt0");
                         // check if it is one of the char classes
                         if(check.equals("\\w") || check.equals("\\W") || check.equals("\\d") || check.equals("\\D")
                                 || check.equals("\\s") || check.equals("\\S")) {
                             encode = false;
-                        }
-                        else if ( // check if is correct type
+                        } else if ( // check if a character is correct type of character class
                                 (pred.equals("\\w") && !Character.isLetter(check.charAt(check.length()-1))) ||
                                 (pred.equals("\\W") && Character.isLetter(check.charAt(check.length()-1))) ||
                                 (pred.equals("\\d") && !Character.isDigit(check.charAt(check.length()-1))) ||
@@ -156,8 +153,7 @@ public class SATSolver {
                                 ) {
                             encode = false;
                         }
-
-                        // if satisfied all conditions, encode as hard constraint
+                        // if satisfied all conditions, encode as a hard-constraint
                         if(encode) {
                             exprChar = ctx.mkBoolConst(var);
                             if (exprPreds == null) {
@@ -254,7 +250,7 @@ public class SATSolver {
                     System.out.println(key + " = " + table.get(holeNum).get(key));
                 }
             }
-            // replace wholes here
+            // retrieves a new regex with SAT formula result stored in 'table'
             String newRegexStr = getNewRegex();
             try {
                 newRegex = edu.wisc.regfixer.parser.Main.parse(newRegexStr);
@@ -282,10 +278,7 @@ public class SATSolver {
             String pred_s = Integer.toString(holeNum) + '_' + "\\s";
             String pred_S = Integer.toString(holeNum) + '_' + "\\S";
 
-            // if predicate is evaluated to true, replace with it
-//            if(table.containsKey(predW) && table.get(predW)) {
-//                newRegex = newRegex.substring(startIndex,endIndex) + "\\w" + newRegex.substring(endIndex+1);
-//            }
+            // if predicate in each step is evaluated to true, replace with it
             if(table.get(holeNum) != null) {
                 if (table.get(holeNum).containsKey(pred_w) && table.get(holeNum).get(pred_w)) {
                     newRegex = newRegex.substring(startIndex, endIndex) + "\\w" + newRegex.substring(endIndex + 1);
@@ -299,11 +292,12 @@ public class SATSolver {
                     newRegex = newRegex.substring(startIndex, endIndex) + "\\s" + newRegex.substring(endIndex + 1);
 //                } else if (table.get(holeNum).containsKey(pred_S) && table.get(holeNum).get(pred_S)) {
 //                    newRegex = newRegex.substring(startIndex, endIndex) + "\\S" + newRegex.substring(endIndex + 1);
-                } else {
+                }
+                // no predicates are found to be true, so make a character set by concatenating true characters
+                else {
                     String replace = "[";
                     // iterate the table and pick the ones with true
                     Map<String, Boolean> tmpTable = table.get(holeNum);
-                    ;
                     for (String key : tmpTable.keySet()) {
                         int delimiterPos = key.indexOf('_');
                         int tmpHoleNum = Integer.parseInt(key.substring(0, delimiterPos));
