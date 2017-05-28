@@ -206,6 +206,16 @@ public class Automaton extends automata.Automaton {
       .collect(Collectors.toSet());
   }
 
+  public List<Map<HoleId, Set<Character>>> computeRuns (String source) throws TimeoutException {
+    List<Map<HoleId, Set<Character>>> accum = new LinkedList<>();
+
+    for (Route route : this.trace(source)) {
+      accum.add(route.getSpans());
+    }
+
+    return accum;
+  }
+
   /**
    * METHODS FOR BUILDING THE AUTOMATON AND ITS PREDICATES
    */
