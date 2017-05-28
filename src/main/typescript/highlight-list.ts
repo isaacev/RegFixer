@@ -16,6 +16,14 @@ export class HighlightList {
     this.tail = null
   }
 
+  clone () {
+    let other = new HighlightList()
+    other.head = this.head
+    other.tail = this.tail
+
+    return other
+  }
+
   getMatches (): { start: number, end: number }[] {
     return this.map((h) => {
       return { start: h.getStart().index, end: h.getEnd().index }
@@ -26,7 +34,7 @@ export class HighlightList {
     if (this.head === null) {
       this.head = h
       this.tail = h
-      return this
+      return this.clone()
     }
 
     // The given Highlight comes before the current list head OR the list is
@@ -36,7 +44,7 @@ export class HighlightList {
       h.setPrev(null)
       h.setNext(this.head)
       this.head = h
-      return this
+      return this.clone()
     }
 
     // The given Highlight comes after the last member of the list.
@@ -45,7 +53,7 @@ export class HighlightList {
       h.setPrev(this.tail)
       h.setNext(null)
       this.tail = h
-      return this
+      return this.clone()
     }
 
     // The given Highlight belongs somewhere in the middle of the list.
@@ -61,7 +69,7 @@ export class HighlightList {
         h.setNext(curr.getNext())
         curr.setNext(h)
         curr.getNext().getNext().setPrev(h)
-        return this
+        return this.clone()
       }
 
       curr = curr.getNext()
@@ -78,13 +86,13 @@ export class HighlightList {
         this.head.setPrev(null)
       }
 
-      return this
+      return this.clone()
     }
 
     if (this.tail === h) {
       this.tail.getPrev().setNext(null)
       this.tail = this.tail.getPrev()
-      return this
+      return this.clone()
     }
 
     let curr = this.head
@@ -92,7 +100,7 @@ export class HighlightList {
       if (curr.getNext() === h) {
         curr.setNext(h.getNext())
         h.getNext().setPrev(curr)
-        return this
+        return this.clone()
       }
 
       curr = curr.getNext()

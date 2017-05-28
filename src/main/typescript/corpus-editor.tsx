@@ -35,6 +35,7 @@ interface Props {
 interface State {
   regex: string
   popover: ReactNode
+  highlights: HighlightList
 }
 
 export class CorpusEditor extends Component<Props, State> {
@@ -42,7 +43,6 @@ export class CorpusEditor extends Component<Props, State> {
   private textarea: HTMLTextAreaElement
   private instance: CodeMirror.Editor
   private document: CodeMirror.Doc
-  private highlights: HighlightList
   private isDragging: boolean = false
   private popoverTimeout: number
 
@@ -54,6 +54,7 @@ export class CorpusEditor extends Component<Props, State> {
     this.state = {
       regex: props.regex,
       popover: null,
+      highlights: new HighlightList(),
     }
 
     this.handleEditorChange = this.handleEditorChange.bind(this)
@@ -78,10 +79,6 @@ export class CorpusEditor extends Component<Props, State> {
     this.setState({
       regex: nextProps.regex,
     })
-  }
-
-  componentWillUpdate () {
-    this.mouseoverField.clearHighlightZones()
   }
 
   componentDidUpdate (prevProps: Props, prevState: State) {
@@ -174,9 +171,37 @@ export class CorpusEditor extends Component<Props, State> {
           onMouseOut={this.delayHideAllPopovers}>
           {child}
         </Popover>
-
-      this.forceUpdate()
+      })
     }
+  }
+
+  private updateMouseoverZones (highlights: HighlightList) {
+    this.mouseoverField.clearZones()
+
+    highlights.forEach((highlight) => {
+      let start = highlight.getStart().coords
+      let end = highlight.getEnd().coords
+
+      if (start.top === end.top) {
+        let x = start.left
+        let y = start.top
+        let w = end.left - x
+        let h = end.bottom - y
+        let zone = new MouseoverZone(x, y, w, h)
+
+        zone.on('over', this.showRemovePopover.bind(this, highlight))
+        zone.on('out', this.delayHideAllPopovers)
+
+        this.mouseoverField.addZone('highlight', zone)
+      } else {
+        console.error('cannot support multi-line zones')
+      }
+    })
+  }
+
+  private handleHighlightsChange (highlights: HighlightList) {
+    this.updateMouseoverZones(highlights)
+    this.props.onMatchesChange(highlights.getMatches())
   }
 
   private showRemovePopover (h: Highlight) {
@@ -221,38 +246,51 @@ export class CorpusEditor extends Component<Props, State> {
       popover: null
     })
     this.cancelHideAllPopovers()
-    this.forceUpdate()
   }
 
   private removeHighlight (h: Highlight) {
-    if (this.highlights) {
-      this.highlights.remove(h)
-      this.props.onMatchesChange(this.highlights.getMatches())
-      this.forceUpdate()
+    if (this.state.highlights) {
+      let newHighlights = this.state.highlights.remove(h)
+
+      this.setState({
+        highlights: newHighlights,
+      })
+
+      this.handleHighlightsChange(newHighlights)
     }
   }
 
   private addHighlight (pair: PointPair): void {
-    if (!this.highlights) {
-      this.highlights = new HighlightList()
+    if (!this.state.highlights) {
+      this.setState({
+        highlights: new HighlightList(),
+      })
     }
 
     let highlight = new Highlight(pair)
+    let newHighlights: HighlightList = null
 
     try {
-      this.highlights.insert(highlight)
+      newHighlights = this.state.highlights.insert(highlight)
     } catch (err) {
       alert('matches cannot overlap')
       return
     }
 
-    this.props.onMatchesChange(this.highlights.getMatches())
-    this.forceUpdate()
+    this.setState({
+      highlights: newHighlights,
+    })
+
+    this.handleHighlightsChange(newHighlights)
   }
 
   // Removes text markers and data structure tracking highlights in corpus.
   private clearHighlights (): void {
-    this.highlights = new HighlightList()
+    this.setState({
+      highlights: new HighlightList(),
+    })
+
+    this.handleHighlightsChange(new HighlightList())
   }
 
   // Removes any existing highlights & text markers, re-computes matches from
@@ -267,16 +305,18 @@ export class CorpusEditor extends Component<Props, State> {
 
     if (pairs !== undefined) {
       // Create new Highlight and add it to the global list of Highlights.
-      this.highlights = pairs.reduce((list, pair, i) => {
+      let newHighlights = pairs.reduce((list, pair, i) => {
         let highlight = new Highlight(pair)
         return list.insert(highlight)
       }, new HighlightList())
 
-      // Listen for mouse-over events on the text marker elements.
-      this.props.onMatchesChange(this.highlights.getMatches())
-    }
+      this.setState({
+        highlights: newHighlights,
+      })
 
-    this.forceUpdate()
+      // Listen for mouse-over events on the text marker elements.
+      this.handleHighlightsChange(newHighlights)
+    }
   }
 
   private handleEmptyRegex (): void {
@@ -407,9 +447,11 @@ export class CorpusEditor extends Component<Props, State> {
       } else {
         h.setEnd({ index: index, pos: newPos, coords: coords })
       }
-
-      this.forceUpdate()
     }
+
+    this.setState({
+      highlights: this.state.highlights.clone(),
+    })
   }
 
   private handleDragStop (cursor: CodeMirror.Position, x: number, y: number) {
@@ -440,8 +482,8 @@ export class CorpusEditor extends Component<Props, State> {
   // Have each highlight produce Grip elements corresponding to that highlight's
   // left and right endpoints.
   private collectGrips (): ReactNode[] {
-    if (this.highlights) {
-      return this.highlights.reduce((grips, h) => {
+    if (this.state.highlights) {
+      return this.state.highlights.reduce((grips, h) => {
         grips.push(<StartGrip
           key={grips.length}
           point={h.getStart()}
@@ -472,7 +514,7 @@ export class CorpusEditor extends Component<Props, State> {
         </Overlay>
         <textarea ref={(input) => { this.textarea = input }} />
         <Underlay
-          highlightList={this.highlights}
+          highlightList={this.state.highlights}
           colors={this.props.colors}
           onNewPopoverZone={this.handleNewPopoverZone} />
       </div>
