@@ -43,8 +43,6 @@ export class Underlay extends Component<Props, {}> {
         let w = end.left - x
         let h = end.bottom - y
         this.ctx.fillRect(x, y, w, h)
-        let zone = new MouseoverZone(x, y, w, h)
-        this.props.onNewPopoverZone(zone, highlight)
       } else {
         let x = start.left
         let y = start.top
