@@ -55,14 +55,22 @@ export class CorpusEditor extends Component<Props, State> {
       regex: props.regex,
       popover: null,
     }
+
+    this.handleEditorChange = this.handleEditorChange.bind(this)
+    this.handleCursorActivity = this.handleCursorActivity.bind(this)
+    this.handleMouseActivity = this.handleMouseActivity.bind(this)
+    this.handleNewPopoverZone = this.handleNewPopoverZone.bind(this)
+    this.delayHideAllPopovers = this.delayHideAllPopovers.bind(this)
+    this.cancelHideAllPopovers = this.cancelHideAllPopovers.bind(this)
+    this.hideAllPopovers = this.hideAllPopovers.bind(this)
   }
 
   componentDidMount () {
     this.instance = window['CodeMirror'].fromTextArea(this.textarea)
     this.instance.setValue(this.props.corpus)
     this.document = this.instance.getDoc()
-    this.instance.on('change', this.handleEditorChange.bind(this))
-    this.instance.on('cursorActivity', this.handleCursorActivity.bind(this))
+    this.instance.on('change', this.handleEditorChange)
+    this.instance.on('cursorActivity', this.handleCursorActivity)
     this.resetHighlights()
   }
 
@@ -130,7 +138,7 @@ export class CorpusEditor extends Component<Props, State> {
           zone.on('over', this.showAddPopover.bind(this, pair, () => {
             this.document.setCursor(this.document.getCursor())
           }))
-          zone.on('out', this.delayHideAllPopovers.bind(this))
+          zone.on('out', this.delayHideAllPopovers)
           this.mouseoverField.addZone('highlight', zone)
         })
 
@@ -152,21 +160,18 @@ export class CorpusEditor extends Component<Props, State> {
 
   private handleNewPopoverZone (zone: MouseoverZone, h: Highlight): void {
     zone.on('over', this.showRemovePopover.bind(this, h))
-    zone.on('out', this.delayHideAllPopovers.bind(this))
+    zone.on('out', this.delayHideAllPopovers)
     this.mouseoverField.addZone('highlight', zone)
   }
 
   private showPopover (pair: PointPair, child: ReactNode): void {
     if (this.isDragging === false) {
-      let cancelHideAllPopovers = this.cancelHideAllPopovers.bind(this)
-      let delayHideAllPopovers = this.delayHideAllPopovers.bind(this)
       this.cancelHideAllPopovers()
-
       this.setState({
         popover: <Popover
           pair={pair}
-          onMouseOver={cancelHideAllPopovers}
-          onMouseOut={delayHideAllPopovers}>
+          onMouseOver={this.cancelHideAllPopovers}
+          onMouseOut={this.delayHideAllPopovers}>
           {child}
         </Popover>
 
@@ -175,7 +180,7 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   private showRemovePopover (h: Highlight) {
-    setTimeout(this.cancelHideAllPopovers.bind(this), 0)
+    setTimeout(this.cancelHideAllPopovers, 0)
     this.showPopover(h.getPair(), (
       <Button
         glyph="\u2717"
@@ -204,7 +209,7 @@ export class CorpusEditor extends Component<Props, State> {
 
   private delayHideAllPopovers () {
     this.cancelHideAllPopovers()
-    this.popoverTimeout = setTimeout(this.hideAllPopovers.bind(this), 500)
+    this.popoverTimeout = setTimeout(this.hideAllPopovers, 500)
   }
 
   private cancelHideAllPopovers () {
@@ -455,15 +460,12 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   render () {
-    let handleMouseActivity = this.handleMouseActivity.bind(this)
-    let handleNewPopoverZone = this.handleNewPopoverZone.bind(this)
-
     return (
       <div
         className="corpus-editor"
         ref={(input) => { this.root = input}}
-        onMouseMove={handleMouseActivity}
-        onMouseOut={handleMouseActivity}>
+        onMouseMove={this.handleMouseActivity}
+        onMouseOut={this.handleMouseActivity}>
         <Overlay>
           {this.state.popover}
           {this.collectGrips()}
@@ -472,7 +474,7 @@ export class CorpusEditor extends Component<Props, State> {
         <Underlay
           highlightList={this.highlights}
           colors={this.props.colors}
-          onNewPopoverZone={handleNewPopoverZone} />
+          onNewPopoverZone={this.handleNewPopoverZone} />
       </div>
     )
   }
