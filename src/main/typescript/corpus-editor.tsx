@@ -402,7 +402,7 @@ export class CorpusEditor extends Component<Props, State> {
     this.hideAllPopovers()
     cursor = this.setReadOnly()
     util.onEvent(window.document.body, 'mousemove', handleDragWrapper)
-    util.onceEvent(window.document.body, 'mouseup', handleDragStopWrapper)
+    util.onceEvent(window, 'mouseup', handleDragStopWrapper)
   }
 
   // After a mouse movement, update the appropriate highlight with the new

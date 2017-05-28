@@ -61,11 +61,11 @@ export function getPositionAfter (doc: CodeMirror.Doc, pos: CodeMirror.Position)
   throw new Error(`cannot get position after (${lastLine}:${lastCh})`)
 }
 
-export function onEvent (elem: HTMLElement, eventName: string, cb: (MouseEvent) => void) {
+export function onEvent (elem: Window | HTMLElement, eventName: string, cb: (MouseEvent) => void) {
   elem.addEventListener(eventName, cb)
 }
 
-export function onceEvent (elem: HTMLElement, eventName: string, cb: (MouseEvent) => void) {
+export function onceEvent (elem: Window | HTMLElement, eventName: string, cb: (MouseEvent) => void) {
   let once = function (event: MouseEvent) {
     elem.removeEventListener(eventName, once)
     cb(event)
@@ -74,7 +74,7 @@ export function onceEvent (elem: HTMLElement, eventName: string, cb: (MouseEvent
   elem.addEventListener(eventName, once)
 }
 
-export function offEvent (elem: HTMLElement, eventName: string, cb: (MouseEvent) => void) {
+export function offEvent (elem: Window | HTMLElement, eventName: string, cb: (MouseEvent) => void) {
   elem.removeEventListener(eventName, cb)
 }
 
