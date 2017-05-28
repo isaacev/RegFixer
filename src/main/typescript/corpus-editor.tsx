@@ -101,6 +101,10 @@ export class CorpusEditor extends Component<Props, State> {
     this.props.onCorpusChange(this.instance.getValue())
   }
 
+  private clearSelection () {
+    this.document.setCursor(this.document.getCursor())
+  }
+
   private handleCursorActivity () {
     this.mouseoverField.clearSelectionZones()
     this.hideAllPopovers()
@@ -221,6 +225,7 @@ export class CorpusEditor extends Component<Props, State> {
         onClick={() => {
           this.hideAllPopovers()
           this.addHighlight(pair)
+          this.clearSelection()
         }} />
     ))
   }
@@ -380,6 +385,8 @@ export class CorpusEditor extends Component<Props, State> {
 
   // Initialize event listeners for managing the lifecycle of a Grip drag.
   private handleDragStart (h: Highlight, isStart: boolean, offset: [number, number]) {
+    this.clearSelection()
+
     let cursor: CodeMirror.Position = null
 
     const handleDragWrapper = ((event: MouseEvent<HTMLDivElement>) => {
