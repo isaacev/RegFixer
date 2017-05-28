@@ -196,7 +196,7 @@ public class Automaton extends automata.Automaton {
       frontier = getEpsClosure(frontier);
 
       if (frontier.isEmpty()) {
-        return null;
+        return new HashSet<>();
       }
     }
 
