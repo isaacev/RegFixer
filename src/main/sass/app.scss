@@ -145,11 +145,6 @@ html, body {
       color: $color-mid-gray;
     }
   }
-
-  .action {
-    display: inline-block;
-    margin-right: $padding-thin;
-  }
 }
 
 .regex-editor-controls {
@@ -159,6 +154,11 @@ html, body {
   right: $margin-app;
   bottom: $padding-medium;
   margin: 4px 0;
+
+  .action {
+    display: inline-block;
+    margin-right: $padding-thin;
+  }
 }
 
 .regex-editor-status {
