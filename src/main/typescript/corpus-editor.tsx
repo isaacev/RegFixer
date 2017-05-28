@@ -34,6 +34,7 @@ interface Props {
 
 interface State {
   regex: string
+  popover: ReactNode
 }
 
 export class CorpusEditor extends Component<Props, State> {
@@ -43,7 +44,6 @@ export class CorpusEditor extends Component<Props, State> {
   private document: CodeMirror.Doc
   private highlights: HighlightList
   private isDragging: boolean = false
-  private popover: ReactNode = null
   private popoverTimeout: number
 
   private mouseoverField: MouseoverField = new MouseoverField()
@@ -53,6 +53,7 @@ export class CorpusEditor extends Component<Props, State> {
 
     this.state = {
       regex: props.regex,
+      popover: null,
     }
   }
 
@@ -161,14 +162,13 @@ export class CorpusEditor extends Component<Props, State> {
       let delayHideAllPopovers = this.delayHideAllPopovers.bind(this)
       this.cancelHideAllPopovers()
 
-      this.popover = (
-        <Popover
+      this.setState({
+        popover: <Popover
           pair={pair}
           onMouseOver={cancelHideAllPopovers}
           onMouseOut={delayHideAllPopovers}>
           {child}
         </Popover>
-      )
 
       this.forceUpdate()
     }
@@ -212,7 +212,9 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   private hideAllPopovers () {
-    this.popover = null
+    this.setState({
+      popover: null
+    })
     this.cancelHideAllPopovers()
     this.forceUpdate()
   }
@@ -463,7 +465,7 @@ export class CorpusEditor extends Component<Props, State> {
         onMouseMove={handleMouseActivity}
         onMouseOut={handleMouseActivity}>
         <Overlay>
-          {this.popover}
+          {this.state.popover}
           {this.collectGrips()}
         </Overlay>
         <textarea ref={(input) => { this.textarea = input }} />
