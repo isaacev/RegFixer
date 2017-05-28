@@ -3,8 +3,6 @@ package edu.wisc.regfixer.fixer;
 import java.util.*;
 
 import com.microsoft.z3.*;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import com.sun.tools.corba.se.idl.StringGen;
 import edu.wisc.regfixer.parser.RegexNode;
 
 
