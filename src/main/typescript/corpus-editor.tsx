@@ -383,8 +383,17 @@ export class CorpusEditor extends Component<Props, State> {
     return points
   }
 
+  private addDraggingClass (): void {
+    window.document.body.classList.add('grabbing-cursor')
+  }
+
+  private removeDraggingClass (): void {
+    window.document.body.classList.remove('grabbing-cursor')
+  }
+
   // Initialize event listeners for managing the lifecycle of a Grip drag.
   private handleDragStart (h: Highlight, isStart: boolean, offset: [number, number]) {
+    this.addDraggingClass()
     this.clearSelection()
 
     let cursor: CodeMirror.Position = null
@@ -394,6 +403,7 @@ export class CorpusEditor extends Component<Props, State> {
     }).bind(this)
 
     const handleDragStopWrapper = ((event: MouseEvent<HTMLDivElement>) => {
+      this.removeDraggingClass()
       this.handleDragStop(cursor, event.pageX, event.pageY)
       util.offEvent(window.document.body, 'mousemove', handleDragWrapper)
     }).bind(this)
