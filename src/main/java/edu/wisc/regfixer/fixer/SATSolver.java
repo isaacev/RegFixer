@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.microsoft.z3.*;
 import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.enumerate.HoleId;
 
 
 /**
@@ -23,8 +24,8 @@ public class SATSolver {
     private Solver solver;
     private Optimize opt;
     private RegexNode regex;
-    private Map<Integer, Map<String, Boolean>> table;   // table manages <Hole#, <Hole#_Character, T/F>
-    private Map<Integer, Map<String, Integer>> countTable;  // counting table for <Hole#, <CharClasses, Count>>
+    private Map<HoleId, Map<String, Boolean>> table;   // table manages <Hole#, <Hole#_Character, T/F>
+    private Map<HoleId, Map<String, Integer>> countTable;  // counting table for <Hole#, <CharClasses, Count>>
 
     SATSolver(RegexNode regex) {
         this.cfg = new HashMap<String, String>();
@@ -36,19 +37,19 @@ public class SATSolver {
         this.countTable = new HashMap<>();
     }
 
-    public void makeFormula(List<Map<Integer, Set<Character>>> runs, boolean posFlag) {
+    public void makeFormula(List<Map<HoleId, Set<Character>>> runs, boolean posFlag) {
         formulaForExample(runs, posFlag);
     }
 
-    public void formulaForExample(List<Map<Integer, Set<Character>>> runs, boolean posFlag) {
+    public void formulaForExample(List<Map<HoleId, Set<Character>>> runs, boolean posFlag) {
         // iterate runs
         BoolExpr exprFinal = null;
 
-        for(Map<Integer, Set<Character>> run : runs) {
+        for(Map<HoleId, Set<Character>> run : runs) {
             BoolExpr exprRun = null;
 
             // iterate each holes
-            for(Integer holeNum : run.keySet()) {
+            for(HoleId holeNum : run.keySet()) {
 
                 // initialize countTable and table for each holeNum
                 if(!countTable.containsKey(holeNum)) {
@@ -111,7 +112,7 @@ public class SATSolver {
     public void encodePredConstraint() {
 
         // iterating each hole
-        for(Integer holeNum : countTable.keySet()) {
+        for(HoleId holeNum : countTable.keySet()) {
             // iterating each predicate (e.g. \w, \d, \s...)
             for(String pred : countTable.get(holeNum).keySet()) {
                 BoolExpr exprPreds = null;
@@ -172,7 +173,7 @@ public class SATSolver {
     }
 
 
-    private void initializeCountTable (Map<Integer, Map<String, Integer>> countTable, Integer holeNum) {
+    private void initializeCountTable (Map<HoleId, Map<String, Integer>> countTable, HoleId holeNum) {
         //TODO: \W \D \S are omitted for now
 
         Map<String, Integer> actualCount = new HashMap<>();
@@ -191,7 +192,7 @@ public class SATSolver {
         return countTable.containsKey(holeNum) && countTable.get(holeNum).get(predDesc) > 2;
     }
 
-    private void countCharType(Integer holeNum, Character charVal) {
+    private void countCharType(HoleId holeNum, Character charVal) {
         //TODO: \W \D \S are omitted for now
 
         String key = holeNum.toString() + "_" + charVal.toString();
@@ -238,7 +239,7 @@ public class SATSolver {
             System.out.println("\nSatisfiable SAT formula, possible char class");
             Model model = opt.getModel();
 
-            for(Integer holeNum : table.keySet()) {
+            for(HoleId holeNum : table.keySet()) {
                 for (String key : table.get(holeNum).keySet()) {
                     BoolExpr boolExpr = ctx.mkBoolConst(key);
                     if (model.evaluate(boolExpr, false).isTrue()) {

@@ -5,6 +5,7 @@ import java.util.*;
 import edu.wisc.regfixer.automata.Automaton;
 import edu.wisc.regfixer.parser.*;
 import edu.wisc.regfixer.enumerate.HoleNode;
+import edu.wisc.regfixer.enumerate.HoleId;
 import org.sat4j.specs.TimeoutException;
 
 /**
@@ -85,8 +86,8 @@ public class Main {
             System.out.println("Current Regex = " + regex.toString());
 
             Automaton automaton = new Automaton(regex);
-            List<List<Map<Integer, Set<Character>>>> allRunsPos = new ArrayList<>();
-            List<List<Map<Integer, Set<Character>>>> allRunsNeg = new ArrayList<>();
+            List<List<Map<HoleId, Set<Character>>>> allRunsPos = new ArrayList<>();
+            List<List<Map<HoleId, Set<Character>>>> allRunsNeg = new ArrayList<>();
 
             System.out.print("Positives: ");
             for(int i = 0; i < posExamples.size(); i ++) {
@@ -103,12 +104,12 @@ public class Main {
             }
             System.out.println();
             SATSolver solver = new SATSolver(regex);
-            for(List<Map<Integer, Set<Character>>> posRun : allRunsPos) {
+            for(List<Map<HoleId, Set<Character>>> posRun : allRunsPos) {
                 if(!posRun.isEmpty()) {
                     solver.makeFormula(posRun, true);
                 }
             }
-            for(List<Map<Integer, Set<Character>>> negRun : allRunsNeg) {
+            for(List<Map<HoleId, Set<Character>>> negRun : allRunsNeg) {
                 if(!negRun.isEmpty()) {
                     solver.makeFormula(negRun, false);
                 }
@@ -121,14 +122,14 @@ public class Main {
 
 
     }
-    public static void print(String regex, List<Map<Integer, Set<Character>>> runs, String ex) {
+    public static void print(String regex, List<Map<HoleId, Set<Character>>> runs, String ex) {
         if (runs.isEmpty())
             return;
         System.out.printf("\n%s apply \"%s\"\n", regex, ex);
         for (int i = 0; i < runs.size(); i++) {
             System.out.printf("R%d", i);
-            Map<Integer, Set<Character>> run = runs.get(i);
-            for (Integer key : run.keySet()) {
+            Map<HoleId, Set<Character>> run = runs.get(i);
+            for (HoleId key : run.keySet()) {
                 System.out.printf("\tH%d {", key);
 
                 for (Character val : run.get(key)) {
