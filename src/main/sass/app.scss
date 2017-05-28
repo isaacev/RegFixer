@@ -179,7 +179,7 @@ html, body {
 }
 
 .fix-modal {
-  width: 360px;
+  min-width: 360px;
   position: absolute;
   top: 36px + (2 * $padding-medium) + $padding-thick;
   left: $padding-thick;
@@ -208,6 +208,7 @@ html, body {
     .regex {
       height: 32px;
       margin: 0;
+      margin-right: (2 * $button-size) + $padding-thin + $padding-medium;
       padding: 0;
       line-height: 32px;
       color: $color-gray;
@@ -217,7 +218,7 @@ html, body {
       position: absolute;
       top: $padding-thick;
 
-      @for $i from 0 through 4 {
+      @for $i from 1 through 2 {
         &:nth-of-type(#{$i}) {
           right: (($i - 1) * ($button-size + $padding-thin)) + $padding-thick;
         }
