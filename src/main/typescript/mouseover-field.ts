@@ -19,11 +19,6 @@ export class MouseoverField extends Hoverable {
 
     this.on('move', this.defaultMouseMove.bind(this))
     this.on('out', this.defaultMouseOut.bind(this))
-
-    window.foo = () => {
-      console.log(this.highlightZones)
-      console.log(this.selectionZones)
-    }
   }
 
   private defaultMouseMove (x: number, y: number): void {
