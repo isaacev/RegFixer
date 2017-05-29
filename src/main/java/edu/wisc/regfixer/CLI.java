@@ -23,7 +23,7 @@ public class CLI {
     private List<String> catchall = new ArrayList<>();
   }
 
-  @Parameters
+  @Parameters(separators="=")
   private static class ArgsServe {
     @Parameter(names="--port")
     private Integer port = null;
@@ -38,7 +38,7 @@ public class CLI {
     private List<String> catchall = new ArrayList<>();
   }
 
-  @Parameters
+  @Parameters(separators="=")
   private static class ArgsFix {
     @Parameter(names="--color")
     private boolean color = false;
