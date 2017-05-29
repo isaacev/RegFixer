@@ -34,6 +34,10 @@ public class Range implements Comparable<Range> {
     return this.rightIndex;
   }
 
+  public int length () {
+    return this.rightIndex - this.leftIndex;
+  }
+
   @Override
   public boolean equals (Object other) {
     if (other instanceof Range) {

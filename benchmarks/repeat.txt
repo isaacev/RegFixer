@@ -1,9 +1,6 @@
-a\w*
+a\w+
 ---
-(0:1)
-(2:6)
-(7:14)
-(15:25)
+(0:4)
+(5:12)
 ---
-a axyz axyzxyz axyzxyzxyz
-ab
+axyz axyzxyz azzxyxy axxx

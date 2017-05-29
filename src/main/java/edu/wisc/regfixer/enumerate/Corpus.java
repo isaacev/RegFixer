@@ -24,16 +24,20 @@ public class Corpus {
     this.negativeRanges = new HashSet<Range>(negatives);
 
     this.positiveExamples = this.positiveRanges.stream()
-      .map(r -> this.corpus.substring(r.getLeftIndex(), r.getRightIndex()))
+      .map(r -> this.getSubstring(r))
       .collect(Collectors.toSet());
 
     this.negativeExamples = this.negativeRanges.stream()
-      .map(r -> this.corpus.substring(r.getLeftIndex(), r.getRightIndex()))
+      .map(r -> this.getSubstring(r))
       .collect(Collectors.toSet());
   }
 
   public String getCorpus () {
     return this.corpus;
+  }
+
+  public String getSubstring (Range range) {
+    return this.corpus.substring(range.getLeftIndex(), range.getRightIndex());
   }
 
   public Set<Range> getPositiveRanges () {
@@ -76,9 +80,20 @@ public class Corpus {
     return this.positiveRanges.containsAll(ranges);
   }
 
+  public boolean isPerfectMatch (Synthesis synthesis) {
+    Set<Range> ranges = getMatchingRanges(synthesis.toPattern(), this.corpus);
+    return ranges.equals(this.positiveRanges);
+  }
+
+  public Set<Range> getBadMatches (Synthesis synthesis) {
+    Set<Range> ranges = getMatchingRanges(synthesis.toPattern(), this.corpus);
+    ranges.removeAll(this.positiveRanges);
+    return ranges;
+  }
+
   public Set<Range> findUnexpectedMatches (Synthesis synthesis) {
-    // TODO
-    return null;
+    Set<Range> found = getMatchingRanges(synthesis.toPattern(), this.corpus);
+    return Corpus.inferNegativeRanges(found, this.positiveRanges);
   }
 
   private boolean matchesStrings (Pattern pattern, Set<String> strings) {
@@ -92,38 +107,64 @@ public class Corpus {
   }
 
   public static Set<Range> inferNegativeRanges (Pattern pattern, String corpus, Set<Range> positives) {
-    List<Range> oldRanges = new LinkedList<>(getMatchingRanges(pattern, corpus));
-    List<Range> newRanges = new LinkedList<>(positives);
-    Collections.sort(oldRanges);
-    Collections.sort(newRanges);
+    Set<Range> found = getMatchingRanges(pattern, corpus);
+    return inferNegativeRanges(found, positives);
+  }
 
+  public static Set<Range> inferNegativeRanges (Set<Range> found, Set<Range> expected) {
+    List<Range> foundList = new LinkedList<>(found);
+    List<Range> expectedList = new LinkedList<>(expected);
+    return inferNegativeRanges(foundList, expectedList);
+  }
+
+  public static Set<Range> inferNegativeRanges (List<Range> found, List<Range> expected) {
     Set<Range> negatives = new HashSet<>();
+
+    Collections.sort(found);
+    Collections.sort(expected);
+
     int oldIndex = 0;
     int newIndex = 0;
 
-    outerLoop:
     while (true) {
-      boolean exhaustedOldRanges = (oldIndex >= oldRanges.size());
-      boolean exhaustedNewRanges = (newIndex >= newRanges.size());
-      if (exhaustedOldRanges || exhaustedNewRanges) {
-        break outerLoop;
+      if (oldIndex >= found.size()) {
+        break;
       }
 
-      Range oldRange = oldRanges.get(oldIndex++);
-      Range newRange = newRanges.get(newIndex++);
+      if (newIndex >= expected.size()) {
+        negatives.add(found.get(oldIndex++));
+        continue;
+      }
 
-      // Ignore "old" ranges that don't intersect the current "new" ranges and
-      // that comre before the current "new" range.
-      while (oldRange.endsBefore(newRange)) {
-        if (oldIndex >= oldRanges.size()) {
-          break outerLoop;
+      Range oldRange = found.get(oldIndex);
+      Range newRange = expected.get(newIndex);
+
+      if (newRange.getLeftIndex() == oldRange.getLeftIndex()) {
+        if (newRange.equals(oldRange) == false) {
+          negatives.add(oldRange);
         }
-      }
 
-      if (oldRange.startsBefore(newRange) && oldRange.intersects(newRange)) {
-        int from = newRange.getLeftIndex();
-        int to = oldRange.getRightIndex();
-        negatives.add(new Range(from, to));
+        if (oldRange.length() <= newRange.length()) {
+          oldIndex++;
+        }
+
+        if (newRange.length() <= oldRange.length()) {
+          newIndex++;
+        }
+      } else if (newRange.getLeftIndex() < oldRange.getLeftIndex()) {
+        if (newRange.endsBefore(oldRange) || newRange.intersects(oldRange)) {
+          newIndex++;
+        } else {
+          oldIndex++;
+        }
+      } else if (newRange.getLeftIndex() > oldRange.getLeftIndex()) {
+        negatives.add(oldRange);
+
+        if (oldRange.endsBefore(newRange) || oldRange.intersects(newRange)) {
+          oldIndex++;
+        } else {
+          newIndex++;
+        }
       }
     }
 

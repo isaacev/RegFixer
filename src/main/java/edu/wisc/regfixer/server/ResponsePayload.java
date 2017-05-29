@@ -8,4 +8,8 @@ public class ResponsePayload {
   public ResponsePayload (RegexNode regex) {
     this.fix = regex.toString();
   }
+
+  public ResponsePayload (String fix) {
+    this.fix = fix;
+  }
 }

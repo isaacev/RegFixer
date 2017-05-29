@@ -3,18 +3,19 @@ package edu.wisc.regfixer.automata;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.TreeMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import automata.Move;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import edu.wisc.regfixer.enumerate.HoleNode;
+import edu.wisc.regfixer.enumerate.HoleId;
 import edu.wisc.regfixer.parser.CharClassSetNode;
 import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
@@ -44,10 +45,7 @@ public class Automaton extends automata.Automaton {
   private final SFA<CharPred, Character> sfa;
   private int totalHoles = 0;
 
-  private static int nextHoleId = 0;
-
   public Automaton (RegexNode tree) throws TimeoutException {
-    Automaton.nextHoleId = 0;
     this.sfa = nodeToAutomaton(tree).sfa;
   }
 
@@ -120,7 +118,7 @@ public class Automaton extends automata.Automaton {
 
             if (moveCast.guard instanceof HolePred) {
               HolePred predCast = (HolePred) moveCast.guard;
-              int holdId = predCast.getHoleId();
+              HoleId holdId = predCast.getHoleId();
               newState = new State(move.to, parent, ch, holdId);
             }
           }
@@ -143,14 +141,14 @@ public class Automaton extends automata.Automaton {
     return false;
   }
 
-  private Map<Integer, Set<Character>> computeCrosses (State endState) {
-    Map<Integer, Set<Character>> crosses = new TreeMap<>();
+  private Route traceFromState (State endState) {
+    Map<HoleId, Set<Character>> crosses = new HashMap<>();
 
     State currState = endState;
     while (currState != null) {
       if (currState.getValue() != null && currState.getHoleId() != null) {
         char value = currState.getValue();
-        int holeId = currState.getHoleId();
+        HoleId holeId = currState.getHoleId();
 
         if (crosses.containsKey(holeId) == false) {
           crosses.put(holeId, new HashSet<>());
@@ -162,7 +160,7 @@ public class Automaton extends automata.Automaton {
       currState = currState.getParent();
     }
 
-    return crosses;
+    return new Route(crosses);
   }
 
   public boolean accepts (String str) throws TimeoutException {
@@ -190,47 +188,32 @@ public class Automaton extends automata.Automaton {
     return isFinalConfiguration(frontier);
   }
 
-  public Map<String, List<Map<Integer, Set<Character>>>> computeRuns (Collection<String> examples) throws TimeoutException {
-    Map<String, List<Map<Integer, Set<Character>>>> runs = new HashMap<>();
-
-    for (String example : examples) {
-      runs.put(example, this.computeRuns(example));
-    }
-
-    return runs;
-  }
-
-  public List<Map<Integer, Set<Character>>> computeRuns (String str) throws TimeoutException {
-    List<Character> charList = new LinkedList<>();
-
-    for (int i = 0; i < str.length(); i++) {
-      charList.add(str.charAt(i));
-    }
-
-    return computeRuns(charList);
-  }
-
-  public List<Map<Integer, Set<Character>>> computeRuns (List<Character> chars) throws TimeoutException {
+  public Set<Route> trace (String source) throws TimeoutException {
     List<State> frontier = getEpsClosure(new State(getInitialState()));
 
-    for (Character ch : chars) {
-      frontier = getNextState(frontier, ch);
+    for (int i = 0; i < source.length(); i++) {
+      frontier = getNextState(frontier, source.charAt(i));
       frontier = getEpsClosure(frontier);
 
       if (frontier.isEmpty()) {
-        return null;
+        return new HashSet<>();
       }
     }
 
-    List<Map<Integer, Set<Character>>> runs = new LinkedList<>();
+    return frontier.stream()
+      .filter(s -> isFinalState(s.getStateId()))
+      .map(s -> traceFromState(s))
+      .collect(Collectors.toSet());
+  }
 
-    for (State state : frontier) {
-      if (isFinalState(state.getStateId())) {
-        runs.add(computeCrosses(state));
-      }
+  public List<Map<HoleId, Set<Character>>> computeRuns (String source) throws TimeoutException {
+    List<Map<HoleId, Set<Character>>> accum = new LinkedList<>();
+
+    for (Route route : this.trace(source)) {
+      accum.add(route.getSpans());
     }
 
-    return runs;
+    return accum;
   }
 
   /**
@@ -312,7 +295,7 @@ public class Automaton extends automata.Automaton {
     return fromPredicate(StdCharPred.TRUE);
   }
 
-  public static Automaton fromHolePredicate (int holeId) throws TimeoutException {
+  public static Automaton fromHolePredicate (HoleId holeId) throws TimeoutException {
     return fromPredicate(new HolePred(holeId));
   }
 
@@ -428,7 +411,7 @@ public class Automaton extends automata.Automaton {
   }
 
   private static Automaton holeToAutomaton (HoleNode node) throws TimeoutException {
-    return fromHolePredicate(Automaton.nextHoleId++);
+    return fromHolePredicate(node.getHoleId());
   }
 
   private static Automaton charClassSetToAutomaton (CharClassSetNode node) throws TimeoutException {

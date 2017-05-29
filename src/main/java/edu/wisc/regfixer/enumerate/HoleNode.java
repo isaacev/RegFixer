@@ -16,9 +16,15 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
 
   private RegexNode child = null;
   private int age;
+  private HoleId id;
 
   public HoleNode () {
     this.age = HoleNode.nextAge++;
+    this.id = new HoleId();
+  }
+
+  public HoleId getHoleId () {
+    return this.id;
   }
 
   public int descendants () {

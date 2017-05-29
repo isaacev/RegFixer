@@ -1,17 +1,18 @@
 package edu.wisc.regfixer.automata;
 
+import edu.wisc.regfixer.enumerate.HoleId;
 import theory.characters.CharPred;
 import theory.characters.StdCharPred;
 
 public class HolePred extends CharPred {
-  protected Integer holeId = null;
+  protected HoleId holeId = null;
 
-  public HolePred (int holeId) {
+  public HolePred (HoleId holeId) {
     super(StdCharPred.TRUE.intervals);
     this.holeId = holeId;
   }
 
-  public int getHoleId () {
+  public HoleId getHoleId () {
     return this.holeId;
   }
 }
