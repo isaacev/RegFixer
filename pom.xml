@@ -13,10 +13,44 @@
   </properties>
   <repositories>
     <repository>
-      <id>Internal repository</id>
-      <url>file://${basedir}/mvn</url>
+      <id>project.local</id>
+      <name>project</name>
+      <url>file:${project.basedir}/mvn</url>
     </repository>
   </repositories>
+
+  <profiles>
+    <profile>
+      <id>linux</id>
+      <activation>
+        <os>
+          <family>unix</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.microsoft</groupId>
+          <artifactId>z3</artifactId>
+          <version>4.5.0-linux</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>macos</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.microsoft</groupId>
+          <artifactId>z3</artifactId>
+          <version>4.5.0-macos</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 
   <dependencies>
     <!-- GENERATES A PARSER FROM A .cup FILE -->
@@ -82,11 +116,6 @@
       <groupId>jdd</groupId>
       <artifactId>jdd</artifactId>
       <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.microsoft</groupId>
-      <artifactId>z3</artifactId>
-      <version>4.5.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
