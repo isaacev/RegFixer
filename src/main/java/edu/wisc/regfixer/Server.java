@@ -14,20 +14,10 @@ import static spark.Spark.post;
 import static spark.Spark.staticFileLocation;
 
 public class Server {
-  public static void main (String[] args) {
+  public static void start (int portNum) {
     Gson gson = new Gson();
 
-    if (System.getenv("PORT") == null) {
-      System.err.println("Usage: PORT=<NUMBER> regfixer");
-      System.exit(1);
-    }
-
-    try {
-      port(Integer.valueOf(System.getenv("PORT")));
-    } catch (NumberFormatException ex) {
-      System.err.println("Usage: PORT=<NUMBER> regfixer");
-      System.exit(1);
-    }
+    port(portNum);
 
     staticFileLocation("/dist");
 

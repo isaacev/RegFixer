@@ -175,7 +175,7 @@ public class CLI {
       }
     }
 
-    // Server.start(args.port);
+    Server.start(args.port);
     return 0;
   }
 
