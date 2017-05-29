@@ -2,6 +2,9 @@ package edu.wisc.regfixer;
 
 import java.io.IOException;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import edu.wisc.regfixer.enumerate.Benchmark;
 import edu.wisc.regfixer.enumerate.Job;
 import edu.wisc.regfixer.util.ReportStream;
