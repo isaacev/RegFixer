@@ -34,4 +34,23 @@ public class Job {
   public Corpus getCorpus () {
     return this.corpus;
   }
+
+  public String toString () {
+    StringBuilder builder = new StringBuilder();
+
+    // Print regex string.
+    builder.append(String.format("%s\n", this.getTree()));
+
+    // Print range indices.
+    builder.append(String.format("%s\n", Benchmark.boundary));
+    for (Range range : this.getCorpus().getPositiveRanges()) {
+      builder.append(String.format("%s\n", range));
+    }
+
+    // Print full corpus.
+    builder.append(String.format("%s\n", Benchmark.boundary));
+    builder.append(this.getCorpus());
+
+    return builder.toString();
+  }
 }

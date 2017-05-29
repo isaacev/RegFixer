@@ -8,7 +8,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class Benchmark {
-  static String boundary = "---";
+  public final static String boundary = "---";
 
   public static Job readFromFile (String filename) throws IOException {
     String regex = "";
@@ -59,20 +59,7 @@ public class Benchmark {
 
   public static void saveToFile (Job job, String filename) throws IOException {
     PrintWriter pw = new PrintWriter(filename, "UTF-8");
-
-    // Print regex string.
-    pw.println(job.getTree());
-
-    // Print range indices.
-    pw.println(boundary);
-    for (Range range : job.getCorpus().getPositiveRanges()) {
-      pw.println(range.toString());
-    }
-
-    // Print full corpus.
-    pw.println(boundary);
-    pw.println(job.getCorpus());
-
+    pw.print(job.toString());
     pw.close();
   }
 }
