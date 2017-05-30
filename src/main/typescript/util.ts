@@ -95,3 +95,15 @@ export function debounce (fn: () => void, wait: number): () => void {
     timeout = setTimeout(later, wait)
   }
 }
+
+export function formatBenchmarkFile (regex: string, matches: { start: number, end: number }[], corpus: string): string {
+  return [
+    regex,
+    '---',
+    matches.map((match) => {
+      return `(${match.start}:${match.end})`
+    }).join('\n'),
+    '---',
+    corpus,
+  ].join('\n')
+}

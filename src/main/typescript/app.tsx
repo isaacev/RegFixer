@@ -13,8 +13,10 @@ import { RegexEditorStatus } from './regex-editor-status'
 import { FixModal } from './fix-modal'
 import { CorpusEditor } from './corpus-editor'
 import { Button } from './button'
+import { DownloadButton } from './download-button'
 import { Notif } from './notif'
 import { Notifs } from './notifs'
+import { formatBenchmarkFile } from './util'
 
 interface Props {
   regex: string
@@ -166,12 +168,21 @@ export class App extends Component<Props, State> {
     })
   }
 
+  createDownloadLink (): string {
+    const benchmarkContents = formatBenchmarkFile(this.state.regex, this.state.matches, this.state.corpus)
+    const encodedContents = btoa(benchmarkContents)
+    return `data:text/plain;base64,${encodedContents}`
+  }
+
   render () {
+    const downloadLink = this.createDownloadLink()
+
     return (
       <div>
         <RegexEditor regex={this.state.regex} onRegexChange={this.handleRegexChange}>
           <RegexEditorControls>
             <Button glyph="?" color="blue" onClick={this.handleRequestFix} />
+            <DownloadButton glyph="\u2193" color="blue" href={downloadLink} name="benchmark.txt" />
             <RegexEditorStatus inError={this.state.inError}>
               {this.state.message}
             </RegexEditorStatus>
