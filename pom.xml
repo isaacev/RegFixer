@@ -19,6 +19,7 @@
     </repository>
   </repositories>
 
+  <!-- CHOOSE APPROPRIATE Z3 BINDINGS FOR CURRENT OPERATING SYSTEM -->
   <profiles>
     <profile>
       <id>linux</id>
