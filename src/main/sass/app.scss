@@ -7,6 +7,7 @@ $color-mid-gray:    #D3D3D3;
 $color-gray:        #636363;
 $color-green:       #29b765;
 $color-red:         #ED7669;
+$color-yellow:      #F4D03F;
 $color-blue:        #3498DB;
 
 $font-monospace:    "SFMono-Regular", "Source Code Pro", monospace;
@@ -283,5 +284,54 @@ html, body {
 
   .canvas {
     // ...
+  }
+}
+
+.notifs {
+  position: fixed;
+  right: $padding-medium;
+  bottom: $padding-medium;
+  z-index: 2000;
+}
+
+.notif {
+  width: 256px;
+  height: 64px;
+  position: relative;
+  background-color: $color-light-gray;
+  box-shadow: 0 2px 4px $color-mid-gray;
+  border-radius: $border-radius;
+  overflow: hidden;
+
+  & + & {
+    margin-top: $padding-thin;
+  }
+
+  .health {
+    width: 32px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+
+    &.health-green {
+      background-color: $color-green;
+    }
+
+    &.health-red {
+      background-color: $color-red;
+    }
+
+    &.health-yellow {
+      background-color: $color-yellow;
+    }
+  }
+
+  .message {
+    height: 32px;
+    margin: 16px 0 16px 32px + 16px;
+    padding: 0;
+    font-family: $font-monospace;
+    line-height: 32px;
   }
 }

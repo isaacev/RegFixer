@@ -13,6 +13,8 @@ import { RegexEditorStatus } from './regex-editor-status'
 import { FixModal } from './fix-modal'
 import { CorpusEditor } from './corpus-editor'
 import { Button } from './button'
+import { Notif } from './notif'
+import { Notifs } from './notifs'
 
 interface Props {
   regex: string
@@ -28,6 +30,10 @@ interface State {
   fixedRegex: string
   inError: boolean
   message: string
+  notifs: {
+    health: 'green' | 'yellow' | 'red',
+    message: string
+  }[]
 }
 
 export class App extends Component<Props, State> {
@@ -42,6 +48,7 @@ export class App extends Component<Props, State> {
       fixedRegex: '',
       inError: false,
       message: '',
+      notifs: [],
     }
 
     this.handleRegexChange     = this.handleRegexChange.bind(this)
@@ -67,17 +74,35 @@ export class App extends Component<Props, State> {
       right: match.end,
     }))
 
+    this.setState({
+      notifs: [{
+        health: 'yellow',
+        message: 'Working',
+      }],
+    })
+
     post('/api/fix').send({
       regex: this.state.regex,
       ranges: matches,
       corpus: this.state.corpus,
     }).end((err, res) => {
       if (err != null || res.status !== 200) {
+        this.setState({
+          notifs: [{
+            health: 'red',
+            message: 'Server error',
+          }],
+        })
         throw new Error('did not receive fix from server')
       } else {
         let fixed = JSON.parse(res.text).fix
         if (typeof fixed !== 'string') {
-          throw new Error('did not receive fix from server')
+          this.setState({
+            notifs: [{
+              health: 'red',
+              message: 'Unable to make repair',
+            }],
+          })
         }
 
         fixed = fixed.replace(/\\\\/g, '\\')
@@ -85,6 +110,7 @@ export class App extends Component<Props, State> {
         this.setState({
           hasFix: true,
           fixedRegex: fixed,
+          notifs: [],
         })
       }
     })
@@ -166,6 +192,11 @@ export class App extends Component<Props, State> {
           onEmptyRegex={this.handleEmptyRegex}
           onInfiniteMatches={this.handleInfiniteMatches}
           onBrokenRegex={this.handleBrokenRegex} />
+        <Notifs>
+          {this.state.notifs.map(notif => {
+            return <Notif health={notif.health} message={notif.message} />
+          })}
+        </Notifs>
       </div>
     )
   }
