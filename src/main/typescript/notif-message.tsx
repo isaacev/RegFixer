@@ -1,3 +1,10 @@
+//
+// src/main/typescript/notif-message.tsx
+// RegEx Frontend
+//
+// Created on 5/30/17
+//
+
 import { PureComponent } from 'react'
 
 interface Props {
