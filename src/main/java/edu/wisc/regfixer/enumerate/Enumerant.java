@@ -25,8 +25,8 @@ import org.sat4j.specs.TimeoutException;
 public class Enumerant implements Comparable<Enumerant> {
   public final static int UNION_COST    = 1;
   public final static int OPTIONAL_COST = 1;
-  public final static int STAR_COST     = 1;
-  public final static int PLUS_COST     = 1;
+  public final static int STAR_COST     = 3;
+  public final static int PLUS_COST     = 2;
   public final static int CONCAT_COST   = 1;
 
   private final RegexNode tree;
