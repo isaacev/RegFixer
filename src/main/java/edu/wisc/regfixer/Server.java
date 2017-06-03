@@ -1,5 +1,7 @@
 package edu.wisc.regfixer;
 
+import java.util.concurrent.TimeoutException;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import edu.wisc.regfixer.server.RequestError;
@@ -38,7 +40,13 @@ public class Server {
         return gson.toJson(new RequestError("malformed JSON"));
       }
 
-      String result = RegFixer.fix(request.toJob());
+      String result = "";
+      try {
+        result = RegFixer.fix(request.toJob());
+      } catch (TimeoutException ex) {
+        res.status(408);
+        return gson.toJson(new ResponseError("synthesis timeout"));
+      }
 
       res.status(200);
       res.type("application/json; charset=utf-8");

@@ -1,5 +1,7 @@
 package edu.wisc.regfixer;
 
+import java.util.concurrent.TimeoutException;
+
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Enumerants;
 import edu.wisc.regfixer.enumerate.Job;
@@ -9,11 +11,19 @@ import edu.wisc.regfixer.synthesize.SynthesisFailure;
 import edu.wisc.regfixer.util.ReportStream;
 
 public class RegFixer {
-  public static String fix (Job job) {
+  public static String fix (Job job) throws TimeoutException {
     return RegFixer.fix(job, new ReportStream());
   }
 
-  public static String fix (Job job, ReportStream report) {
+  public static String fix (Job job, ReportStream report) throws TimeoutException {
+    return RegFixer.fix(job, report, 200);
+  }
+
+  public static String fix (Job job, int loopLimit) throws TimeoutException {
+    return RegFixer.fix(job, new ReportStream(), loopLimit);
+  }
+
+  public static String fix (Job job, ReportStream report, int loopLimit) throws TimeoutException {
     report.printHeader("Given the regular expression:");
     report.printRegex(job.getTree());
 
@@ -62,6 +72,12 @@ public class RegFixer {
         }
       } else {
         report.printEnumerantError(true, "failed dot test");
+      }
+
+      if (i >= loopLimit) {
+        String fmt = "TIMEOUT: enumeration loop limit reached (%d)";
+        report.redPrintf(fmt, loopLimit);
+        throw new TimeoutException(String.format(fmt, loopLimit));
       }
     }
 
