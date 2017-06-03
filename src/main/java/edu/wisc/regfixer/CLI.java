@@ -28,6 +28,9 @@ public class CLI {
     @Parameter(names="--port")
     private Integer port = null;
 
+    @Parameter(names="--limit")
+    private Integer limit = null;
+
     @Parameter(names="--open")
     private String open = null;
 
@@ -42,6 +45,9 @@ public class CLI {
   private static class ArgsFix {
     @Parameter(names="--color")
     private boolean color = false;
+
+    @Parameter(names="--limit")
+    private Integer limit = null;
 
     @Parameter
     private List<String> files = new ArrayList<>();
@@ -103,6 +109,10 @@ public class CLI {
       + "\n          The port to listen for incoming connections. If this flag is not"
       + "\n          specified the PORT environment variable will be used instead. If"
       + "\n          neither the flag nor the variable are set, an error will occur."
+      + "\n      --limit <number>"
+      + "\n          The maximum number of unsuccessful enumeration cycles that occur"
+      + "\n          before a TimeoutException is thrown and the job aborts without a"
+      + "\n          final result. Default value is 200."
       + "\n      --open <file> (not implemented)"
       + "\n          Read a benchmark file and use its contents as the initial values"
       + "\n          in the web-app. If this flag is not set, the web-app will launch"
@@ -118,6 +128,10 @@ public class CLI {
       + "\n    fix [options] <file>"
       + "\n      --color"
       + "\n          If set, output will include ANSI color codes."
+      + "\n      --limit <number>"
+      + "\n          The maximum number of unsuccessful enumeration cycles that occur"
+      + "\n          before a TimeoutException is thrown and the job aborts without a"
+      + "\n          final result. Default value is 200."
       + "\n      <file>"
       + "\n          Read a benchmark file and use its contents to compute the repair"
       + "\n          of its regular expression. If this argument is not set, an error"
@@ -175,7 +189,11 @@ public class CLI {
       }
     }
 
-    Server.start(args.port);
+    if (args.limit == null || args.limit <= 1) {
+      args.limit = 200;
+    }
+
+    Server.start(args.port, args.limit);
     return 0;
   }
 
@@ -199,8 +217,12 @@ public class CLI {
 
     ReportStream report = new ReportStream(System.out, args.color);
 
+    if (args.limit == null || args.limit <= 1) {
+      args.limit = 200;
+    }
+
     try {
-      RegFixer.fix(job, report);
+      RegFixer.fix(job, report, args.limit);
       return 0;
     } catch (Exception ex) {
       System.err.println(ex.getMessage());

@@ -16,7 +16,7 @@ import static spark.Spark.post;
 import static spark.Spark.staticFileLocation;
 
 public class Server {
-  public static void start (int portNum) {
+  public static void start (int portNum, int loopLimit) {
     Gson gson = new Gson();
 
     port(portNum);
@@ -42,7 +42,7 @@ public class Server {
 
       String result = "";
       try {
-        result = RegFixer.fix(request.toJob());
+        result = RegFixer.fix(request.toJob(), loopLimit);
       } catch (TimeoutException ex) {
         res.status(408);
         return gson.toJson(new ResponseError("synthesis timeout"));
