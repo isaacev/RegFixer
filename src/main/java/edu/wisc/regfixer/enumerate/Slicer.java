@@ -77,6 +77,24 @@ public class Slicer {
       }
     }
 
+    // Add holes between children
+    for (int i = 0; i <= totalChildren; i++) {
+      HoleNode newHole = new HoleNode();
+      List<RegexNode> newChildren = new LinkedList<>();
+
+      if (i < totalChildren) {
+        newChildren.addAll(children.subList(0, i));
+        newChildren.add(newHole);
+        newChildren.addAll(children.subList(i, totalChildren));
+      } else {
+        newChildren.addAll(children);
+        newChildren.add(newHole);
+      }
+
+      ConcatNode newNode = new ConcatNode(newChildren);
+      partials.add(new Enumerant(newNode, newHole, 1));
+    }
+
     return partials;
   }
 
