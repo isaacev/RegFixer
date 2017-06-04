@@ -36,6 +36,7 @@ public class Slicer {
   private static List<Enumerant> sliceConcat (ConcatNode node) {
     List<Enumerant> partials = new LinkedList<>();
 
+    // Replace sub-lists of children with single holes
     List<RegexNode> children = node.getChildren();
     int totalChildren = children.size();
     for (int w = 1; w <= totalChildren; w++) {
