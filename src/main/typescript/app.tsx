@@ -89,11 +89,22 @@ export class App extends Component<Props, State> {
       corpus: this.state.corpus,
     }).end((err, res) => {
       if (err != null || res.status !== 200) {
+        let message = 'Server error'
+
+        switch (res.status) {
+          case 400:
+            message = 'Malformed request'
+            break
+          case 408:
+            message = 'Repair timeout'
+            break
+        }
+
         this.setState({
           notifs: [{
             health: 'red',
-            message: 'Server error',
-          }],
+            message: message,
+          }]
         })
         throw new Error('did not receive fix from server')
       } else {
