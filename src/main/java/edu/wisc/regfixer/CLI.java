@@ -112,7 +112,7 @@ public class CLI {
       + "\n      --limit <number>"
       + "\n          The maximum number of unsuccessful enumeration cycles that occur"
       + "\n          before a TimeoutException is thrown and the job aborts without a"
-      + "\n          final result. Default value is 200."
+      + "\n          final result. Default value is 1000."
       + "\n      --open <file> (not implemented)"
       + "\n          Read a benchmark file and use its contents as the initial values"
       + "\n          in the web-app. If this flag is not set, the web-app will launch"
@@ -131,7 +131,7 @@ public class CLI {
       + "\n      --limit <number>"
       + "\n          The maximum number of unsuccessful enumeration cycles that occur"
       + "\n          before a TimeoutException is thrown and the job aborts without a"
-      + "\n          final result. Default value is 200."
+      + "\n          final result. Default value is 1000."
       + "\n      <file>"
       + "\n          Read a benchmark file and use its contents to compute the repair"
       + "\n          of its regular expression. If this argument is not set, an error"
@@ -190,7 +190,7 @@ public class CLI {
     }
 
     if (args.limit == null || args.limit <= 1) {
-      args.limit = 200;
+      args.limit = 1000;
     }
 
     Server.start(args.port, args.limit);
@@ -218,7 +218,7 @@ public class CLI {
     ReportStream report = new ReportStream(System.out, args.color);
 
     if (args.limit == null || args.limit <= 1) {
-      args.limit = 200;
+      args.limit = 1000;
     }
 
     try {

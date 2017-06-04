@@ -16,7 +16,7 @@ public class RegFixer {
   }
 
   public static String fix (Job job, ReportStream report) throws TimeoutException {
-    return RegFixer.fix(job, report, 200);
+    return RegFixer.fix(job, report, 1000);
   }
 
   public static String fix (Job job, int loopLimit) throws TimeoutException {
