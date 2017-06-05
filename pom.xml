@@ -216,6 +216,7 @@
           </descriptorRefs>
           <finalName>regfixer</finalName>
           <appendAssemblyId>false</appendAssemblyId>
+          <attach>false</attach>
           <archive>
             <manifest>
               <mainClass>edu.wisc.regfixer.CLI</mainClass>
