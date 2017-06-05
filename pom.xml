@@ -83,6 +83,13 @@
       <version>1.2.1</version>
     </dependency>
 
+    <!-- DEPENDENCY FOR SHA1 DIGESTS -->
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.10</version>
+    </dependency>
+
     <!-- DEPENDENCIES FOR HANDLING PROJECT PACKAGING -->
     <dependency>
       <groupId>com.sparkjava</groupId>

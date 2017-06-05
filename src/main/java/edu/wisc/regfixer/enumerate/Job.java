@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import edu.wisc.regfixer.parser.RegexNode;
+import org.apache.commons.codec.digest.DigestUtils;
 
 public class Job {
   private final RegexNode tree;
@@ -52,5 +53,9 @@ public class Job {
     builder.append(this.getCorpus());
 
     return builder.toString();
+  }
+
+  public String toDigest () {
+    return DigestUtils.sha1Hex(this.toString());
   }
 }
