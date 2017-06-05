@@ -117,7 +117,7 @@ public class CLI {
       + "\n          Read a benchmark file and use its contents as the initial values"
       + "\n          in the web-app. If this flag is not set, the web-app will launch"
       + "\n          from a clean state."
-      + "\n      --debug (not implemented)"
+      + "\n      --debug"
       + "\n          When this flag is set, each repair request will produce a report"
       + "\n          that will be written to a file describing the steps used to find"
       + "\n          the repair. These reports will be written to disk with filenames"
@@ -193,7 +193,7 @@ public class CLI {
       args.limit = 1000;
     }
 
-    Server.start(args.port, args.limit);
+    Server.start(args.port, args.limit, args.debug);
     return 0;
   }
 
