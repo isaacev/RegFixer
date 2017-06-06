@@ -265,9 +265,13 @@ html, body {
 
   .popover {
     width: $button-size;
-    height: $button-size;
+    height: $button-size + 12px;
     position: absolute;
-    padding-top: 12px;
+
+    .action {
+      position: relative;
+      top: 12px;
+    }
   }
 
   .grip {
