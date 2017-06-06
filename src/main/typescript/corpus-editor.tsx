@@ -261,6 +261,7 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   private hideAllPopovers () {
+    this.popoverIsHovered = false
     this.setState({
       popover: null
     })
