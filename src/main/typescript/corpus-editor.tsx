@@ -45,6 +45,7 @@ export class CorpusEditor extends Component<Props, State> {
   private document: CodeMirror.Doc
   private isDragging: boolean = false
   private popoverTimeout: number
+  private popoverIsHovered: boolean = false
 
   private mouseoverField: MouseoverField = new MouseoverField()
 
@@ -64,6 +65,8 @@ export class CorpusEditor extends Component<Props, State> {
     this.delayHideAllPopovers = this.delayHideAllPopovers.bind(this)
     this.cancelHideAllPopovers = this.cancelHideAllPopovers.bind(this)
     this.hideAllPopovers = this.hideAllPopovers.bind(this)
+    this.handlePopoverMouseOver = this.handlePopoverMouseOver.bind(this)
+    this.handlePopoverMouseOut = this.handlePopoverMouseOut.bind(this)
   }
 
   componentDidMount () {
@@ -159,14 +162,24 @@ export class CorpusEditor extends Component<Props, State> {
     this.mouseoverField.addZone('highlight', zone)
   }
 
+  private handlePopoverMouseOver (event: MouseEvent<HTMLDivElement>): void {
+    this.cancelHideAllPopovers()
+    this.popoverIsHovered = true
+  }
+
+  private handlePopoverMouseOut (event: MouseEvent<HTMLDivElement>): void {
+    this.delayHideAllPopovers()
+    this.popoverIsHovered = false
+  }
+
   private showPopover (pair: PointPair, child: ReactNode): void {
     if (this.isDragging === false) {
       this.cancelHideAllPopovers()
       this.setState({
         popover: <Popover
           pair={pair}
-          onMouseOver={this.cancelHideAllPopovers}
-          onMouseOut={this.delayHideAllPopovers}>
+          onMouseOver={this.handlePopoverMouseOver}
+          onMouseOut={this.handlePopoverMouseOut}>
           {child}
         </Popover>
       })
@@ -203,6 +216,10 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   private showRemovePopover (h: Highlight) {
+    if (this.popoverIsHovered) {
+      return
+    }
+
     setTimeout(this.cancelHideAllPopovers, 0)
     this.showPopover(h.getPair(), (
       <Button
@@ -217,6 +234,10 @@ export class CorpusEditor extends Component<Props, State> {
   }
 
   private showAddPopover (pair: PointPair) {
+    if (this.popoverIsHovered) {
+      return
+    }
+
     this.showPopover(pair, (
       <Button
         glyph="\u2713"

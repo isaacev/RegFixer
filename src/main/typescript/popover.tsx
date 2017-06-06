@@ -5,15 +5,15 @@
 // Created on 4/10/17
 //
 
-import { PureComponent } from 'react'
+import { PureComponent, MouseEvent } from 'react'
 import { PointPair } from './point'
 
 const POPOVER_WIDTH = 32
 
 interface Props {
   pair: PointPair
-  onMouseOver: () => void
-  onMouseOut: () => void
+  onMouseOver: (event: MouseEvent<HTMLDivElement>) => void
+  onMouseOut: (event: MouseEvent<HTMLDivElement>) => void
 }
 
 export class Popover extends PureComponent<Props, {}> {
