@@ -19,6 +19,8 @@ public class SATSolver {
     private static final String CHARCLASS_WHITESPACE= "\\s";
     private static final String CHARCLASS_NOT_WHITESPACE= "\\S";
 
+
+
     private HashMap<String, String> cfg;
     private Context ctx;
     private Solver solver;
@@ -27,7 +29,7 @@ public class SATSolver {
     private Map<HoleId, Map<String, Boolean>> table;   // table manages <Hole#, <Hole#_Character, T/F>
     private Map<HoleId, Map<String, Integer>> countTable;  // counting table for <Hole#, <CharClasses, Count>>
 
-    SATSolver(RegexNode regex) {
+    public SATSolver(RegexNode regex) {
         this.cfg = new HashMap<String, String>();
         this.ctx = new Context(cfg);
         this.solver = ctx.mkSolver();     // actual solver for SAT
@@ -140,16 +142,16 @@ public class SATSolver {
 
                         // check if it is one of the char classes
                         if(check.equals("\\w") || check.equals("\\W") || check.equals("\\d") || check.equals("\\D")
-                                || check.equals("\\s") || check.equals("\\S")) {
+                            || check.equals("\\s") || check.equals("\\S")) {
                             encode = false;
                         } else if ( // check if a character is correct type of character class
-                                (pred.equals("\\w") && !Character.isLetter(check.charAt(check.length()-1))) ||
+                            (pred.equals("\\w") && !Character.isLetter(check.charAt(check.length()-1))) ||
                                 (pred.equals("\\W") && Character.isLetter(check.charAt(check.length()-1))) ||
                                 (pred.equals("\\d") && !Character.isDigit(check.charAt(check.length()-1))) ||
                                 (pred.equals("\\D") && Character.isDigit(check.charAt(check.length()-1))) ||
                                 (pred.equals("\\s") && !Character.isWhitespace(check.charAt(check.length()-1))) ||
                                 (pred.equals("\\S") && Character.isWhitespace(check.charAt(check.length()-1)))
-                                ) {
+                            ) {
                             encode = false;
                         }
                         // if satisfied all conditions, encode as a hard-constraint
@@ -228,7 +230,7 @@ public class SATSolver {
     }
 
     public RegexNode solveFormula() {
-//        System.out.println("SAT formula to solve is...\n" + opt.toString());
+        System.out.println("SAT formula to solve is...\n" + opt.toString());
         Status status = opt.Check();
         RegexNode newRegex = null;
 
@@ -266,6 +268,8 @@ public class SATSolver {
 
         System.out.println("\nStart changing: " + newRegex);
         int holeNum = 0;
+        HoleId holeId = new HoleId();
+        System.out.println(holeId.hashCode());
         int startIndex = 0;
         int endIndex = newRegex.indexOf(hole);
 

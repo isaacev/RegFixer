@@ -13,17 +13,29 @@ import org.sat4j.specs.TimeoutException;
  */
 public class Main {
     public static void main (String[] args) throws Exception {
+
+//          public CharClassSetNode (boolean not, Collection<CharRangeNode> subClasses) {
+        Collection<CharRangeNode> collection = new ArrayList<>();
+
+        collection.add(new CharRangeNode(new CharLiteralNode('a')));
+        collection.add(new CharRangeNode(new CharLiteralNode('b')));
+        collection.add(new CharRangeNode(new CharLiteralNode('g')));
+
+        CharClassSetNode charClassSetNode = new CharClassSetNode(false, collection);
+
+        System.out.println(charClassSetNode);
+
 //        testRepeat();
 //        testTwoHoles();
-        testDigitAndLetters();
+//        testDigitAndLetters();
     }
 
     public static void testDigitAndLetters() {
         String reg = "(❑)+a(❑)+";
         RegexNode regex = new ConcatNode(Arrays.asList(
-                new PlusNode(new HoleNode()),
-                new CharLiteralNode('a'),
-                new PlusNode(new HoleNode())
+            new PlusNode(new HoleNode()),
+            new CharLiteralNode('a'),
+            new PlusNode(new HoleNode())
         ));
         List<String> posExamples = new ArrayList<>();
         posExamples.add("123a23");
@@ -39,9 +51,9 @@ public class Main {
     public static void testRepeat() {
         String reg = "a(❑)*";
         RegexNode regex = new ConcatNode(Arrays.asList(
-                new CharLiteralNode('a'),
+            new CharLiteralNode('a'),
 //                new HoleNode(),
-                new StarNode(new HoleNode())
+            new StarNode(new HoleNode())
         ));
         List<String> posExamples = new ArrayList<>();
         posExamples.add("a");
@@ -59,11 +71,11 @@ public class Main {
         String reg = "a❑(❑)*";
         try {
 //            RegexNode regex= edu.wisc.regfixer.parser.Main.parse(reg);
-        RegexNode regex = new ConcatNode(Arrays.asList(
+            RegexNode regex = new ConcatNode(Arrays.asList(
                 new CharLiteralNode('a'),
                 new HoleNode(),
                 new StarNode(new HoleNode())
-        ));
+            ));
             List<String> posExamples = new ArrayList<>();
 //            posExamples.add("a4");
             posExamples.add("a2zxy");
@@ -127,10 +139,12 @@ public class Main {
             return;
         System.out.printf("\n%s apply \"%s\"\n", regex, ex);
         for (int i = 0; i < runs.size(); i++) {
-            System.out.printf("R%d", i);
+            System.out.printf("R%d ", i);
             Map<HoleId, Set<Character>> run = runs.get(i);
             for (HoleId key : run.keySet()) {
-                System.out.printf("\tH%d {", key);
+//                System.out.printf("\tH%d {", key.);
+                System.out.print(key.toString() + " {");
+
 
                 for (Character val : run.get(key)) {
                     System.out.printf(" %c", val);
