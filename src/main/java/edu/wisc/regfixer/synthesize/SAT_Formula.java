@@ -72,7 +72,7 @@ public class SAT_Formula {
         // iterate over chars
         for(Character charVal : run.get(holeNum)) {
           // make each variable by  "HOLE#_CHARACTER", and each character costs -2
-          String var = holeNum.toString() + '_' + charVal.toString();
+          String var = SAT_Formula.makeVarName(holeNum, charVal.toString());
           BoolExpr exprChar = ctx.mkBoolConst(var);
           opt.AssertSoft(exprChar, -2, "MAX_SAT");
           // 1. merging different chars
@@ -129,7 +129,7 @@ public class SAT_Formula {
         // encode hard-constraint for each predicate if their count is more than 2
         if(countTable.get(holeNum).get(pred) > 2) {
 
-          String predVar = holeNum.toString() + '_' + pred;
+          String predVar = SAT_Formula.makeVarName(holeNum, pred);
           BoolExpr exprPred = ctx.mkBoolConst(predVar);
           table.get(holeNum).put(predVar,false);
 
@@ -198,7 +198,7 @@ public class SAT_Formula {
   private void countCharType(HoleId holeNum, Character charVal) {
     //TODO: \W \D \S are omitted for now
 
-    String key = holeNum.toString() + "_" + charVal.toString();
+    String key = SAT_Formula.makeVarName(holeNum, charVal.toString());
 
     // check whether a character is word, not word, digit, not digit, whitespace or not whitespace
     if(Character.isLetter(charVal)) {   // WORD
@@ -254,5 +254,9 @@ public class SAT_Formula {
       }
     }
     return false;
+  }
+
+  private static String makeVarName (HoleId holeId, String predicate) {
+    return String.format("%s_%s", holeId.toString(), predicate);
   }
 }
