@@ -28,11 +28,11 @@ public class SAT_Solver {
     Context ctx = sat_formula.getCtx();
 
     // if a character is true
-    for(HoleId holeNum: table.keySet()) {
-      for (String key : table.get(holeNum).keySet()) {
+    for(HoleId holeId: table.keySet()) {
+      for (String key : table.get(holeId).keySet()) {
         BoolExpr boolExpr = ctx.mkBoolConst(key);
         if (model.evaluate(boolExpr, false).isTrue()) {
-          table.get(holeNum).replace(key, true);
+          table.get(holeId).replace(key, true);
         }
       }
     }
@@ -62,43 +62,51 @@ public class SAT_Solver {
   public static void optimizeCharClasses(SAT_Formula sat_formula, Map<HoleId, CharClass> holeSolutions, Map<HoleId, Map<String, Boolean>> table) {
 
     // iterate each hole in 'table' and check by the order
-    for(HoleId holeNum : table.keySet()) {
-      String pred_w = holeNum.toString() + "_\\w";
-      String pred_W = holeNum.toString() + "_\\W";
-      String pred_d = holeNum.toString() + "_\\d";
-      String pred_D = holeNum.toString() + "_\\D";
-      String pred_s = holeNum.toString() + "_\\s";
-      String pred_S = holeNum.toString() + "_\\S";
+    for(HoleId holeId : table.keySet()) {
+      String pred_w = holeId.toString() + "_\\w";
+      String pred_W = holeId.toString() + "_\\W";
+      String pred_a = holeId.toString() + "_\\a"; // alphabet only
+      String pred_d = holeId.toString() + "_\\d";
+      String pred_D = holeId.toString() + "_\\D";
+      String pred_s = holeId.toString() + "_\\s";
+      String pred_S = holeId.toString() + "_\\S";
 
       // TODO: \W, \D, \S are not yet included.  Need to discuss about it
 
       // 1. test meta char classes -- CharEscapedNode
-      if(sat_formula.predicateIsSolutionInHole(holeNum, pred_w)) {
-        holeSolutions.put(holeNum, new CharEscapedNode('w'));
+      if(sat_formula.predicateIsSolutionInHole(holeId, pred_w)) {
+        holeSolutions.put(holeId, new CharEscapedNode('w'));
         continue;
-      } else if(sat_formula.predicateIsSolutionInHole(holeNum, pred_d)) {
-        holeSolutions.put(holeNum, new CharEscapedNode('d'));
+      } else if(sat_formula.predicateIsSolutionInHole(holeId, pred_d)) {
+        holeSolutions.put(holeId, new CharEscapedNode('d'));
         continue;
-      } else if(sat_formula.predicateIsSolutionInHole(holeNum, pred_s)) {
-        holeSolutions.put(holeNum, new CharEscapedNode('s'));
+      } else if(sat_formula.predicateIsSolutionInHole(holeId, pred_s)) {
+        holeSolutions.put(holeId, new CharEscapedNode('s'));
         continue;
       }
 
       // TODO: need to include validation for [a-zA-Z] during the SAT_formula.build()
       // 2. test range -- CharRangeNode
+      if(sat_formula.predicateIsSolutionInHole(holeId, pred_a)) {
+        Collection<CharRangeNode> collection = new ArrayList<>();
+        collection.add(new CharRangeNode(new CharLiteralNode('a'), new CharLiteralNode('z')));
+        collection.add(new CharRangeNode(new CharLiteralNode('A'), new CharLiteralNode('Z')));
+        holeSolutions.put(holeId, new CharClassSetNode(false, collection));
+        continue;
+      }
 
       // 3. test character set -- CharClassSetNode
       Collection<CharRangeNode> collection = new ArrayList<>();
-      Map<String, Boolean> tmpTable = table.get(holeNum);
+      Map<String, Boolean> tmpTable = table.get(holeId);
       for(String charStr: tmpTable.keySet()) {
-        if(table.get(holeNum).get(charStr)) {
+        if(table.get(holeId).get(charStr)) {
           int delimiterPos = charStr.indexOf('_');
           char val = charStr.charAt(delimiterPos + 1);
           collection.add(new CharRangeNode(new CharLiteralNode(val)));
         }
       }
       CharClassSetNode charClassSetNode = new CharClassSetNode(false, collection);
-      holeSolutions.put(holeNum, charClassSetNode);
+      holeSolutions.put(holeId, charClassSetNode);
     }
 
   }
@@ -115,9 +123,9 @@ public class SAT_Solver {
     }
 
     System.out.println("\nSatisfiable SAT formula");
-    for(HoleId holeNum: table.keySet()) {
-      for (String key : table.get(holeNum).keySet()) {
-        System.out.println(key + " = " + table.get(holeNum).get(key));
+    for(HoleId holeId: table.keySet()) {
+      for (String key : table.get(holeId).keySet()) {
+        System.out.println(key + " = " + table.get(holeId).get(key));
       }
     }
   }

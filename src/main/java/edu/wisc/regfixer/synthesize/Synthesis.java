@@ -18,21 +18,22 @@ public class Synthesis {
   private RegexNode tree;
 
   public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
-
-//    Formula formula = Formula.build(positives, negatives);
-//    Map<HoleId, CharClass> holeSolutions = CharClassSolver.solve(formula);
-
-    // TODO: Sang's Fix here with new SATSolver -- return this.tree.solution
-    SAT_Formula sat_formula = new SAT_Formula(positives, negatives);
-    sat_formula.build();
-    Map<HoleId, CharClass> holeSolutions = SAT_Solver.solve(sat_formula);
-    SAT_Solver.printResult(sat_formula);
+    /* original formula here
+    Formula formula = Formula.build(positives, negatives);
+    Map<HoleId, CharClass> holeSolutions = CharClassSolver.solve(formula);
 
     if (holeSolutions.size() != enumerant.getHoles().size()) {
       throw new SynthesisFailure("no solution for some holes");
     }
+*/
+    // Sang's TEST here
+    SAT_Formula sat_formula = new SAT_Formula(positives, negatives);
+    sat_formula.build();
 
-    // fix starts here
+    Map<HoleId, CharClass> holeSolutions= SAT_Solver.solve(sat_formula);
+    if (holeSolutions.size() != enumerant.getHoles().size()) {
+      throw new SynthesisFailure("no solution for some holes");
+    }
     RegexNode solution = enumerant.getTree();
 
     for (Entry<HoleId, CharClass> holeSolution : holeSolutions.entrySet()) {
@@ -57,6 +58,7 @@ public class Synthesis {
   }
 
   public Pattern toPattern () {
+//    System.out.println(this.tree.toString());
     return Pattern.compile(this.tree.toString());
   }
 
