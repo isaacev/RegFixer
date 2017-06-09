@@ -58,21 +58,21 @@ public class SAT_Formula {
       Map<HoleId, Set<Character>> run = route.getSpans();
 
       // iterate each hole
-      for(HoleId holeNum : run.keySet()) {
-        // initialize countTable and table for each holeNum
-        if(!countTable.containsKey(holeNum)) {
-          initializeCountTable(countTable, holeNum);
+      for(HoleId holeId : run.keySet()) {
+        // initialize countTable and table for each holeId
+        if(!countTable.containsKey(holeId)) {
+          initializeCountTable(countTable, holeId);
         }
-        if(!table.containsKey(holeNum)) {
-          table.put(holeNum, new HashMap<>());
+        if(!table.containsKey(holeId)) {
+          table.put(holeId, new HashMap<>());
         }
         // for different chars in the same hole
         BoolExpr exprChars = null;
 
         // iterate over chars
-        for(Character charVal : run.get(holeNum)) {
+        for(Character charVal : run.get(holeId)) {
           // make each variable by  "HOLE#_CHARACTER", and each character costs -2
-          String var = SAT_Formula.makeVarName(holeNum, charVal.toString());
+          String var = SAT_Formula.makeVarName(holeId, charVal.toString());
           BoolExpr exprChar = ctx.mkBoolConst(var);
           opt.AssertSoft(exprChar, -2, "MAX_SAT");
           // 1. merging different chars
@@ -86,9 +86,9 @@ public class SAT_Formula {
             }
           }
           // check each hole's character class count
-          countCharType(holeNum, charVal);
-          if(!table.get(holeNum).containsKey(var)) {
-            table.get(holeNum).put(var,false);
+          countCharType(holeId, charVal);
+          if(!table.get(holeId).containsKey(var)) {
+            table.get(holeId).put(var,false);
           }
         }   // each hole loop ends
         // 2. merging different holes
@@ -120,18 +120,18 @@ public class SAT_Formula {
   private void encodePredicates() {
 
     // iterating each hole
-    for(HoleId holeNum : countTable.keySet()) {
+    for(HoleId holeId : countTable.keySet()) {
 
       // iterating each predicate (e.g. \w, \d, \s...)
-      for(String pred : countTable.get(holeNum).keySet()) {
+      for(String pred : countTable.get(holeId).keySet()) {
 
         BoolExpr exprPreds = null;
         // encode hard-constraint for each predicate if their count is more than 2
-        if(countTable.get(holeNum).get(pred) > 2) {
+        if(countTable.get(holeId).get(pred) > 2) {
 
-          String predVar = SAT_Formula.makeVarName(holeNum, pred);
+          String predVar = SAT_Formula.makeVarName(holeId, pred);
           BoolExpr exprPred = ctx.mkBoolConst(predVar);
-          table.get(holeNum).put(predVar,false);
+          table.get(holeId).put(predVar,false);
 
           // soft-constraint: each predicate gets a value
           if (pred.equals("\\w") || pred.equals("\\W")) {
@@ -142,8 +142,8 @@ public class SAT_Formula {
             opt.AssertSoft(exprPred,3,"MAX_SAT");
           }
 
-          // iterating character exists with corresponding holeNum
-          for(String var : table.get(holeNum).keySet()) {
+          // iterating character exists with corresponding holeId
+          for(String var : table.get(holeId).keySet()) {
             String check = var.substring(var.indexOf('_') + 1);
             BoolExpr exprChar = null;
             boolean encode = true;
@@ -182,7 +182,7 @@ public class SAT_Formula {
     }   // outer for ends
   }
 
-  private void initializeCountTable (Map<HoleId, Map<String, Integer>> countTable, HoleId holeNum) {
+  private void initializeCountTable (Map<HoleId, Map<String, Integer>> countTable, HoleId holeId) {
     //TODO: \W \D \S are omitted for now
 
     Map<String, Integer> actualCount = new HashMap<>();
@@ -192,40 +192,40 @@ public class SAT_Formula {
 //        actualCount.put("\\D", 0);
     actualCount.put("\\s", 0);
 //        actualCount.put("\\S", 0);
-    countTable.put(holeNum, actualCount);
+    countTable.put(holeId, actualCount);
   }
 
-  private void countCharType(HoleId holeNum, Character charVal) {
+  private void countCharType(HoleId holeId, Character charVal) {
     //TODO: \W \D \S are omitted for now
 
-    String key = SAT_Formula.makeVarName(holeNum, charVal.toString());
+    String key = SAT_Formula.makeVarName(holeId, charVal.toString());
 
     // check whether a character is word, not word, digit, not digit, whitespace or not whitespace
     if(Character.isLetter(charVal)) {   // WORD
-      if(!table.get(holeNum).containsKey(key)) {   // increment count if not already in the table
-        countTable.get(holeNum).put("\\w", countTable.get(holeNum).get("\\w") + 1);
+      if(!table.get(holeId).containsKey(key)) {   // increment count if not already in the table
+        countTable.get(holeId).put("\\w", countTable.get(holeId).get("\\w") + 1);
       }
 //        } else {    // NOT WORD
-//            if(!table.get(holeNum).containsKey(key)) {
-//                countTable.get(holeNum).put("\\W", countTable.get(holeNum).get("\\W") + 1);
+//            if(!table.get(holeId).containsKey(key)) {
+//                countTable.get(holeId).put("\\W", countTable.get(holeId).get("\\W") + 1);
 //            }
     }
     if(Character.isDigit(charVal)) {    // Digit
-      if(!table.get(holeNum).containsKey(key)) {
-        countTable.get(holeNum).put("\\d", countTable.get(holeNum).get("\\d") + 1);
+      if(!table.get(holeId).containsKey(key)) {
+        countTable.get(holeId).put("\\d", countTable.get(holeId).get("\\d") + 1);
       }
 //        } else {    // Not Digit
-//            if(!table.get(holeNum).containsKey(key)) {
-//                countTable.get(holeNum).put("\\D", countTable.get(holeNum).get("\\D") + 1);
+//            if(!table.get(holeId).containsKey(key)) {
+//                countTable.get(holeId).put("\\D", countTable.get(holeId).get("\\D") + 1);
 //            }
     }
     if(Character.isWhitespace(charVal)) {   // whitespace
-      if(!table.get(holeNum).containsKey(key)) {
-        countTable.get(holeNum).put("\\s", countTable.get(holeNum).get("\\s") + 1);
+      if(!table.get(holeId).containsKey(key)) {
+        countTable.get(holeId).put("\\s", countTable.get(holeId).get("\\s") + 1);
       }
 //        } else {    // Not whitespace
-//            if(!table.get(holeNum).containsKey(key)) {
-//                countTable.get(holeNum).put("\\S", countTable.get(holeNum).get("\\S") + 1);
+//            if(!table.get(holeId).containsKey(key)) {
+//                countTable.get(holeId).put("\\S", countTable.get(holeId).get("\\S") + 1);
 //            }
     }
   }
@@ -247,9 +247,9 @@ public class SAT_Formula {
   /*
   It tests whether a given predicate (e.g. \w) is a solution for the corresponding hole
    */
-  public boolean predicateIsSolutionInHole(HoleId holeNum, String predicate) {
-    if(table.get(holeNum).containsKey(predicate)) {
-      if(table.get(holeNum).get(predicate)) {   // its result is true
+  public boolean predicateIsSolutionInHole(HoleId holeId, String predicate) {
+    if(table.get(holeId).containsKey(predicate)) {
+      if(table.get(holeId).get(predicate)) {   // its result is true
         return true;
       }
     }
