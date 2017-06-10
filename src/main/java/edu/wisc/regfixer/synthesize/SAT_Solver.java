@@ -15,12 +15,9 @@ import java.util.*;
 public class SAT_Solver {
 
   public static Map<HoleId, CharClass> solve(SAT_Formula sat_formula) throws SynthesisFailure {
-
-
-    if(sat_formula.isUnsatisfiable()) {   // throws exception if the formula is unsatisfiable
+    if(sat_formula.isUnsatisfiable()) {
       throw new SynthesisFailure("unsatisfiable SAT formula");
     }
-
 
     // Display for testing -- which characters are possible solutions?
     Model model = sat_formula.getOpt().getModel();
