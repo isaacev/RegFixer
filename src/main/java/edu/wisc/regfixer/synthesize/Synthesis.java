@@ -18,15 +18,6 @@ public class Synthesis {
   private RegexNode tree;
 
   public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
-    /* original formula here
-    Formula formula = Formula.build(positives, negatives);
-    Map<HoleId, CharClass> holeSolutions = CharClassSolver.solve(formula);
-
-    if (holeSolutions.size() != enumerant.getHoles().size()) {
-      throw new SynthesisFailure("no solution for some holes");
-    }
-*/
-    // Sang's TEST here
     SAT_Formula sat_formula = new SAT_Formula(positives, negatives);
     sat_formula.build();
 
