@@ -35,11 +35,11 @@ public class SAT_Formula {
   }
 
   public void build() {
-    for(Set<Route> runs: this.postives) {   // make for positives
+    for(Set<Route> runs: this.postives) {
       buildFormula(runs, true);
     }
 
-    for(Set<Route> runs: this.negatives) {  // make for negatives
+    for(Set<Route> runs: this.negatives) {
       buildFormula(runs, false);
     }
 
