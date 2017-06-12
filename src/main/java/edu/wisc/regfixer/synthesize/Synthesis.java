@@ -49,7 +49,6 @@ public class Synthesis {
   }
 
   public Pattern toPattern () {
-//    System.out.println(this.tree.toString());
     return Pattern.compile(this.tree.toString());
   }
 
