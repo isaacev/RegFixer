@@ -25,7 +25,7 @@ import edu.wisc.regfixer.parser.CharRangeNode;
 import edu.wisc.regfixer.parser.ConcreteCharClass;
 
 public class CharClassSolver {
-  public static Map<HoleId, CharClass> solve (Formula formula) throws SynthesisFailure {
+  public static Map<HoleId, CharClass> solve (SAT_Formula formula) throws SynthesisFailure {
     if (formula.isUnSatisfiable()) {
       throw new SynthesisFailure("unsatisfiable SAT formula");
     }

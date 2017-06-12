@@ -19,11 +19,12 @@ public class Synthesis {
 
   public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
     SAT_Formula sat_formula = new SAT_Formula(positives, negatives);
+    Map<HoleId, CharClass> holeSolutions = CharClassSolver.solve(sat_formula);
 
-    Map<HoleId, CharClass> holeSolutions= SAT_Solver.solve(sat_formula);
     if (holeSolutions.size() != enumerant.getHoles().size()) {
       throw new SynthesisFailure("no solution for some holes");
     }
+
     RegexNode solution = enumerant.getTree();
 
     for (Entry<HoleId, CharClass> holeSolution : holeSolutions.entrySet()) {
