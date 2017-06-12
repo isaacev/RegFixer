@@ -1,237 +1,257 @@
 package edu.wisc.regfixer.synthesize;
 
-import com.microsoft.z3.*;
-import edu.wisc.regfixer.automata.Route;
-import edu.wisc.regfixer.enumerate.HoleId;
-
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Model;
+import com.microsoft.z3.Optimize;
+import com.microsoft.z3.Status;
+import edu.wisc.regfixer.automata.Route;
+import edu.wisc.regfixer.enumerate.HoleId;
+import edu.wisc.regfixer.parser.CharClass;
+import edu.wisc.regfixer.parser.CharEscapedNode;
+import edu.wisc.regfixer.parser.CharLiteralNode;
 
 /**
  * Created by sangyunpark on 6/8/17.
  */
 public class SAT_Formula {
-
-  private Map<HoleId, Map<String, Boolean>> table;   // table manages <Hole#, <Hole#_Character, T/F>
-  private HashMap<String, String> cfg;
   private Context ctx;
-  private Solver solver;
   private Optimize opt;
-  private Map<HoleId, Map<String, Integer>> countTable;  // counting table for <Hole#, <CharClasses, Count>>
-  private List<Set<Route>> postives;  // list of positive examples with set of runs (= Route)
+  private Model model;
+  private Set<BoolExpr> knownVars;
+  private Map<BoolExpr, HoleId> varToHoleId;
+  private Map<HoleId, Set<BoolExpr>> holeIdToVars;
+  private Map<BoolExpr, CharClass> varToCharClass;
+  private Map<HoleId, Map<CharEscapedNode, Integer>> charCountTable;
+  private Map<HoleId, Map<Character, Boolean>> knownHoleCharCrosses;
+  private List<Set<Route>> positives;
   private List<Set<Route>> negatives;
 
-  public SAT_Formula(List<Set<Route>> positives, List<Set<Route>> negatives) {
-    this.cfg = new HashMap<String, String>();
-    this.ctx = new Context(cfg);
-    this.solver = ctx.mkSolver();     // actual solver for SAT
-    this.table = new HashMap<>();
-    this.opt = ctx.mkOptimize();    // optimizer for MAX-SAT
-    this.countTable = new HashMap<>();
-    this.postives = positives;
+  public SAT_Formula (List<Set<Route>> positives, List<Set<Route>> negatives) {
+    this.positives = positives;
     this.negatives = negatives;
+    this.ctx = new Context();
+    this.opt = this.ctx.mkOptimize();
+    this.model = null;
+    this.knownVars = new HashSet<>();
+    this.varToHoleId = new HashMap<>();
+    this.holeIdToVars = new HashMap<>();
+    this.varToCharClass = new HashMap<>();
+    this.charCountTable = new HashMap<>();
+    this.knownHoleCharCrosses = new HashMap<>();
+
+    this.buildFormula();
   }
 
-  public void build() {
-    for(Set<Route> runs: this.postives) {
-      buildFormula(runs, true);
-    }
+  private void buildFormula () {
+    for (Set<Route> routes : this.positives) {
+      BoolExpr expr = this.buildExampleFormula(routes, true);
 
-    for(Set<Route> runs: this.negatives) {
-      buildFormula(runs, false);
-    }
-
-    this.encodePredicates();  // encode predicate constraints (e.g. \d \w ...)
-  }
-
-  private void buildFormula(Set<Route> runs, boolean posFlag) {
-    BoolExpr exprFinal = null;
-    if(runs.size() == 0) { return; }
-    // iterate each runs
-    for(Route route : runs) {
-      BoolExpr exprRun = null;
-
-      // retrieve in a form of actual run
-      Map<HoleId, Set<Character>> run = route.getSpans();
-
-      // iterate each hole
-      for(HoleId holeId : run.keySet()) {
-        // initialize countTable and table for each holeId
-        if(!countTable.containsKey(holeId)) {
-          initializeCountTable(countTable, holeId);
-        }
-        if(!table.containsKey(holeId)) {
-          table.put(holeId, new HashMap<>());
-        }
-        // for different chars in the same hole
-        BoolExpr exprChars = null;
-
-        // iterate over chars
-        for(Character charVal : run.get(holeId)) {
-          // make each variable by  "HOLE#_CHARACTER", and each character costs -2
-          String var = SAT_Formula.makeVarName(holeId, charVal.toString());
-          BoolExpr exprChar = ctx.mkBoolConst(var);
-          opt.AssertSoft(exprChar, -2, "MAX_SAT");
-          // 1. merging different chars
-          if(posFlag) {
-            if(exprChars == null) { exprChars = exprChar; }
-            else { exprChars = ctx.mkAnd(exprChars, exprChar); }
-          } else {
-            if(exprChars == null) { exprChars = ctx.mkNot(exprChar); }
-            else {    // Negative -- OR different chars in the
-              exprChars = ctx.mkOr(exprChars, ctx.mkNot(exprChar));
-            }
-          }
-          // check each hole's character class count
-          countCharType(holeId, charVal);
-          if(!table.get(holeId).containsKey(var)) {
-            table.get(holeId).put(var,false);
-          }
-        }   // each hole loop ends
-        // 2. merging different holes
-        if(exprRun == null) {
-          exprRun = exprChars;
-        }
-        else {
-          if (posFlag) {   // Positive example -- AND different holes
-            exprRun = ctx.mkAnd(exprRun, exprChars);
-          } else {        // Negative example -- NOT OR different holes
-            exprRun = ctx.mkOr(exprRun, exprChars);
-          }
-        }
-      } // each hole For ends
-      if(exprRun == null) // case when no character is going through a hole --> return
-        return;
-
-      // 3. merging different runs
-      if(exprFinal == null) {
-        exprFinal = exprRun;
-      } else {
-        if(posFlag) { exprFinal = ctx.mkOr(exprFinal, exprRun); }
-        else { exprFinal = ctx.mkAnd(exprFinal, exprRun); }
+      if (expr != null) {
+        this.opt.Add(expr);
       }
-    } // runs for loop ends
-    opt.Add(exprFinal);
+    }
+
+    for (Set<Route> routes : this.negatives) {
+      BoolExpr expr = this.buildExampleFormula(routes, false);
+
+      if (expr != null) {
+        this.opt.Add(expr);
+      }
+    }
+
+    this.encodePredicates();
   }
 
-  private void encodePredicates() {
+  private BoolExpr buildExampleFormula (Set<Route> routes, boolean posFlag) {
+    BoolExpr exprFinal = null;
 
-    // iterating each hole
-    for(HoleId holeId : countTable.keySet()) {
+    for (Route route : routes) {
+      BoolExpr exprRoute = this.buildRouteFormula(route, posFlag);
 
-      // iterating each predicate (e.g. \w, \d, \s...)
-      for(String pred : countTable.get(holeId).keySet()) {
+      if (exprRoute == null) {
+        continue;
+      }
 
+      if (exprFinal == null) {
+        exprFinal = exprRoute;
+      } else if (posFlag) {
+        exprFinal = this.ctx.mkOr(exprFinal, exprRoute);
+      } else {
+        exprFinal = this.ctx.mkAnd(exprFinal, exprRoute);
+      }
+    }
+
+    return exprFinal;
+  }
+
+  private BoolExpr buildRouteFormula (Route route, boolean posFlag) {
+    Map<HoleId, Set<Character>> spans = route.getSpans();
+    BoolExpr exprRoute = null;
+
+    for (HoleId holeId : spans.keySet()) {
+      if (this.charCountTable.containsKey(holeId) == false) {
+        this.initializeCountTable(holeId);
+      }
+
+      BoolExpr exprChars = this.buildCharFormula(holeId, spans.get(holeId), posFlag);
+
+      if (exprRoute == null) {
+        exprRoute = exprChars;
+      } else if (posFlag) {
+        exprRoute = this.ctx.mkAnd(exprRoute, exprChars);
+      } else {
+        exprRoute = this.ctx.mkOr(exprRoute, exprChars);
+      }
+    }
+
+    return exprRoute;
+  }
+
+  private BoolExpr buildCharFormula (HoleId holeId, Set<Character> chars, boolean posFlag) {
+    BoolExpr exprChars = null;
+
+    for (Character charVal : chars) {
+      BoolExpr exprChar = this.registerVariable(holeId, new CharLiteralNode(charVal));
+      this.opt.AssertSoft(exprChar, -2, "MAX_SAT");
+      this.countCharType(holeId, charVal);
+
+      if (posFlag) {
+        if (exprChars == null) {
+          exprChars = exprChar;
+        } else {
+          exprChars = this.ctx.mkAnd(exprChars, exprChar);
+        }
+      } else {
+        if (exprChars == null) {
+          exprChars = this.ctx.mkNot(exprChar);
+        } else {
+          exprChars = this.ctx.mkOr(exprChars, this.ctx.mkNot(exprChar));
+        }
+      }
+    }
+
+    return exprChars;
+  }
+
+  private void encodePredicates () {
+    for (HoleId holeId : this.charCountTable.keySet()) {
+      for (CharEscapedNode predClass : this.charCountTable.get(holeId).keySet()) {
         BoolExpr exprPreds = null;
-        // encode hard-constraint for each predicate if their count is more than 2
-        if(countTable.get(holeId).get(pred) > 2) {
+        Integer count = this.charCountTable.get(holeId).get(predClass);
 
-          String predVar = SAT_Formula.makeVarName(holeId, pred);
-          BoolExpr exprPred = ctx.mkBoolConst(predVar);
-          table.get(holeId).put(predVar,false);
+        if (count > 2) {
+          BoolExpr exprPred = this.registerVariable(holeId, predClass);
+          Integer metaClassWeight = SAT_Formula.computeMetaClassWeight(predClass);
+          this.opt.AssertSoft(exprPred, metaClassWeight, "MAX_SAT");
 
-          // soft-constraint: each predicate gets a value
-          if (pred.equals("\\w") || pred.equals("\\W")) {
-            opt.AssertSoft(exprPred,5,"MAX_SAT");
-          } else if(pred.equals("\\a")) {
-            opt.AssertSoft(exprPred,4,"MAX_SAT");
-          } else if(pred.equals("\\d") || pred.equals("\\D")) {
-            opt.AssertSoft(exprPred,3,"MAX_SAT");
-          } else if(pred.equals("\\s") || pred.equals("\\S")) {
-            opt.AssertSoft(exprPred,2,"MAX_SAT");
-          }
+          for (BoolExpr var : this.holeIdToVars.get(holeId)) {
+            CharClass varClass = this.varToCharClass.get(var);
+            boolean isLiteralClass = varClass instanceof CharLiteralNode;
 
-          // iterating character exists with corresponding holeId
-          for(String var : table.get(holeId).keySet()) {
-            String check = var.substring(var.indexOf('_') + 1);
-            BoolExpr exprChar = null;
-            boolean encode = true;
+            if (isLiteralClass) {
+              boolean childOfPredClass = SAT_Formula.charIsMemberOfMetaClass((CharLiteralNode) varClass, predClass);
 
-            // check if it is one of the char classes
-            if(check.equals("\\w") || check.equals("\\W") || check.equals("\\a") ||check.equals("\\d")
-                || check.equals("\\D") || check.equals("\\s") || check.equals("\\S")) {
-              encode = false;
-            } else if ( // check if a character is correct type of character class
-                (pred.equals("\\w") && !Character.isLetterOrDigit(check.charAt(check.length()-1))) ||
-                    (pred.equals("\\W") && Character.isLetterOrDigit(check.charAt(check.length()-1))) ||
-                    (pred.equals("\\a") && !Character.isLetter(check.charAt(check.length()-1))) ||
-                    (pred.equals("\\d") && !Character.isDigit(check.charAt(check.length()-1))) ||
-                    (pred.equals("\\D") && Character.isDigit(check.charAt(check.length()-1))) ||
-                    (pred.equals("\\s") && !Character.isWhitespace(check.charAt(check.length()-1))) ||
-                    (pred.equals("\\S") && Character.isWhitespace(check.charAt(check.length()-1)))
-                ) {
-              encode = false;
-            }
-            // if satisfied all conditions, encode as a hard-constraint
-            if(encode) {
-              exprChar = ctx.mkBoolConst(var);
-              if (exprPreds == null) {
-                exprPreds = ctx.mkOr(ctx.mkNot(exprPred), exprChar);
-              } else {
-                exprPreds = ctx.mkAnd(exprPreds, ctx.mkOr(ctx.mkNot(exprPred), exprChar));
+              if (childOfPredClass) {
+                if (exprPreds == null) {
+                  exprPreds = this.ctx.mkOr(this.ctx.mkNot(exprPred), var);
+                } else {
+                  exprPreds = this.ctx.mkAnd(exprPreds, this.ctx.mkOr(this.ctx.mkNot(exprPred), var));
+                }
               }
             }
           }
-          if(exprPreds != null) {
-            opt.Add(exprPreds);
+
+          if (exprPreds != null) {
+            this.opt.Add(exprPreds);
           }
         }
       }
-    }   // outer for ends
+    }
   }
 
-  private void initializeCountTable (Map<HoleId, Map<String, Integer>> countTable, HoleId holeId) {
-    //TODO: \W \D \S are omitted for now
-
-    Map<String, Integer> actualCount = new HashMap<>();
-    actualCount.put("\\w", 0);
-//        actualCount.put("\\W", 0);
-    actualCount.put("\\d", 0);
-//        actualCount.put("\\D", 0);
-    actualCount.put("\\s", 0);
-//        actualCount.put("\\S", 0);
-    actualCount.put("\\a", 0);  // refers to alphabet
-    countTable.put(holeId, actualCount);
+  private void initializeCountTable (HoleId holeId) {
+    this.charCountTable.put(holeId, new HashMap<>());
+    this.charCountTable.get(holeId).put(new CharEscapedNode('w'), 0);
+    this.charCountTable.get(holeId).put(new CharEscapedNode('d'), 0);
+    this.charCountTable.get(holeId).put(new CharEscapedNode('s'), 0);
+    this.charCountTable.get(holeId).put(new CharEscapedNode('a'), 0);
   }
 
-  private void countCharType(HoleId holeId, Character charVal) {
-    //TODO: \W \D \S are omitted for now
+  private void countCharType (HoleId holeId, Character charVal) {
+    Map<CharEscapedNode, Integer> count = this.charCountTable.get(holeId);
 
-    String key = SAT_Formula.makeVarName(holeId, charVal.toString());
-    // check whether a character is word, not word, digit, not digit, whitespace or not whitespace
-    if(Character.isLetterOrDigit(charVal)) {   // WORD
-      if(!table.get(holeId).containsKey(key)) {   // increment count if not already in the table
-        countTable.get(holeId).put("\\w", countTable.get(holeId).get("\\w") + 1);
-      }
-//        } else {    // NOT WORD
-//            if(!table.get(holeId).containsKey(key)) {
-//                countTable.get(holeId).put("\\W", countTable.get(holeId).get("\\W") + 1);
-//            }
+    if (this.knownHoleCharCrosses.get(holeId) == null) {
+      this.knownHoleCharCrosses.put(holeId, new HashMap<>());
     }
-    if(Character.isLetter(charVal)) { // Alphabet only
-      if(!table.get(holeId).containsKey(key)) {
-        countTable.get(holeId).put("\\a", countTable.get(holeId).get("\\a") + 1);
-      }
+
+    if (this.knownHoleCharCrosses.get(holeId).get(charVal) == null) {
+      this.knownHoleCharCrosses.get(holeId).put(charVal, true);
+    } else {
+      return;
     }
-    if(Character.isDigit(charVal)) {    // Digit
-      if(!table.get(holeId).containsKey(key)) {
-        countTable.get(holeId).put("\\d", countTable.get(holeId).get("\\d") + 1);
-      }
-//        } else {    // Not Digit
-//            if(!table.get(holeId).containsKey(key)) {
-//                countTable.get(holeId).put("\\D", countTable.get(holeId).get("\\D") + 1);
-//            }
+
+    if (Character.isLetterOrDigit(charVal)) {
+      CharEscapedNode metaClass = new CharEscapedNode('w');
+      int old = count.get(metaClass);
+      count.put(metaClass, old + 1);
     }
-    if(Character.isWhitespace(charVal)) {   // whitespace
-      if(!table.get(holeId).containsKey(key)) {
-        countTable.get(holeId).put("\\s", countTable.get(holeId).get("\\s") + 1);
-      }
-//        } else {    // Not whitespace
-//            if(!table.get(holeId).containsKey(key)) {
-//                countTable.get(holeId).put("\\S", countTable.get(holeId).get("\\S") + 1);
-//            }
+
+    if (Character.isLetter(charVal)) {
+      CharEscapedNode metaClass = new CharEscapedNode('a');
+      int old = count.get(metaClass);
+      count.put(metaClass, old + 1);
+    }
+
+    if (Character.isDigit(charVal)) {
+      CharEscapedNode metaClass = new CharEscapedNode('d');
+      int old = count.get(metaClass);
+      count.put(metaClass, old + 1);
+    }
+
+    if (Character.isWhitespace(charVal)) {
+      CharEscapedNode metaClass = new CharEscapedNode('s');
+      int old = count.get(metaClass);
+      count.put(metaClass, old + 1);
+    }
+  }
+
+  public static Integer computeMetaClassWeight (CharClass charClass) {
+    switch (charClass.toString()) {
+      case "\\w":
+      case "\\W":
+        return 5;
+      case "\\a":
+        return 4;
+      case "\\d":
+      case "\\D":
+        return 3;
+      case "\\s":
+      case "\\S":
+        return 2;
+      default:
+        return 0;
+    }
+  }
+
+  public static boolean charClassIsMetaClass (CharClass charClass) {
+    switch (charClass.toString()) {
+      case "\\w":
+      case "\\W":
+      case "\\a":
+      case "\\d":
+      case "\\D":
+      case "\\s":
+      case "\\S":
+        return true;
+      default:
+        return false;
     }
   }
 
@@ -240,7 +260,28 @@ public class SAT_Formula {
   }
 
   public Map<HoleId, Map<String, Boolean>> getTable() {
-    return table;
+    return null;
+  }
+
+  public static boolean charIsMemberOfMetaClass (CharLiteralNode literal, CharEscapedNode meta) {
+    switch (meta.toString()) {
+      case "\\w":
+        return Character.isLetterOrDigit(literal.getChar());
+      case "\\W":
+        return Character.isLetterOrDigit(literal.getChar()) == false;
+      case "\\a":
+        return Character.isLetter(literal.getChar());
+      case "\\d":
+        return Character.isDigit(literal.getChar());
+      case "\\D":
+        return Character.isDigit(literal.getChar()) == false;
+      case "\\s":
+        return Character.isWhitespace(literal.getChar());
+      case "\\S":
+        return Character.isWhitespace(literal.getChar()) == false;
+      default:
+        return false;
+    }
   }
 
   public Context getCtx() { return ctx; }
@@ -253,15 +294,55 @@ public class SAT_Formula {
   It tests whether a given predicate (e.g. \w) is a solution for the corresponding hole
    */
   public boolean predicateIsSolutionInHole(HoleId holeId, String predicate) {
-    if(table.get(holeId).containsKey(predicate)) {
-      if(table.get(holeId).get(predicate)) {   // its result is true
-        return true;
-      }
-    }
     return false;
+  }
+
+  private BoolExpr registerVariable (HoleId holeId, CharClass charClass) {
+    String name = SAT_Formula.makeVarName(holeId, charClass.toString());
+    BoolExpr expr = this.ctx.mkBoolConst(name);
+
+    if (this.holeIdToVars.containsKey(holeId) == false) {
+      this.holeIdToVars.put(holeId, new HashSet<>());
+    }
+
+    this.knownVars.add(expr);
+    this.varToHoleId.put(expr, holeId);
+    this.holeIdToVars.get(holeId).add(expr);
+    this.varToCharClass.put(expr, charClass);
+
+    return expr;
   }
 
   private static String makeVarName (HoleId holeId, String predicate) {
     return String.format("%s_%s", holeId.toString(), predicate);
+  }
+
+  public boolean isUnSatisfiable () {
+    return (this.opt.Check() == Status.UNSATISFIABLE);
+  }
+
+  public Set<BoolExpr> getVariables () {
+    return this.knownVars;
+  }
+
+  public HoleId getHoleIdForVariable (BoolExpr var) {
+    return this.varToHoleId.get(var);
+  }
+
+  public CharClass getCharClassForVariable (BoolExpr var) {
+    return this.varToCharClass.get(var);
+  }
+
+  public boolean variableEvaluatesTrue (BoolExpr var) {
+    if (this.model == null) {
+      this.model = this.opt.getModel();
+    }
+
+    return this.model.evaluate(var, false).isTrue();
+  }
+
+  @Override
+  public String toString () {
+    return this.opt.toString();
   }
 }

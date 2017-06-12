@@ -19,7 +19,6 @@ public class Synthesis {
 
   public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
     SAT_Formula sat_formula = new SAT_Formula(positives, negatives);
-    sat_formula.build();
 
     Map<HoleId, CharClass> holeSolutions= SAT_Solver.solve(sat_formula);
     if (holeSolutions.size() != enumerant.getHoles().size()) {
