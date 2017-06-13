@@ -1,13 +1,6 @@
 package edu.wisc.regfixer.enumerate;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import edu.wisc.regfixer.automata.Automaton;
@@ -23,11 +16,11 @@ import edu.wisc.regfixer.synthesize.SynthesisFailure;
 import org.sat4j.specs.TimeoutException;
 
 public class Enumerant implements Comparable<Enumerant> {
-  public final static int UNION_COST    = 1;
+  public final static int UNION_COST    = 2;
   public final static int OPTIONAL_COST = 1;
   public final static int STAR_COST     = 3;
   public final static int PLUS_COST     = 2;
-  public final static int CONCAT_COST   = 1;
+  public final static int CONCAT_COST   = 2;
 
   private final RegexNode tree;
   private final Map<HoleId, HoleNode> holes;
@@ -175,7 +168,6 @@ public class Enumerant implements Comparable<Enumerant> {
       String fmt = "timed-out computing runs for `%s`";
       throw new SynthesisFailure(String.format(fmt, this.tree));
     }
-
     return new Synthesis(this, positiveRuns, negativeRuns);
   }
 

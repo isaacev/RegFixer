@@ -54,7 +54,7 @@ public class Slicer {
         if (midfix.size() == 1) {
           midfixPartials.addAll(sliceNode(midfix.get(0)));
         } else {
-          int descendants = midfix.stream().mapToInt(RegexNode::descendants).sum();
+          int descendants = midfix.stream().mapToInt(RegexNode::descendants).sum(); // cost calculated here
           midfixPartials.add(new Enumerant(new HoleNode(), descendants));
         }
 
