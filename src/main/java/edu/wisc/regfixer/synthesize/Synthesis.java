@@ -12,6 +12,7 @@ import edu.wisc.regfixer.enumerate.Grafter;
 import edu.wisc.regfixer.enumerate.HoleId;
 import edu.wisc.regfixer.enumerate.HoleNode;
 import edu.wisc.regfixer.parser.CharClass;
+import edu.wisc.regfixer.parser.CharClassSetNode;
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class Synthesis {
@@ -29,10 +30,21 @@ public class Synthesis {
     // Sang's TEST here
     SAT_Formula sat_formula = new SAT_Formula(positives, negatives);
     sat_formula.build();
+//    System.out.println(sat_formula.getOpt().toString());
 
     Map<HoleId, CharClass> holeSolutions= SAT_Solver.solve(sat_formula);
+//    SAT_Solver.printResult(sat_formula);
+
     if (holeSolutions.size() != enumerant.getHoles().size()) {
       throw new SynthesisFailure("no solution for some holes");
+    }
+    // prevent if no character exists in CharClassSetNode
+    for(HoleId holeId : holeSolutions.keySet()) {
+      if(holeSolutions.get(holeId) instanceof CharClassSetNode) {
+        if (((CharClassSetNode) holeSolutions.get(holeId)).getSubClassesSize() == 0) {
+          throw new SynthesisFailure("no solution for some holes");
+        }
+      }
     }
     RegexNode solution = enumerant.getTree();
 

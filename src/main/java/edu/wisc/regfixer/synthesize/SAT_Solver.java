@@ -72,13 +72,12 @@ public class SAT_Solver {
       String pred_S = holeId.toString() + "_\\S";
 
       // TODO: \W, \D, \S are not yet included.  Need to discuss about it
-
       // 1. test meta char classes -- CharEscapedNode
-      if(sat_formula.predicateIsSolutionInHole(holeId, pred_w)) {
-        holeSolutions.put(holeId, new CharEscapedNode('w'));
-        continue;
-      } else if(sat_formula.predicateIsSolutionInHole(holeId, pred_d)) {
+      if(sat_formula.predicateIsSolutionInHole(holeId, pred_d)) {
         holeSolutions.put(holeId, new CharEscapedNode('d'));
+        continue;
+      } else if(sat_formula.predicateIsSolutionInHole(holeId, pred_w)) {
+        holeSolutions.put(holeId, new CharEscapedNode('w'));
         continue;
       } else if(sat_formula.predicateIsSolutionInHole(holeId, pred_s)) {
         holeSolutions.put(holeId, new CharEscapedNode('s'));

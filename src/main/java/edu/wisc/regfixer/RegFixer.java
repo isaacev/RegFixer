@@ -49,7 +49,6 @@ public class RegFixer {
     int i = 0;
     while ((enumerant = enumerants.poll()) != null) {
       report.printEnumerant(++i, enumerant.getCost(), enumerant.toString());
-
       if (job.getCorpus().passesDotTest(enumerant)) {
         try {
           synthesis = enumerant.synthesize(job.getCorpus());
@@ -63,7 +62,7 @@ public class RegFixer {
           break;
         } else {
           report.printEnumerantRepair(false, synthesis.toString());
-          report.printEnumerantError(false, "matched too much");
+          report.printEnumerantError(false, "matched incorrectly");
 
           for (Range range : job.getCorpus().getBadMatches(synthesis)) {
             String example = job.getCorpus().getSubstring(range);

@@ -13,6 +13,10 @@ public class CharClassSetNode implements CharClass {
     this.subClasses = new HashSet<>(subClasses);
   }
 
+  public int getSubClassesSize() {
+    return this.subClasses.size();
+  }
+
   public boolean isInverted () {
     return this.not;
   }
