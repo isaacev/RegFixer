@@ -6,3 +6,5 @@ node_modules
 src/main/resources/dist/*.map
 classes
 .idea
+com.microsoft.z3.jar
+benchmarks/example1.txt
