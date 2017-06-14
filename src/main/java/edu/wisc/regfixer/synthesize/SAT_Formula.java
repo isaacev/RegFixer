@@ -23,7 +23,6 @@ public class SAT_Formula {
   private List<Set<Route>> postives;  // list of positive examples with set of runs (= Route)
   private List<Set<Route>> negatives;
 
-
   public SAT_Formula(List<Set<Route>> positives, List<Set<Route>> negatives) {
     this.cfg = new HashMap<String, String>();
     this.ctx = new Context(cfg);
@@ -36,11 +35,11 @@ public class SAT_Formula {
   }
 
   public void build() {
-    for(Set<Route> runs: this.postives) {   // make for positives
+    for(Set<Route> runs: this.postives) {
       buildFormula(runs, true);
     }
 
-    for(Set<Route> runs: this.negatives) {  // make for negatives
+    for(Set<Route> runs: this.negatives) {
       buildFormula(runs, false);
     }
 
