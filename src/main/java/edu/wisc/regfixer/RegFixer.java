@@ -1,6 +1,7 @@
 package edu.wisc.regfixer;
 
 import java.util.concurrent.TimeoutException;
+import java.util.regex.PatternSyntaxException;
 
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Enumerants;
@@ -56,19 +57,23 @@ public class RegFixer {
           report.printEnumerantError(true, ex.getMessage());
           continue;
         }
+        try {
+          if (job.getCorpus().isPerfectMatch(synthesis)) {
+            report.printEnumerantRepair(true, synthesis.toString());
+            break;
+          } else {
+            report.printEnumerantRepair(false, synthesis.toString());
+            report.printEnumerantError(false, "matched incorrectly");
 
-        if (job.getCorpus().isPerfectMatch(synthesis)) {
-          report.printEnumerantRepair(true, synthesis.toString());
-          break;
-        } else {
-          report.printEnumerantRepair(false, synthesis.toString());
-          report.printEnumerantError(false, "matched incorrectly");
-
-          for (Range range : job.getCorpus().getBadMatches(synthesis)) {
-            String example = job.getCorpus().getSubstring(range);
-            report.printEnumerantBadMatch(range, example);
+            for (Range range : job.getCorpus().getBadMatches(synthesis)) {
+              String example = job.getCorpus().getSubstring(range);
+              report.printEnumerantBadMatch(range, example);
+            }
           }
+        } catch (PatternSyntaxException e) {  // catching illegal syntax (e.g. [23-0], [23 ])
+          report.printEnumerantError(false, "Illegal Syntax of Regex");
         }
+
       } else {
         report.printEnumerantError(true, "failed dot test");
       }

@@ -126,7 +126,7 @@ public class SAT_Formula {
 
         BoolExpr exprPreds = null;
         // encode hard-constraint for each predicate if their count is more than 2
-        if(countTable.get(holeId).get(pred) > 2) {
+        if(countTable.get(holeId).get(pred) > 1) {
 
           String predVar = SAT_Formula.makeVarName(holeId, pred);
           BoolExpr exprPred = ctx.mkBoolConst(predVar);
