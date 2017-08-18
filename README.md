@@ -54,7 +54,7 @@ That matches the strings:
 All done
 ```
 
-## Running on local server
+## Running on local server (with JAR file)
 
 `java -jar target/regfixer.jar serve --port=8080`
 
