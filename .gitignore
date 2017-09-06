@@ -6,3 +6,4 @@ node_modules
 src/main/resources/dist/*.map
 classes
 .idea
+.DS_Store
