@@ -1,7 +1,9 @@
 package edu.wisc.regfixer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeoutException;
 import java.util.List;
 
 import com.beust.jcommander.JCommander;
@@ -10,6 +12,7 @@ import com.beust.jcommander.Parameters;
 import edu.wisc.regfixer.enumerate.Benchmark;
 import edu.wisc.regfixer.enumerate.Job;
 import edu.wisc.regfixer.util.ReportStream;
+import edu.wisc.regfixer.util.Ansi;
 
 public class CLI {
   private static class ArgsRoot {
@@ -53,16 +56,22 @@ public class CLI {
     private List<String> files = new ArrayList<>();
   }
 
+  @Parameters(separators="=")
+  private static class ArgsTest {
+  }
+
   public static void main (String[] argv) {
     ArgsRoot root = new ArgsRoot();
     ArgsServe serve = new ArgsServe();
     ArgsFix fix = new ArgsFix();
+    ArgsTest test = new ArgsTest();
 
     JCommander cli = JCommander.newBuilder()
       .programName("regfixer")
       .addObject(root)
       .addCommand("serve", serve)
       .addCommand("fix", fix)
+      .addCommand("test", test)
       .build();
 
     cli.parse(argv);
@@ -89,6 +98,10 @@ public class CLI {
 
     if (cli.getParsedCommand().equals("fix")) {
       System.exit(handleFix(fix));
+    }
+
+    if (cli.getParsedCommand().equals("test")) {
+      System.exit(handleTest(test));
     }
   }
 
@@ -228,5 +241,36 @@ public class CLI {
       System.err.println(ex.getMessage());
       return 1;
     }
+  }
+
+  private static int handleTest (ArgsTest args) {
+    File testingDir = new File("tests");
+    File[] testingFiles = testingDir.listFiles();
+
+    if (testingFiles == null) {
+      System.err.println("cannot read directory ./tests");
+      return 1;
+    }
+
+    for (int i = 0; i < testingFiles.length; i++) {
+      if (testingFiles[i].isFile()) {
+        Job job = null;
+
+        try {
+          job = Benchmark.readFromFile(testingFiles[i].getPath());
+        } catch (IOException ex) {
+          System.err.println("unable to read file: " + testingFiles[i].getPath());
+        }
+
+        try {
+          String solution = RegFixer.fix(job);
+          System.out.println(Ansi.Green.sprintf("  ✓ %-32s %s", testingFiles[i].getName(), solution));
+        } catch (TimeoutException ex) {
+          System.out.println(Ansi.Red.sprintf("  ✗ %-32s %s", testingFiles[i].getName(), "test timed out"));
+        }
+      }
+    }
+
+    return 0;
   }
 }
