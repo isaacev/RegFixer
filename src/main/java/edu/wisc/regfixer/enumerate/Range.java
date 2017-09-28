@@ -57,24 +57,24 @@ public class Range implements Comparable<Range> {
   }
 
   public boolean startsBefore (Range other) {
-    return (this.leftIndex < other.getLeftIndex());
+    return (this.leftIndex <= other.getLeftIndex());
   }
 
   public boolean startsAfter (Range other) {
-    return (this.leftIndex > other.getRightIndex());
+    return (this.leftIndex >= other.getRightIndex());
   }
 
   public boolean endsBefore (Range other) {
-    return (this.rightIndex < other.getLeftIndex());
+    return (this.rightIndex <= other.getLeftIndex());
   }
 
   public boolean endsAfter (Range other) {
-    return (this.rightIndex > other.getRightIndex());
+    return (this.rightIndex >= other.getRightIndex());
   }
 
   public boolean intersects (Range other) {
-    boolean intersectionAtStart = (this.leftIndex <= other.getRightIndex());
-    boolean intersectionAtEnd = (this.rightIndex <= other.getLeftIndex());
+    boolean intersectionAtStart = (this.leftIndex < other.getRightIndex());
+    boolean intersectionAtEnd = (this.rightIndex < other.getLeftIndex());
 
     return intersectionAtStart || intersectionAtEnd;
   }
