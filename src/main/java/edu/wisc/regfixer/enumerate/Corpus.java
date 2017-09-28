@@ -1,10 +1,10 @@
 package edu.wisc.regfixer.enumerate;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -20,16 +20,16 @@ public class Corpus {
 
   public Corpus (String corpus, Set<Range> positives, Set<Range> negatives) {
     this.corpus = corpus;
-    this.positiveRanges = new HashSet<Range>(positives);
-    this.negativeRanges = new HashSet<Range>(negatives);
+    this.positiveRanges = new TreeSet<Range>(positives);
+    this.negativeRanges = new TreeSet<Range>(negatives);
 
     this.positiveExamples = this.positiveRanges.stream()
       .map(r -> this.getSubstring(r))
-      .collect(Collectors.toSet());
+      .collect(Collectors.toCollection(TreeSet::new));
 
     this.negativeExamples = this.negativeRanges.stream()
       .map(r -> this.getSubstring(r))
-      .collect(Collectors.toSet());
+      .collect(Collectors.toCollection(TreeSet::new));
   }
 
   public String getCorpus () {
@@ -118,7 +118,7 @@ public class Corpus {
   }
 
   public static Set<Range> inferNegativeRanges (List<Range> found, List<Range> expected) {
-    Set<Range> negatives = new HashSet<>();
+    Set<Range> negatives = new TreeSet<>();
 
     Collections.sort(found);
     Collections.sort(expected);
@@ -172,7 +172,7 @@ public class Corpus {
   }
 
   private static Set<Range> getMatchingRanges (Pattern pattern, String corpus) {
-    Set<Range> ranges = new HashSet<>();
+    Set<Range> ranges = new TreeSet<>();
     Matcher matcher = pattern.matcher(corpus);
 
     while (matcher.find()) {
