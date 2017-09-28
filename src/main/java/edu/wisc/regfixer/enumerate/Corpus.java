@@ -123,52 +123,41 @@ public class Corpus {
     Collections.sort(found);
     Collections.sort(expected);
 
-    int oldIndex = 0;
-    int newIndex = 0;
-
-    while (true) {
-      if (oldIndex >= found.size()) {
-        break;
-      }
-
-      if (newIndex >= expected.size()) {
-        negatives.add(found.get(oldIndex++));
-        continue;
-      }
-
-      Range oldRange = found.get(oldIndex);
-      Range newRange = expected.get(newIndex);
-
-      if (newRange.getLeftIndex() == oldRange.getLeftIndex()) {
-        if (newRange.equals(oldRange) == false) {
-          negatives.add(oldRange);
-        }
-
-        if (oldRange.length() <= newRange.length()) {
-          oldIndex++;
-        }
-
-        if (newRange.length() <= oldRange.length()) {
-          newIndex++;
-        }
-      } else if (newRange.getLeftIndex() < oldRange.getLeftIndex()) {
-        if (newRange.endsBefore(oldRange) || newRange.intersects(oldRange)) {
-          newIndex++;
-        } else {
-          oldIndex++;
-        }
-      } else if (newRange.getLeftIndex() > oldRange.getLeftIndex()) {
-        negatives.add(oldRange);
-
-        if (oldRange.endsBefore(newRange) || oldRange.intersects(newRange)) {
-          oldIndex++;
-        } else {
-          newIndex++;
-        }
+    for (Range maybe : found) {
+      if (isNegativeRange(maybe, expected)) {
+        negatives.add(maybe);
       }
     }
 
     return negatives;
+  }
+
+  public static boolean isNegativeRange (Range maybe, List<Range> positives) {
+    for (int i = 0; i < positives.size(); i++) {
+      Range pos = positives.get(i);
+
+      if (pos.equals(maybe)) {
+        return false;
+      }
+
+      if (pos.getLeftIndex() == maybe.getLeftIndex()) {
+        return false;
+      }
+
+      if (maybe.intersects(pos)) {
+        return false;
+      }
+
+      if (pos.endsBefore(maybe)) {
+        if (i == positives.size() - 1) {
+          return true;
+        } else if (positives.get(i + 1).startsAfter(maybe)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   private static Set<Range> getMatchingRanges (Pattern pattern, String corpus) {
