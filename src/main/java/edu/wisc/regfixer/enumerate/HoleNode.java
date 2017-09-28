@@ -17,14 +17,24 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
   private RegexNode child = null;
   private int age;
   private HoleId id;
+  private boolean canInsertQuantifiers;
 
   public HoleNode () {
+    this(true);
+  }
+
+  public HoleNode (boolean canInsertQuantifiers) {
     this.age = HoleNode.nextAge++;
     this.id = new HoleId();
+    this.canInsertQuantifiers = canInsertQuantifiers;
   }
 
   public HoleId getHoleId () {
     return this.id;
+  }
+
+  public boolean canInsertQuantifierNodes () {
+    return this.canInsertQuantifiers;
   }
 
   public int descendants () {
