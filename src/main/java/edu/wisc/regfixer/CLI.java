@@ -262,7 +262,7 @@ public class CLI {
     }
 
     for (int i = 0; i < testingFiles.length; i++) {
-      if (testingFiles[i].isFile()) {
+      if (testingFiles[i].isFile() && testingFiles[i].getName().matches("test_\\w+\\.txt")) {
         Job job = null;
 
         try {
