@@ -3,6 +3,8 @@ package edu.wisc.regfixer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.TimeoutException;
 import java.util.List;
 
@@ -246,6 +248,13 @@ public class CLI {
   private static int handleTest (ArgsTest args) {
     File testingDir = new File("tests");
     File[] testingFiles = testingDir.listFiles();
+
+    Arrays.sort(testingFiles, new Comparator<File>() {
+      @Override
+      public int compare (File a, File b) {
+        return a.getName().compareTo(b.getName());
+      }
+    });
 
     if (testingFiles == null) {
       System.err.println("cannot read directory ./tests");
