@@ -60,6 +60,22 @@ public class CharClassSolver {
     if (classes.contains(new CharEscapedNode('w'))) { return new CharEscapedNode('w'); }
     if (classes.contains(new CharEscapedNode('W'))) { return new CharEscapedNode('W'); }
 
+    // if (classes.contains(new CharEscapedNode('a'))) {
+    //   List<CharRangeNode> subClasses = new LinkedList<>();
+
+    //   // Lower case range.
+    //   CharLiteralNode left = new CharLiteralNode('a');
+    //   CharLiteralNode right = new CharLiteralNode('z');
+    //   subClasses.add(new CharRangeNode(left, right));
+
+    //   // Upper case range.
+    //   left = new CharLiteralNode('A');
+    //   right = new CharLiteralNode('Z');
+    //   subClasses.add(new CharRangeNode(left, right));
+
+    //   return new CharClassSetNode(false, subClasses);
+    // }
+
     if (classes.size() > 1) {
       if (classes.stream().noneMatch(c -> c instanceof ConcreteCharClass)) {
         throw new SynthesisFailure("cannot combine into a single character class");
