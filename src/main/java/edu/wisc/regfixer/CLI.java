@@ -2,6 +2,9 @@ package edu.wisc.regfixer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -273,7 +276,19 @@ public class CLI {
 
         try {
           String solution = RegFixer.fix(job);
-          System.out.println(Ansi.Green.sprintf("  ✓ %-32s %s", testingFiles[i].getName(), solution));
+
+          String expectedPath = "./tests/expect_" + testingFiles[i].getName().substring(5);
+          String expected = null;
+          try {
+            byte[] encoded = Files.readAllBytes(Paths.get(expectedPath));
+            expected = new String(encoded, StandardCharsets.UTF_8);
+          } catch (Exception ex) {}
+
+          if (expected == null) {
+            System.out.println(Ansi.Green.sprintf("  ✓ %-32s %s", testingFiles[i].getName(), solution));
+          } else {
+            System.out.println(Ansi.Green.sprintf("  ✓ %-32s %-32s %s", testingFiles[i].getName(), solution, expected));
+          }
         } catch (TimeoutException ex) {
           System.out.println(Ansi.Red.sprintf("  ✗ %-32s %s", testingFiles[i].getName(), "test timed out"));
         }
