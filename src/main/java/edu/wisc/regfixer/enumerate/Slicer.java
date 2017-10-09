@@ -13,6 +13,14 @@ import edu.wisc.regfixer.parser.RepetitionNode;
 import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 
+/**
+ * Slicer is responsible for adding holes to a complete tree as a starting point
+ * for the enumeration search algorithm. This includes adding hole nodes in the
+ * following places within the original tree:
+ * - in place of each subexpression
+ * - between each top-level subexpression
+ * - concatenated with the whole expression (preceeding and succeeding)
+ */
 public class Slicer {
   public static List<Enumerant> slice (RegexNode node) {
     return sliceNode(node);
