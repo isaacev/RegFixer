@@ -141,6 +141,10 @@ public class Corpus {
       }
 
       if (pos.getLeftIndex() == maybe.getLeftIndex()) {
+        if (maybe.endsAfter(pos)) {
+          return true;
+        }
+
         return false;
       }
 
