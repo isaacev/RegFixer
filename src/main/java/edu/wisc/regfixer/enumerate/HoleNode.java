@@ -4,8 +4,18 @@ import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.parser.StarNode;
+import java.util.LinkedList;
+import java.util.List;
 
 public class HoleNode implements RegexNode, Comparable<HoleNode> {
+  public static enum ExpansionChoice {
+    Union,
+    Concat,
+    Star,
+    Plus,
+    Optional,
+  }
+
   public static enum FillType {
     Dot,
     DotStar,
@@ -17,16 +27,27 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
   private RegexNode child = null;
   private int age;
   private HoleId id;
-  private boolean canInsertQuantifiers;
+  private List<ExpansionChoice> history;
 
   public HoleNode () {
-    this(true);
+    this(new LinkedList<>());
   }
 
-  public HoleNode (boolean canInsertQuantifiers) {
+  public HoleNode (ExpansionChoice latest) {
+    super();
+    this.history.add(latest);
+  }
+
+  public HoleNode (List<ExpansionChoice> history) {
     this.age = HoleNode.nextAge++;
     this.id = new HoleId();
-    this.canInsertQuantifiers = canInsertQuantifiers;
+    this.history = history;
+  }
+
+  public HoleNode expand (ExpansionChoice latest) {
+    List<ExpansionChoice> newHistory = new LinkedList<>(this.history);
+    newHistory.add(latest);
+    return new HoleNode(newHistory);
   }
 
   public HoleId getHoleId () {
@@ -34,7 +55,18 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
   }
 
   public boolean canInsertQuantifierNodes () {
-    return this.canInsertQuantifiers;
+    for (int i = this.history.size() - 1; i >= 0; i--) {
+      switch (this.history.get(i)) {
+        case Union:
+          continue;
+        case Concat:
+          return true;
+        default:
+          return false;
+      }
+    }
+
+    return true;
   }
 
   public int descendants () {

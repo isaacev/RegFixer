@@ -135,7 +135,7 @@ public class Slicer {
       partials.add(new Enumerant(branch, partial));
     }
 
-    partials.add(new Enumerant(new HoleNode(false), node.descendants()));
+    partials.add(new Enumerant(new HoleNode(HoleNode.ExpansionChoice.Optional), node.descendants()));
     return partials;
   }
 
@@ -147,7 +147,7 @@ public class Slicer {
       partials.add(new Enumerant(branch, partial));
     }
 
-    partials.add(new Enumerant(new HoleNode(false), node.descendants()));
+    partials.add(new Enumerant(new HoleNode(HoleNode.ExpansionChoice.Star), node.descendants()));
     return partials;
   }
 
@@ -159,7 +159,7 @@ public class Slicer {
       partials.add(new Enumerant(branch, partial));
     }
 
-    partials.add(new Enumerant(new HoleNode(false), node.descendants()));
+    partials.add(new Enumerant(new HoleNode(HoleNode.ExpansionChoice.Plus), node.descendants()));
     return partials;
   }
 

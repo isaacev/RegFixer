@@ -120,8 +120,8 @@ public class Enumerant implements Comparable<Enumerant> {
   }
 
   private Enumerant expandWithUnion (HoleNode hole) {
-    HoleNode hole1 = new HoleNode(hole.canInsertQuantifierNodes());
-    HoleNode hole2 = new HoleNode(hole.canInsertQuantifierNodes());
+    HoleNode hole1 = hole.expand(HoleNode.ExpansionChoice.Union);
+    HoleNode hole2 = hole.expand(HoleNode.ExpansionChoice.Union);
     List<HoleNode> newHoles = Arrays.asList(hole1, hole2);
     RegexNode newTree = new UnionNode(hole1, hole2);
     Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.UNION_COST);
@@ -129,28 +129,30 @@ public class Enumerant implements Comparable<Enumerant> {
   }
 
   private Enumerant expandWithOptional (HoleNode hole) {
-    HoleNode newHole = new HoleNode(false);
+    HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Optional);
     RegexNode newTree = new OptionalNode(newHole);
     Enumerant twig = new Enumerant(newTree, newHole, Enumerant.OPTIONAL_COST);
     return Grafter.graft(this, hole, twig);
   }
 
   private Enumerant expandWithStar (HoleNode hole) {
-    HoleNode newHole = new HoleNode(false);
+    HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Star);
     RegexNode newTree = new StarNode(newHole);
     Enumerant twig = new Enumerant(newTree, newHole, Enumerant.STAR_COST);
     return Grafter.graft(this, hole, twig);
   }
 
   private Enumerant expandWithPlus (HoleNode hole) {
-    HoleNode newHole = new HoleNode(false);
+    HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Plus);
     RegexNode newTree = new PlusNode(newHole);
     Enumerant twig = new Enumerant(newTree, newHole, Enumerant.PLUS_COST);
     return Grafter.graft(this, hole, twig);
   }
 
   private Enumerant expandWithConcat (HoleNode hole) {
-    List<HoleNode> newHoles = Arrays.asList(new HoleNode(), new HoleNode());
+    HoleNode hole1 = hole.expand(HoleNode.ExpansionChoice.Concat);
+    HoleNode hole2 = hole.expand(HoleNode.ExpansionChoice.Concat);
+    List<HoleNode> newHoles = Arrays.asList(hole1, hole2);
     RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newHoles));
     Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.CONCAT_COST);
     return Grafter.graft(this, hole, twig);
