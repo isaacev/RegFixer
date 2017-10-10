@@ -32,9 +32,10 @@ public class Enumerant implements Comparable<Enumerant> {
   private final RegexNode tree;
   private final Map<HoleId, HoleNode> holes;
   private final int cost;
+  private final HoleNode.ExpansionChoice expansion;
 
   public Enumerant (RegexNode tree, Enumerant other) {
-    this(tree, other.holes.values(), other.cost);
+    this(tree, other.holes.values(), other.cost, null);
   }
 
   public Enumerant (HoleNode hole, int cost) {
@@ -42,10 +43,14 @@ public class Enumerant implements Comparable<Enumerant> {
   }
 
   public Enumerant (RegexNode tree, HoleNode hole, int cost) {
-    this(tree, Arrays.asList(hole), cost);
+    this(tree, Arrays.asList(hole), cost, null);
   }
 
   public Enumerant (RegexNode tree, Collection<HoleNode> holes, int cost) {
+    this(tree, holes, cost, null);
+  }
+
+  public Enumerant (RegexNode tree, Collection<HoleNode> holes, int cost, HoleNode.ExpansionChoice expansion) {
     Map<HoleId, HoleNode> map = new HashMap<>();
 
     for (HoleNode hole : holes) {
@@ -55,12 +60,14 @@ public class Enumerant implements Comparable<Enumerant> {
     this.tree = tree;
     this.holes = map;
     this.cost = cost;
+    this.expansion = expansion;
   }
 
   public Enumerant (RegexNode tree, Map<HoleId, HoleNode> holes, int cost) {
     this.tree = tree;
     this.holes = holes;
     this.cost = cost;
+    this.expansion = null;
   }
 
   public RegexNode getTree () {
@@ -85,6 +92,10 @@ public class Enumerant implements Comparable<Enumerant> {
 
   public int getCost () {
     return this.cost;
+  }
+
+  public HoleNode.ExpansionChoice getExpansionChoice () {
+    return this.expansion;
   }
 
   public Pattern toPattern (HoleNode.FillType type) {
@@ -125,28 +136,28 @@ public class Enumerant implements Comparable<Enumerant> {
     List<HoleNode> newHoles = Arrays.asList(hole1, hole2);
     RegexNode newTree = new UnionNode(hole1, hole2);
     Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.UNION_COST);
-    return Grafter.graft(this, hole, twig);
+    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Union);
   }
 
   private Enumerant expandWithOptional (HoleNode hole) {
     HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Optional);
     RegexNode newTree = new OptionalNode(newHole);
     Enumerant twig = new Enumerant(newTree, newHole, Enumerant.OPTIONAL_COST);
-    return Grafter.graft(this, hole, twig);
+    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Optional);
   }
 
   private Enumerant expandWithStar (HoleNode hole) {
     HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Star);
     RegexNode newTree = new StarNode(newHole);
     Enumerant twig = new Enumerant(newTree, newHole, Enumerant.STAR_COST);
-    return Grafter.graft(this, hole, twig);
+    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Star);
   }
 
   private Enumerant expandWithPlus (HoleNode hole) {
     HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Plus);
     RegexNode newTree = new PlusNode(newHole);
     Enumerant twig = new Enumerant(newTree, newHole, Enumerant.PLUS_COST);
-    return Grafter.graft(this, hole, twig);
+    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Plus);
   }
 
   private Enumerant expandWithConcat (HoleNode hole) {
@@ -155,7 +166,7 @@ public class Enumerant implements Comparable<Enumerant> {
     List<HoleNode> newHoles = Arrays.asList(hole1, hole2);
     RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newHoles));
     Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.CONCAT_COST);
-    return Grafter.graft(this, hole, twig);
+    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Concat);
   }
 
   public Synthesis synthesize (Corpus corpus) throws SynthesisFailure {

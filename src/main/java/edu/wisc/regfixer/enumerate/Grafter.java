@@ -14,7 +14,7 @@ import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 
 public class Grafter {
-  public static Enumerant graft (Enumerant original, HoleNode hole, Enumerant twig) {
+  public static Enumerant graft (Enumerant original, HoleNode hole, Enumerant twig, HoleNode.ExpansionChoice expansion) {
     if (original.getHoles().contains(hole) == false) {
       throw new IllegalArgumentException("hole object must be in the partial tree");
     }
@@ -27,7 +27,7 @@ public class Grafter {
     graftedHoles.addAll(twig.getHoles());
     int graftedCost = original.getCost() + twig.getCost();
 
-    return new Enumerant(graftedTree, graftedHoles, graftedCost);
+    return new Enumerant(graftedTree, graftedHoles, graftedCost, expansion);
   }
 
   public static RegexNode graft (RegexNode original, HoleNode hole, RegexNode twig) {
