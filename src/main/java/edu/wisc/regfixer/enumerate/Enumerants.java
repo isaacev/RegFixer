@@ -33,7 +33,11 @@ public class Enumerants {
       }
     }
 
-    return enumerant;
+    if (enumerant.getExpansionChoice() == HoleNode.ExpansionChoice.Union) {
+      return this.poll();
+    } else {
+      return enumerant;
+    }
   }
 
   private void init () {
