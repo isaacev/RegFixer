@@ -140,6 +140,10 @@ public class RegFixer {
         String badMatch = job.getCorpus().getSubstring(range);
         n.add(badMatch);
       }
+
+      if (job.getCorpus().passesEmptySetTest(enumerant) == false) {
+        report.printEnumerantError("failed empty set test");
+      }
     }
   }
 }
