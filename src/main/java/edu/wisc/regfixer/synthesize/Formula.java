@@ -16,12 +16,33 @@ import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.enumerate.HoleId;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.CharClassSetNode;
+import edu.wisc.regfixer.parser.CharEscapedNode;
+import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.CharRangeNode;
 import edu.wisc.regfixer.parser.ConcreteCharClass;
 
 public class Formula {
+  private static Predicate pred_d = new SimplePredicate('0', '9');
+  private static Predicate pred_D = new CompoundPredicate(false,
+    new SimplePredicate('0', '9'));
+  private static Predicate pred_w = new CompoundPredicate(
+    new SimplePredicate('_'),
+    new SimplePredicate('A', 'Z'),
+    new SimplePredicate('a', 'z'),
+    new SimplePredicate('0', '9'));
+  private static Predicate pred_W = new CompoundPredicate(false,
+    new SimplePredicate('_'),
+    new SimplePredicate('A', 'Z'),
+    new SimplePredicate('a', 'z'),
+    new SimplePredicate('0', '9'));
+
+  private static CharClass class_d = new CharEscapedNode('d');
+  private static CharClass class_D = new CharEscapedNode('D');
+  private static CharClass class_w = new CharEscapedNode('w');
+  private static CharClass class_W = new CharEscapedNode('W');
+
   private static class MetaClassTally {
-    private Map<HoleId, Map<Predicate, Integer>> tally;
+    public Map<HoleId, Map<Predicate, Integer>> tally;
     private Map<Predicate, Integer> weights;
 
     public MetaClassTally () {
@@ -37,25 +58,16 @@ public class Formula {
       this.tally.put(id, new HashMap<>());
 
       // Adds \d meta-class (aka [0-9])
-      this.addMetaClassToTally(id, 3, new SimplePredicate('0', '9'));
+      this.addMetaClassToTally(id, 3, Formula.pred_d);
 
       // Adds \D meta-class (aka [^0-9])
-      this.addMetaClassToTally(id, 3, new CompoundPredicate(false,
-        new SimplePredicate('0', '9')));
+      this.addMetaClassToTally(id, 3, Formula.pred_D);
 
       // Adds \w meta-class (aka [a-zA-Z0-9_])
-      this.addMetaClassToTally(id, 5, new CompoundPredicate(
-        new SimplePredicate('_'),
-        new SimplePredicate('A', 'Z'),
-        new SimplePredicate('a', 'z'),
-        new SimplePredicate('0', '9')));
+      this.addMetaClassToTally(id, 5, Formula.pred_w);
 
       // Adds \W meta-class (aka [^a-zA-Z0-9_])
-      this.addMetaClassToTally(id, 5, new CompoundPredicate(false,
-        new SimplePredicate('_'),
-        new SimplePredicate('A', 'Z'),
-        new SimplePredicate('a', 'z'),
-        new SimplePredicate('0', '9')));
+      this.addMetaClassToTally(id, 5, Formula.pred_W);
     }
 
     private void addMetaClassToTally (HoleId id, int weight, Predicate pred) {
@@ -119,6 +131,10 @@ public class Formula {
 
     // Initialize structures for tracking state
     this.predToClass = new HashMap<>();
+    this.predToClass.put(Formula.pred_d, Formula.class_d);
+    this.predToClass.put(Formula.pred_D, Formula.class_D);
+    this.predToClass.put(Formula.pred_w, Formula.class_w);
+    this.predToClass.put(Formula.pred_W, Formula.class_W);
     this.holeToVars = new HashMap<>();
     this.varToPred = new HashMap<>();
     this.tally = new MetaClassTally();
@@ -173,11 +189,11 @@ public class Formula {
     BoolExpr exprRoute = null;
 
     for (HoleId holeId : spans.keySet()) {
-      BoolExpr exprChars = this.encodeSingleChar(holeId, spans.get(holeId), posFlag);
-
       if (this.tally.hasTally(holeId) == false) {
         this.tally.initializeTally(holeId);
       }
+
+      BoolExpr exprChars = this.encodeSingleChar(holeId, spans.get(holeId), posFlag);
 
       if (exprRoute == null) {
         exprRoute = exprChars;
@@ -196,8 +212,10 @@ public class Formula {
 
     for (Character ch : chars) {
       Predicate pred = new SimplePredicate(ch);
-      BoolExpr exprChar = this.registerPredicate(holeId, pred);
+      CharClass cc = new CharLiteralNode(ch);
+      BoolExpr exprChar = this.registerPredicate(holeId, cc, pred);
       this.opt.AssertSoft(exprChar, -2, "MAX_SAT");
+      this.tally.increment(holeId, ch);
 
       if (posFlag) {
         if (exprChars == null) {
@@ -223,14 +241,15 @@ public class Formula {
    * name, mapped to its corresponding hole (for record keeping), and mapped to
    * its corresponding predicate (also for record keeping).
    */
-  private BoolExpr registerPredicate (HoleId id, Predicate pred) {
-    String name = String.format("%s_%s", id.toString(), pred);
+  private BoolExpr registerPredicate (HoleId id, CharClass cc, Predicate pred) {
+    String name = String.format("%s_%s", id.toString(), cc.toString());
     BoolExpr var = this.ctx.mkBoolConst(name);
 
     if (this.holeToVars.get(id) == null) {
       this.holeToVars.put(id, new HashSet<>());
     }
 
+    this.predToClass.put(pred, cc);
     this.holeToVars.get(id).add(var);
     this.varToPred.put(var, pred);
     return var;
@@ -249,20 +268,22 @@ public class Formula {
     for (HoleId id : this.tally.getHoleIds()) {
       for (Map.Entry<Predicate, Integer> entry : this.tally.getEntries(id)) {
         if (entry.getValue() > METACLASS_THRESHOLD) {
-          this.encodeMetaCharClassForHole(id, entry.getKey());
+          Predicate pred = entry.getKey();
+          CharClass cc = this.predToClass.get(pred);
+          this.encodeMetaCharClassForHole(id, cc, pred);
         }
       }
     }
   }
 
-  private void encodeMetaCharClassForHole (HoleId holeId, Predicate pred) {
+  private void encodeMetaCharClassForHole (HoleId holeId, CharClass cc, Predicate pred) {
     /**
      * Create a SAT variable and associate that variable with this predicate. Give
      * that variable a weight corresponding to how favorable the algorithm favors
      * the predicate.
      */
     BoolExpr exprs = null;
-    BoolExpr expr = this.registerPredicate(holeId, pred);
+    BoolExpr expr = this.registerPredicate(holeId, cc, pred);
     this.opt.AssertSoft(expr, this.tally.getWeight(pred), "MAX_SAT");
 
     /**
@@ -329,6 +350,7 @@ public class Formula {
     Map<HoleId, Set<CharClass>> candidateClasses = new HashMap<>();
     for (Map.Entry<HoleId, Set<Predicate>> entry : candidatePreds.entrySet()) {
       HoleId id = entry.getKey();
+      candidateLoop:
       for (Predicate candidate : entry.getValue()) {
         /**
          * Reject a candidate if that candidate is completly within the bounds
@@ -337,15 +359,17 @@ public class Formula {
         for (Predicate test : entry.getValue()) {
           if (candidate == test) {
             continue;
-          } else if (test.includes(candidate) == false) {
-            if (candidateClasses.get(id) == null) {
-              candidateClasses.put(id, new HashSet<>());
-            }
-
-            CharClass cc = this.predToClass.get(candidate);
-            candidateClasses.get(id).add(cc);
+          } else if (test.includes(candidate)) {
+            continue candidateLoop;
           }
         }
+
+        if (candidateClasses.containsKey(id) == false) {
+          candidateClasses.put(id, new HashSet<>());
+        }
+
+        CharClass cc = this.predToClass.get(candidate);
+        candidateClasses.get(id).add(cc);
       }
     }
 
@@ -363,7 +387,8 @@ public class Formula {
       if (classes.size() == 0) {
         throw new SynthesisFailure("SAT produced no solutions for " + id.toString());
       } else if (classes.size() == 1) {
-        solutionClasses.put(id, classes.iterator().next());
+        CharClass cc = classes.iterator().next();
+        solutionClasses.put(id, cc);
       } else {
         Collection<CharRangeNode> subClasses = new HashSet<>();
 
@@ -381,6 +406,7 @@ public class Formula {
         }
 
         CharClass cc = new CharClassSetNode(subClasses);
+        solutionClasses.put(id, cc);
       }
     }
 
