@@ -18,6 +18,8 @@ public class Corpus {
   private final Set<String> positiveExamples;
   private final Set<String> negativeExamples;
 
+  // private Set<Range> interestingRanges;
+
   public Corpus (String corpus, Set<Range> positives, Set<Range> negatives) {
     this.corpus = corpus;
     this.positiveRanges = new TreeSet<Range>(positives);
@@ -68,7 +70,27 @@ public class Corpus {
 
   public boolean passesEmptySetTest (Enumerant enumerant) {
     Pattern pattern = enumerant.toPattern(HoleNode.FillType.EmptySet);
-    return (false == matchesStrings(pattern, this.negativeExamples));
+    Set<Range> ranges = getMatchingRanges(pattern, this.corpus);
+
+    ranges.removeAll(this.positiveRanges);
+
+    outer:
+    for (Range r : ranges) {
+      for (Range p : this.positiveRanges) {
+        if (p.startsBefore(r) && p.startsAfter(r)) {
+          continue outer;
+        }
+      }
+
+      // interestingRanges.add(r);
+      ranges.remove(r);
+    }
+
+    if (ranges.size() > 0) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   public void addNegativeMatches (Set<Range> newNegatives) {
