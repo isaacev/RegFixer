@@ -233,7 +233,7 @@ public class CLI {
       return 1;
     }
 
-    ReportStream report = new ReportStream(System.out, args.color);
+    ReportStream report = new ReportStream(System.out, true, args.color);
 
     if (args.limit == null || args.limit <= 1) {
       args.limit = 1000;
