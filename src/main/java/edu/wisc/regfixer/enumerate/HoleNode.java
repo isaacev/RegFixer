@@ -29,7 +29,7 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
   private HoleId id;
   private List<ExpansionChoice> history;
 
-  public HoleNode () {
+  private HoleNode () {
     this(new LinkedList<>());
   }
 
