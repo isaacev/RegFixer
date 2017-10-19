@@ -22,18 +22,48 @@ public class CompoundPredicate implements Predicate {
     return this.components;
   }
 
-  public boolean equals (Predicate any) {
-    // TODO
-    return false;
+  public boolean equals (Predicate other) {
+    if (other instanceof SimplePredicate) {
+      if (this.components.size() == 1) {
+        return this.components.iterator().next().equals(other);
+      } else {
+        return false;
+      }
+    } else if (other instanceof CompoundPredicate) {
+      return this.toString().equals(other.toString());
+    } else {
+      return false;
+    }
   }
 
   public boolean includes (Predicate other) {
-    // TODO
-    return false;
+    for (Predicate component : this.components) {
+      if (component.includes(other)) {
+        return this.inclusive;
+      }
+    }
+
+    return !this.inclusive;
   }
 
   public boolean includes (char other) {
-    // TODO
-    return false;
+    for (Predicate component : this.components) {
+      if (component.includes(other)) {
+        return this.inclusive;
+      }
+    }
+
+    return !this.inclusive;
+  }
+
+  public String toString () {
+    String out = "[";
+    if (this.inclusive == false) {
+      out += "^";
+    }
+    for (Predicate component : this.components) {
+      out += component.toString();
+    }
+    return out + "]";
   }
 }
