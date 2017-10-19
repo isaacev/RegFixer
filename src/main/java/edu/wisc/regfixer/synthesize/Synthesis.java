@@ -18,8 +18,8 @@ public class Synthesis {
   private RegexNode tree;
 
   public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
-    SAT_Formula sat_formula = new SAT_Formula(positives, negatives);
-    Map<HoleId, CharClass> holeSolutions = CharClassSolver.solve(sat_formula);
+    Formula formula = new Formula(positives, negatives);
+    Map<HoleId, CharClass> holeSolutions = formula.solve();
 
     if (holeSolutions.size() != enumerant.getHoles().size()) {
       throw new SynthesisFailure("no solution for some holes");
