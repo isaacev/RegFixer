@@ -34,7 +34,7 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
   }
 
   public HoleNode (ExpansionChoice latest) {
-    super();
+    this();
     this.history.add(latest);
   }
 
