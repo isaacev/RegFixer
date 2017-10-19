@@ -8,6 +8,11 @@ public class CharClassSetNode implements CharClass {
   private boolean not;
   private Set<CharRangeNode> subClasses;
 
+  public CharClassSetNode (Collection<CharRangeNode> subClasses) {
+    this.not = false;
+    this.subClasses = new HashSet<>(subClasses);
+  }
+
   public CharClassSetNode (boolean not, Collection<CharRangeNode> subClasses) {
     this.not = not;
     this.subClasses = new HashSet<>(subClasses);
