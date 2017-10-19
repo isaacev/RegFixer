@@ -241,11 +241,12 @@ public class CLI {
 
     try {
       RegFixer.fix(job, report, args.limit);
-      return 0;
-    } catch (Exception ex) {
-      System.err.println(ex.getMessage());
+    } catch (TimeoutException ex) {
+      System.out.println("TIMEOUT EXCEPTION");
       return 1;
     }
+
+    return 0;
   }
 
   private static int handleTest (ArgsTest args) {
