@@ -1,9 +1,11 @@
 package edu.wisc.regfixer;
 
 import java.util.concurrent.TimeoutException;
+import java.util.Set;
 
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Enumerants;
+import edu.wisc.regfixer.enumerate.HoleNode;
 import edu.wisc.regfixer.enumerate.Job;
 import edu.wisc.regfixer.enumerate.Range;
 import edu.wisc.regfixer.synthesize.Synthesis;
@@ -48,30 +50,57 @@ public class RegFixer {
 
     int i = 0;
     while ((enumerant = enumerants.poll()) != null) {
+      synthesis = null;
       report.printEnumerant(++i, enumerant.getCost(), enumerant.toString());
+      HoleNode.ExpansionChoice expansion = enumerant.getExpansionChoice();
 
-      if (job.getCorpus().passesDotTest(enumerant)) {
+      if (expansion == HoleNode.ExpansionChoice.Concat) {
+        if (job.getCorpus().passesDotTest(enumerant)) {
+          try {
+            synthesis = RegFixer.synthesisLoop(job, report, enumerant);
+          } catch (SynthesisFailure ex) {
+            report.printEnumerantError(ex.getMessage());
+            continue;
+          }
+        } else {
+          report.printEnumerantError("failed dot test");
+        }
+      } else if (expansion == HoleNode.ExpansionChoice.Star) {
+        if (job.getCorpus().passesEmptySetTest(enumerant)) {
+          try {
+            synthesis = RegFixer.synthesisLoop(job, report, enumerant);
+          } catch (SynthesisFailure ex) {
+            report.printEnumerantError(ex.getMessage());
+            continue;
+          }
+        } else {
+          report.printEnumerantError("failed empty set test");
+        }
+      } else if (expansion == HoleNode.ExpansionChoice.Plus) {
         try {
-          synthesis = enumerant.synthesize(job.getCorpus());
+          synthesis = RegFixer.synthesisLoop(job, report, enumerant);
         } catch (SynthesisFailure ex) {
-          report.printEnumerantError(true, ex.getMessage());
+          report.printEnumerantError(ex.getMessage());
           continue;
         }
-
-        if (job.getCorpus().isPerfectMatch(synthesis)) {
-          report.printEnumerantRepair(true, synthesis.toString());
-          break;
-        } else {
-          report.printEnumerantRepair(false, synthesis.toString());
-          report.printEnumerantError(false, "matched too much");
-
-          for (Range range : job.getCorpus().getBadMatches(synthesis)) {
-            String example = job.getCorpus().getSubstring(range);
-            report.printEnumerantBadMatch(range, example);
+      } else if (expansion == HoleNode.ExpansionChoice.Optional) {
+        if (job.getCorpus().passesEmptySetTest(enumerant)) {
+          try {
+            synthesis = RegFixer.synthesisLoop(job, report, enumerant);
+          } catch (SynthesisFailure ex) {
+            report.printEnumerantError(ex.getMessage());
+            continue;
           }
+        } else {
+          report.printEnumerantError("failed empty set test");
         }
-      } else {
-        report.printEnumerantError(true, "failed dot test");
+      }
+
+      if (synthesis != null) {
+        report.printEnumerantRepair(synthesis.toString());
+        report.clearPending();
+        report.println();
+        break;
       }
 
       if (i >= loopLimit) {
@@ -90,6 +119,27 @@ public class RegFixer {
       report.printHeader("Unable to compute a repair");
       report.printHeader("All done");
       return null;
+    }
+  }
+
+  private static Synthesis synthesisLoop (Job job, ReportStream report, Enumerant enumerant) throws SynthesisFailure {
+    int iterations = 0;
+    Set<String> p = job.getCorpus().getPositiveExamples();
+    Set<String> n = job.getCorpus().getNegativeExamples();
+    Synthesis synthesis = null;
+
+    while (true) {
+      report.printStatus(String.format("SAT loop (%d iterations)", ++iterations));
+      synthesis = enumerant.synthesize(p, n);
+
+      if (job.getCorpus().getBadMatches(synthesis).size() == 0) {
+        return synthesis;
+      }
+
+      for (Range range : job.getCorpus().getBadMatches(synthesis)) {
+        String badMatch = job.getCorpus().getSubstring(range);
+        n.add(badMatch);
+      }
     }
   }
 }

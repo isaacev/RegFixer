@@ -9,16 +9,20 @@ import edu.wisc.regfixer.enumerate.Range;
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class ReportStream extends PrintStream {
+  private boolean liveStatus;
+  private String pending;
+
   public ReportStream () {
     this(new NullOutputStream());
   }
 
   public ReportStream (OutputStream out) {
-    this(out, false);
+    this(out, false, false);
   }
 
-  public ReportStream (OutputStream out, boolean useColor) {
+  public ReportStream (OutputStream out, boolean liveStatus, boolean useColor) {
     super(out);
+    this.liveStatus = liveStatus;
 
     if (useColor) {
       Ansi.enableColor();
@@ -27,34 +31,46 @@ public class ReportStream extends PrintStream {
     }
   }
 
+  public void clearPending () {
+    if (this.liveStatus == false) { return; }
+
+    this.print("\r");
+    this.print(pending);
+  }
+
   public void printHeader (String message) {
     this.printf("\n%s\n\n", message);
   }
 
   public void printSearchTableHeader () {
-    this.println("  Order:  Cost:   Enumerant:      Repair:         Error:");
-    this.println("  --------------------------------------------------------");
+    this.println("  Order:  Cost:   Enumerant:      Status:");
+    this.println("  -----------------------------------------");
   }
 
   public void printEnumerant (int order, int cost, String enumerant) {
-    this.print(Ansi.White.sprintf("  %-8d%-8d", order, cost));
-    this.print(Ansi.Cyan.sprintf("%-16s", enumerant));
+    this.pending = "";
+    this.pending += Ansi.White.sprintf("  %-8d%-8d", order, cost);
+    this.pending += Ansi.Cyan.sprintf("%-16s", enumerant);
+    this.clearPending();
   }
 
-  public void printEnumerantRepair (boolean newline, String repair) {
-    this.print(Ansi.Cyan.sprintf("%-16s", repair));
+  public void printStatus (String status) {
+    if (this.liveStatus == false) { return; }
 
-    if (newline) {
-      this.printf("\n");
-    }
+    this.clearPending();
+    this.print(Ansi.Green.sprintf("pending: %s", status));
   }
 
-  public void printEnumerantError (boolean padded, String message) {
-    if (padded) {
-      this.printf("%16s", "");
-    }
+  public void printEnumerantRepair (String repair) {
+    this.clearPending();
+    this.print(Ansi.Cyan.sprintf("%-16s\n", repair));
+    this.pending = "";
+  }
 
-    this.print(Ansi.White.sprintf("%s\n", message));
+  public void printEnumerantError (String message) {
+    this.clearPending();
+    this.print(Ansi.White.sprintf("failed: %s\n", message));
+    this.pending = "";
   }
 
   public void printEnumerantBadMatch (Range range, String example) {
