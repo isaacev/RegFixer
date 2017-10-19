@@ -34,20 +34,8 @@ public class Enumerant implements Comparable<Enumerant> {
   private final int cost;
   private final HoleNode.ExpansionChoice expansion;
 
-  public Enumerant (RegexNode tree, Enumerant other) {
-    this(tree, other.holes.values(), other.cost, null);
-  }
-
-  public Enumerant (HoleNode hole, int cost) {
-    this(hole, hole, cost);
-  }
-
-  public Enumerant (RegexNode tree, HoleNode hole, int cost) {
-    this(tree, Arrays.asList(hole), cost, null);
-  }
-
-  public Enumerant (RegexNode tree, Collection<HoleNode> holes, int cost) {
-    this(tree, holes, cost, null);
+  public Enumerant (RegexNode tree, HoleNode hole, int cost, HoleNode.ExpansionChoice expansion) {
+    this(tree, Arrays.asList(hole), cost, expansion);
   }
 
   public Enumerant (RegexNode tree, Collection<HoleNode> holes, int cost, HoleNode.ExpansionChoice expansion) {
@@ -135,28 +123,28 @@ public class Enumerant implements Comparable<Enumerant> {
     HoleNode hole2 = hole.expand(HoleNode.ExpansionChoice.Union);
     List<HoleNode> newHoles = Arrays.asList(hole1, hole2);
     RegexNode newTree = new UnionNode(hole1, hole2);
-    Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.UNION_COST);
+    Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.UNION_COST, HoleNode.ExpansionChoice.Union);
     return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Union);
   }
 
   private Enumerant expandWithOptional (HoleNode hole) {
     HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Optional);
     RegexNode newTree = new OptionalNode(newHole);
-    Enumerant twig = new Enumerant(newTree, newHole, Enumerant.OPTIONAL_COST);
+    Enumerant twig = new Enumerant(newTree, newHole, Enumerant.OPTIONAL_COST, HoleNode.ExpansionChoice.Optional);
     return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Optional);
   }
 
   private Enumerant expandWithStar (HoleNode hole) {
     HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Star);
     RegexNode newTree = new StarNode(newHole);
-    Enumerant twig = new Enumerant(newTree, newHole, Enumerant.STAR_COST);
+    Enumerant twig = new Enumerant(newTree, newHole, Enumerant.STAR_COST, HoleNode.ExpansionChoice.Star);
     return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Star);
   }
 
   private Enumerant expandWithPlus (HoleNode hole) {
     HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Plus);
     RegexNode newTree = new PlusNode(newHole);
-    Enumerant twig = new Enumerant(newTree, newHole, Enumerant.PLUS_COST);
+    Enumerant twig = new Enumerant(newTree, newHole, Enumerant.PLUS_COST, HoleNode.ExpansionChoice.Plus);
     return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Plus);
   }
 
@@ -165,11 +153,11 @@ public class Enumerant implements Comparable<Enumerant> {
     HoleNode hole2 = hole.expand(HoleNode.ExpansionChoice.Concat);
     List<HoleNode> newHoles = Arrays.asList(hole1, hole2);
     RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newHoles));
-    Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.CONCAT_COST);
+    Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.CONCAT_COST, HoleNode.ExpansionChoice.Concat);
     return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Concat);
   }
 
-  public Synthesis synthesize (Corpus corpus) throws SynthesisFailure {
+  public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {
     Automaton automaton = null;
 
     try {
@@ -183,11 +171,11 @@ public class Enumerant implements Comparable<Enumerant> {
     List<Set<Route>> negativeRuns = new LinkedList<>();
 
     try {
-      for (String source : corpus.getPositiveExamples()) {
+      for (String source : p) {
         positiveRuns.add(automaton.trace(source));
       }
 
-      for (String source : corpus.getNegativeExamples()) {
+      for (String source : n) {
         negativeRuns.add(automaton.trace(source));
       }
     } catch (TimeoutException ex) {
