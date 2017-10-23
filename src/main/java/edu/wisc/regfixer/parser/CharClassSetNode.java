@@ -18,6 +18,15 @@ public class CharClassSetNode implements CharClass {
     this.subClasses = new HashSet<>(subClasses);
   }
 
+  public CharClassSetNode (CharRangeNode... subClasses) {
+    this.not = false;
+    this.subClasses = new HashSet<>();
+
+    for (int i = 0; i < subClasses.length; i++) {
+      this.subClasses.add(subClasses[i]);
+    }
+  }
+
   public boolean isInverted () {
     return this.not;
   }

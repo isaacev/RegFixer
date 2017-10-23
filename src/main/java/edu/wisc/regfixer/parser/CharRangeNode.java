@@ -11,6 +11,11 @@ public class CharRangeNode implements CharClass {
     this.right = left;
   }
 
+  public CharRangeNode (char left, char right) {
+    this.left = new CharLiteralNode(left);
+    this.right = new CharLiteralNode(right);
+  }
+
   public CharRangeNode (ConcreteCharClass left, ConcreteCharClass right) {
     this.left = left;
     this.right = right;
