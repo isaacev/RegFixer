@@ -124,6 +124,10 @@ public class RegFixer {
   }
 
   private static Synthesis synthesisLoop (Job job, ReportStream report, Enumerant enumerant) throws SynthesisFailure {
+    if (job.getCorpus().passesDotTest(enumerant) == false) {
+      throw new SynthesisFailure("failed dot test");
+    }
+
     Set<String> p = job.getCorpus().getPositiveExamples();
     Set<String> n = job.getCorpus().getNegativeExamples();
     Synthesis synthesis = null;
