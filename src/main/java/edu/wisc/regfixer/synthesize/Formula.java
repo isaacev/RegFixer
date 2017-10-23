@@ -121,6 +121,7 @@ public class Formula {
   private Optimize opt;
   private Model model;
 
+  private int nextVarId;
   private Map<Predicate, CharClass> predToClass;
   private Map<HoleId, Set<BoolExpr>> holeToVars;
   private Map<BoolExpr, Predicate> varToPred;
@@ -136,6 +137,7 @@ public class Formula {
     this.model = null;
 
     // Initialize structures for tracking state
+    this.nextVarId = 0;
     this.predToClass = new HashMap<>();
     this.predToClass.put(Formula.pred_d, Formula.class_d);
     this.predToClass.put(Formula.pred_D, Formula.class_D);
@@ -249,7 +251,7 @@ public class Formula {
    * its corresponding predicate (also for record keeping).
    */
   private BoolExpr registerPredicate (HoleId id, CharClass cc, Predicate pred) {
-    String name = String.format("%s_%s", id.toString(), cc.toString());
+    String name = String.format("%s_%d", id.toString(), this.nextVarId++);
     BoolExpr var = this.ctx.mkBoolConst(name);
 
     if (this.holeToVars.get(id) == null) {
