@@ -130,7 +130,18 @@ public class Slicer {
   }
 
   private static List<Enumerant> sliceRepetition (RepetitionNode node, List<HoleNode.ExpansionChoice> history) {
-    return null;
+    List<Enumerant> partials = new LinkedList<>();
+    List<HoleNode.ExpansionChoice> newHistory = new LinkedList<>(history);
+    newHistory.add(HoleNode.ExpansionChoice.Repeat);
+
+    for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
+      RepetitionNode branch = new RepetitionNode(partial.getTree(), node.getMin(), node.getMax());
+      partials.add(new Enumerant(branch, partial.getHoles(), partial.getCost(), HoleNode.ExpansionChoice.Repeat));
+    }
+
+    HoleNode hole = new HoleNode(history);
+    partials.add(new Enumerant(hole, hole, node.descendants(), HoleNode.ExpansionChoice.Repeat));
+    return partials;
   }
 
   private static List<Enumerant> sliceOptional (OptionalNode node, List<HoleNode.ExpansionChoice> history) {

@@ -14,6 +14,7 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
     Star,
     Plus,
     Optional,
+    Repeat,
   }
 
   public static enum FillType {
