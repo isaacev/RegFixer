@@ -18,8 +18,6 @@ public class Corpus {
   private final Set<String> positiveExamples;
   private final Set<String> negativeExamples;
 
-  // private Set<Range> interestingRanges;
-
   public Corpus (String corpus, Set<Range> positives, Set<Range> negatives) {
     this.corpus = corpus;
     this.positiveRanges = new TreeSet<Range>(positives);
@@ -70,27 +68,7 @@ public class Corpus {
 
   public boolean passesEmptySetTest (Enumerant enumerant) {
     Pattern pattern = enumerant.toPattern(HoleNode.FillType.EmptySet);
-    Set<Range> ranges = getMatchingRanges(pattern, this.corpus);
-
-    ranges.removeAll(this.positiveRanges);
-
-    outer:
-    for (Range r : ranges) {
-      for (Range p : this.positiveRanges) {
-        if (p.startsBefore(r) && p.startsAfter(r)) {
-          continue outer;
-        }
-      }
-
-      // interestingRanges.add(r);
-      ranges.remove(r);
-    }
-
-    if (ranges.size() > 0) {
-      return false;
-    } else {
-      return true;
-    }
+    return doesNotMatchStrings(pattern, this.negativeExamples);
   }
 
   public void addNegativeMatches (Set<Range> newNegatives) {
@@ -107,6 +85,10 @@ public class Corpus {
     return ranges.equals(this.positiveRanges);
   }
 
+  public Set<Range> getMatches (Synthesis synthesis) {
+    return getMatchingRanges(synthesis.toPattern(), this.corpus);
+  }
+
   public Set<Range> getBadMatches (Synthesis synthesis) {
     Set<Range> ranges = getMatchingRanges(synthesis.toPattern(), this.corpus);
     ranges.removeAll(this.positiveRanges);
@@ -121,6 +103,16 @@ public class Corpus {
   private boolean matchesStrings (Pattern pattern, Set<String> strings) {
     for (String s : strings) {
       if (false == pattern.matcher(s).matches()) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private boolean doesNotMatchStrings (Pattern pattern, Set<String> strings) {
+    for (String s : strings) {
+      if (pattern.matcher(s).matches()) {
         return false;
       }
     }
