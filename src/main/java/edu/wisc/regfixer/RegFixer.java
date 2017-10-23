@@ -2,6 +2,7 @@ package edu.wisc.regfixer;
 
 import java.util.concurrent.TimeoutException;
 import java.util.Set;
+import java.util.TreeSet;
 
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Enumerants;
@@ -123,26 +124,59 @@ public class RegFixer {
   }
 
   private static Synthesis synthesisLoop (Job job, ReportStream report, Enumerant enumerant) throws SynthesisFailure {
-    int iterations = 0;
     Set<String> p = job.getCorpus().getPositiveExamples();
     Set<String> n = job.getCorpus().getNegativeExamples();
     Synthesis synthesis = null;
 
     while (true) {
-      report.printStatus(String.format("SAT loop (%d iterations)", ++iterations));
       synthesis = enumerant.synthesize(p, n);
 
-      if (job.getCorpus().getBadMatches(synthesis).size() == 0) {
+      /**
+       * M = get all matches
+       * B []
+       *
+       *
+       * (l,u) in M is a bad match if:
+       * 1) there exists no positive match l' and u' such that l' < l <= u'
+       * 2) there exists a positive match l' and u' such that l = l' and u > u'
+       *
+       * if (l,u) satisfies both conditions then
+       *   add (l,u) to B
+       *
+       *
+       * if size of B > 0
+       *   n = n U B
+       * else
+       *   return synthesis
+       */
+
+      Set<Range> ranges = job.getCorpus().getMatches(synthesis);
+      Set<Range> badMatches = new TreeSet<>();
+
+      for (Range r : ranges) {
+        boolean cond1 = false;
+        boolean cond2 = false;
+        for (Range rPrime : job.getCorpus().getPositiveRanges()) {
+          if (!(rPrime.getLeftIndex() < r.getLeftIndex() && r.getLeftIndex() <= rPrime.getRightIndex())) {
+            cond1 = true;
+          }
+
+          if (r.getLeftIndex() == rPrime.getLeftIndex() && r.getRightIndex() > rPrime.getRightIndex()) {
+            cond2 = true;
+          }
+        }
+
+        if (cond1 && cond2) {
+          badMatches.add(r);
+        }
+      }
+
+      if (badMatches.size() > 0) {
+        for (Range r : badMatches) {
+          n.add(job.getCorpus().getSubstring(r));
+        }
+      } else {
         return synthesis;
-      }
-
-      for (Range range : job.getCorpus().getBadMatches(synthesis)) {
-        String badMatch = job.getCorpus().getSubstring(range);
-        n.add(badMatch);
-      }
-
-      if (job.getCorpus().passesEmptySetTest(enumerant) == false) {
-        report.printEnumerantError("failed empty set test");
       }
     }
   }
