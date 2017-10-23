@@ -35,11 +35,17 @@ public class Formula {
     new SimplePredicate('A', 'Z'),
     new SimplePredicate('a', 'z'),
     new SimplePredicate('0', '9'));
+  private static Predicate pred_azAZ = new CompoundPredicate(
+    new SimplePredicate('a', 'z'),
+    new SimplePredicate('A', 'Z'));
 
   private static CharClass class_d = new CharEscapedNode('d');
   private static CharClass class_D = new CharEscapedNode('D');
   private static CharClass class_w = new CharEscapedNode('w');
   private static CharClass class_W = new CharEscapedNode('W');
+  private static CharRangeNode class_az = new CharRangeNode('a', 'z');
+  private static CharRangeNode class_AZ = new CharRangeNode('A', 'Z');
+  private static CharClass class_azAZ = new CharClassSetNode(class_az, class_AZ);
 
   private static class MetaClassTally {
     public Map<HoleId, Map<Predicate, Integer>> tally;
@@ -135,6 +141,7 @@ public class Formula {
     this.predToClass.put(Formula.pred_D, Formula.class_D);
     this.predToClass.put(Formula.pred_w, Formula.class_w);
     this.predToClass.put(Formula.pred_W, Formula.class_W);
+    this.predToClass.put(Formula.pred_azAZ, Formula.class_azAZ);
     this.holeToVars = new HashMap<>();
     this.varToPred = new HashMap<>();
     this.tally = new MetaClassTally();
