@@ -421,4 +421,9 @@ public class Formula {
 
     return solutionClasses;
   }
+
+  @Override
+  public String toString () {
+    return this.opt.toString();
+  }
 }
