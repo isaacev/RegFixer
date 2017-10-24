@@ -166,11 +166,15 @@ public class Formula {
     }
 
     public int getSATWeight (HoleId id) {
-      if (this.tally.containsKey(id)) {
-        return this.layerWeight - this.sumChildWeights(id);
+      int totalChildren = 0;
+      for (MetaClassTree child : this.children) {
+        if (child.tally.containsKey(id)) {
+          totalChildren++;
+        }
       }
 
-      return 0;
+      int childLayerWeight = (this.layerWeight + 1) / 2;
+      return (totalChildren * childLayerWeight) - this.layerWeight;
     }
 
     private boolean isSatisfied (char ch) {
