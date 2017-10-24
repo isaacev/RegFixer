@@ -107,26 +107,42 @@ public class Formula {
   private static class MetaClassTree extends PrintableTree {
     private CharClass cc;
     private Predicate pred;
-    private int layerWeight;
+    private int layer;
     private MetaClassTree parent;
     private List<MetaClassTree> children;
     private Map<HoleId, Integer> tally;
 
-    public MetaClassTree (CharClass cc, Predicate pred, int layerWeight, MetaClassTree... children) {
-      this(cc, pred, layerWeight, Arrays.asList(children));
+    public MetaClassTree (CharClass cc, Predicate pred, int layer, MetaClassTree... children) {
+      this(cc, pred, layer, Arrays.asList(children));
     }
 
-    public MetaClassTree (CharClass cc, Predicate pred, int layerWeight, List<MetaClassTree> children) {
-      this.cc          = cc;
-      this.pred        = pred;
-      this.layerWeight = layerWeight;
-      this.parent      = null;
-      this.children    = children;
-      this.tally       = new HashMap<>();
+    public MetaClassTree (CharClass cc, Predicate pred, int layer, List<MetaClassTree> children) {
+      this.cc       = cc;
+      this.pred     = pred;
+      this.layer    = layer;
+      this.parent   = null;
+      this.children = children;
+      this.tally    = new HashMap<>();
 
       for (MetaClassTree child : this.children) {
         child.parent = this;
       }
+    }
+
+    public static int LEAF_WEIGHT = 3;
+
+    public static int layerWeight (int layer) {
+      int weight = 0;
+
+      for (int i = 0; i < layer; i++) {
+        if (i == 0) {
+          weight = MetaClassTree.LEAF_WEIGHT;
+        } else {
+          weight = (2 * weight) - 1;
+        }
+      }
+
+      return weight;
     }
 
     public CharClass getCharClass () {
@@ -173,8 +189,9 @@ public class Formula {
         }
       }
 
-      int childLayerWeight = (this.layerWeight + 1) / 2;
-      return (totalChildren * childLayerWeight) - this.layerWeight;
+      int childWeight = MetaClassTree.layerWeight(this.layer - 1);
+      int treeWeight = MetaClassTree.layerWeight(this.layer);
+      return (totalChildren * childWeight) - treeWeight;
     }
 
     private boolean isSatisfied (char ch) {
@@ -241,85 +258,85 @@ public class Formula {
     }
 
     public static MetaClassTree initialize () {
-      MetaClassTree lit_a = new MetaClassTree(new CharLiteralNode('a'), new SimplePredicate('a'), -2);
-      MetaClassTree lit_b = new MetaClassTree(new CharLiteralNode('b'), new SimplePredicate('b'), -2);
-      MetaClassTree lit_c = new MetaClassTree(new CharLiteralNode('c'), new SimplePredicate('c'), -2);
-      MetaClassTree lit_d = new MetaClassTree(new CharLiteralNode('d'), new SimplePredicate('d'), -2);
-      MetaClassTree lit_e = new MetaClassTree(new CharLiteralNode('e'), new SimplePredicate('e'), -2);
-      MetaClassTree lit_f = new MetaClassTree(new CharLiteralNode('f'), new SimplePredicate('f'), -2);
-      MetaClassTree lit_g = new MetaClassTree(new CharLiteralNode('g'), new SimplePredicate('g'), -2);
-      MetaClassTree lit_h = new MetaClassTree(new CharLiteralNode('h'), new SimplePredicate('h'), -2);
-      MetaClassTree lit_i = new MetaClassTree(new CharLiteralNode('i'), new SimplePredicate('i'), -2);
-      MetaClassTree lit_j = new MetaClassTree(new CharLiteralNode('j'), new SimplePredicate('j'), -2);
-      MetaClassTree lit_k = new MetaClassTree(new CharLiteralNode('k'), new SimplePredicate('k'), -2);
-      MetaClassTree lit_l = new MetaClassTree(new CharLiteralNode('l'), new SimplePredicate('l'), -2);
-      MetaClassTree lit_m = new MetaClassTree(new CharLiteralNode('m'), new SimplePredicate('m'), -2);
-      MetaClassTree lit_n = new MetaClassTree(new CharLiteralNode('n'), new SimplePredicate('n'), -2);
-      MetaClassTree lit_o = new MetaClassTree(new CharLiteralNode('o'), new SimplePredicate('o'), -2);
-      MetaClassTree lit_p = new MetaClassTree(new CharLiteralNode('p'), new SimplePredicate('p'), -2);
-      MetaClassTree lit_q = new MetaClassTree(new CharLiteralNode('q'), new SimplePredicate('q'), -2);
-      MetaClassTree lit_r = new MetaClassTree(new CharLiteralNode('r'), new SimplePredicate('r'), -2);
-      MetaClassTree lit_s = new MetaClassTree(new CharLiteralNode('s'), new SimplePredicate('s'), -2);
-      MetaClassTree lit_t = new MetaClassTree(new CharLiteralNode('t'), new SimplePredicate('t'), -2);
-      MetaClassTree lit_u = new MetaClassTree(new CharLiteralNode('u'), new SimplePredicate('u'), -2);
-      MetaClassTree lit_v = new MetaClassTree(new CharLiteralNode('v'), new SimplePredicate('v'), -2);
-      MetaClassTree lit_w = new MetaClassTree(new CharLiteralNode('w'), new SimplePredicate('w'), -2);
-      MetaClassTree lit_x = new MetaClassTree(new CharLiteralNode('x'), new SimplePredicate('x'), -2);
-      MetaClassTree lit_y = new MetaClassTree(new CharLiteralNode('y'), new SimplePredicate('y'), -2);
-      MetaClassTree lit_z = new MetaClassTree(new CharLiteralNode('z'), new SimplePredicate('z'), -2);
+      MetaClassTree lit_a = new MetaClassTree(new CharLiteralNode('a'), new SimplePredicate('a'), 1);
+      MetaClassTree lit_b = new MetaClassTree(new CharLiteralNode('b'), new SimplePredicate('b'), 1);
+      MetaClassTree lit_c = new MetaClassTree(new CharLiteralNode('c'), new SimplePredicate('c'), 1);
+      MetaClassTree lit_d = new MetaClassTree(new CharLiteralNode('d'), new SimplePredicate('d'), 1);
+      MetaClassTree lit_e = new MetaClassTree(new CharLiteralNode('e'), new SimplePredicate('e'), 1);
+      MetaClassTree lit_f = new MetaClassTree(new CharLiteralNode('f'), new SimplePredicate('f'), 1);
+      MetaClassTree lit_g = new MetaClassTree(new CharLiteralNode('g'), new SimplePredicate('g'), 1);
+      MetaClassTree lit_h = new MetaClassTree(new CharLiteralNode('h'), new SimplePredicate('h'), 1);
+      MetaClassTree lit_i = new MetaClassTree(new CharLiteralNode('i'), new SimplePredicate('i'), 1);
+      MetaClassTree lit_j = new MetaClassTree(new CharLiteralNode('j'), new SimplePredicate('j'), 1);
+      MetaClassTree lit_k = new MetaClassTree(new CharLiteralNode('k'), new SimplePredicate('k'), 1);
+      MetaClassTree lit_l = new MetaClassTree(new CharLiteralNode('l'), new SimplePredicate('l'), 1);
+      MetaClassTree lit_m = new MetaClassTree(new CharLiteralNode('m'), new SimplePredicate('m'), 1);
+      MetaClassTree lit_n = new MetaClassTree(new CharLiteralNode('n'), new SimplePredicate('n'), 1);
+      MetaClassTree lit_o = new MetaClassTree(new CharLiteralNode('o'), new SimplePredicate('o'), 1);
+      MetaClassTree lit_p = new MetaClassTree(new CharLiteralNode('p'), new SimplePredicate('p'), 1);
+      MetaClassTree lit_q = new MetaClassTree(new CharLiteralNode('q'), new SimplePredicate('q'), 1);
+      MetaClassTree lit_r = new MetaClassTree(new CharLiteralNode('r'), new SimplePredicate('r'), 1);
+      MetaClassTree lit_s = new MetaClassTree(new CharLiteralNode('s'), new SimplePredicate('s'), 1);
+      MetaClassTree lit_t = new MetaClassTree(new CharLiteralNode('t'), new SimplePredicate('t'), 1);
+      MetaClassTree lit_u = new MetaClassTree(new CharLiteralNode('u'), new SimplePredicate('u'), 1);
+      MetaClassTree lit_v = new MetaClassTree(new CharLiteralNode('v'), new SimplePredicate('v'), 1);
+      MetaClassTree lit_w = new MetaClassTree(new CharLiteralNode('w'), new SimplePredicate('w'), 1);
+      MetaClassTree lit_x = new MetaClassTree(new CharLiteralNode('x'), new SimplePredicate('x'), 1);
+      MetaClassTree lit_y = new MetaClassTree(new CharLiteralNode('y'), new SimplePredicate('y'), 1);
+      MetaClassTree lit_z = new MetaClassTree(new CharLiteralNode('z'), new SimplePredicate('z'), 1);
 
-      MetaClassTree lit_A = new MetaClassTree(new CharLiteralNode('A'), new SimplePredicate('A'), -2);
-      MetaClassTree lit_B = new MetaClassTree(new CharLiteralNode('B'), new SimplePredicate('B'), -2);
-      MetaClassTree lit_C = new MetaClassTree(new CharLiteralNode('C'), new SimplePredicate('C'), -2);
-      MetaClassTree lit_D = new MetaClassTree(new CharLiteralNode('D'), new SimplePredicate('D'), -2);
-      MetaClassTree lit_E = new MetaClassTree(new CharLiteralNode('E'), new SimplePredicate('E'), -2);
-      MetaClassTree lit_F = new MetaClassTree(new CharLiteralNode('F'), new SimplePredicate('F'), -2);
-      MetaClassTree lit_G = new MetaClassTree(new CharLiteralNode('G'), new SimplePredicate('G'), -2);
-      MetaClassTree lit_H = new MetaClassTree(new CharLiteralNode('H'), new SimplePredicate('H'), -2);
-      MetaClassTree lit_I = new MetaClassTree(new CharLiteralNode('I'), new SimplePredicate('I'), -2);
-      MetaClassTree lit_J = new MetaClassTree(new CharLiteralNode('J'), new SimplePredicate('J'), -2);
-      MetaClassTree lit_K = new MetaClassTree(new CharLiteralNode('K'), new SimplePredicate('K'), -2);
-      MetaClassTree lit_L = new MetaClassTree(new CharLiteralNode('L'), new SimplePredicate('L'), -2);
-      MetaClassTree lit_M = new MetaClassTree(new CharLiteralNode('M'), new SimplePredicate('M'), -2);
-      MetaClassTree lit_N = new MetaClassTree(new CharLiteralNode('N'), new SimplePredicate('N'), -2);
-      MetaClassTree lit_O = new MetaClassTree(new CharLiteralNode('O'), new SimplePredicate('O'), -2);
-      MetaClassTree lit_P = new MetaClassTree(new CharLiteralNode('P'), new SimplePredicate('P'), -2);
-      MetaClassTree lit_Q = new MetaClassTree(new CharLiteralNode('Q'), new SimplePredicate('Q'), -2);
-      MetaClassTree lit_R = new MetaClassTree(new CharLiteralNode('R'), new SimplePredicate('R'), -2);
-      MetaClassTree lit_S = new MetaClassTree(new CharLiteralNode('S'), new SimplePredicate('S'), -2);
-      MetaClassTree lit_T = new MetaClassTree(new CharLiteralNode('T'), new SimplePredicate('T'), -2);
-      MetaClassTree lit_U = new MetaClassTree(new CharLiteralNode('U'), new SimplePredicate('U'), -2);
-      MetaClassTree lit_V = new MetaClassTree(new CharLiteralNode('V'), new SimplePredicate('V'), -2);
-      MetaClassTree lit_W = new MetaClassTree(new CharLiteralNode('W'), new SimplePredicate('W'), -2);
-      MetaClassTree lit_X = new MetaClassTree(new CharLiteralNode('X'), new SimplePredicate('X'), -2);
-      MetaClassTree lit_Y = new MetaClassTree(new CharLiteralNode('Y'), new SimplePredicate('Y'), -2);
-      MetaClassTree lit_Z = new MetaClassTree(new CharLiteralNode('Z'), new SimplePredicate('Z'), -2);
+      MetaClassTree lit_A = new MetaClassTree(new CharLiteralNode('A'), new SimplePredicate('A'), 1);
+      MetaClassTree lit_B = new MetaClassTree(new CharLiteralNode('B'), new SimplePredicate('B'), 1);
+      MetaClassTree lit_C = new MetaClassTree(new CharLiteralNode('C'), new SimplePredicate('C'), 1);
+      MetaClassTree lit_D = new MetaClassTree(new CharLiteralNode('D'), new SimplePredicate('D'), 1);
+      MetaClassTree lit_E = new MetaClassTree(new CharLiteralNode('E'), new SimplePredicate('E'), 1);
+      MetaClassTree lit_F = new MetaClassTree(new CharLiteralNode('F'), new SimplePredicate('F'), 1);
+      MetaClassTree lit_G = new MetaClassTree(new CharLiteralNode('G'), new SimplePredicate('G'), 1);
+      MetaClassTree lit_H = new MetaClassTree(new CharLiteralNode('H'), new SimplePredicate('H'), 1);
+      MetaClassTree lit_I = new MetaClassTree(new CharLiteralNode('I'), new SimplePredicate('I'), 1);
+      MetaClassTree lit_J = new MetaClassTree(new CharLiteralNode('J'), new SimplePredicate('J'), 1);
+      MetaClassTree lit_K = new MetaClassTree(new CharLiteralNode('K'), new SimplePredicate('K'), 1);
+      MetaClassTree lit_L = new MetaClassTree(new CharLiteralNode('L'), new SimplePredicate('L'), 1);
+      MetaClassTree lit_M = new MetaClassTree(new CharLiteralNode('M'), new SimplePredicate('M'), 1);
+      MetaClassTree lit_N = new MetaClassTree(new CharLiteralNode('N'), new SimplePredicate('N'), 1);
+      MetaClassTree lit_O = new MetaClassTree(new CharLiteralNode('O'), new SimplePredicate('O'), 1);
+      MetaClassTree lit_P = new MetaClassTree(new CharLiteralNode('P'), new SimplePredicate('P'), 1);
+      MetaClassTree lit_Q = new MetaClassTree(new CharLiteralNode('Q'), new SimplePredicate('Q'), 1);
+      MetaClassTree lit_R = new MetaClassTree(new CharLiteralNode('R'), new SimplePredicate('R'), 1);
+      MetaClassTree lit_S = new MetaClassTree(new CharLiteralNode('S'), new SimplePredicate('S'), 1);
+      MetaClassTree lit_T = new MetaClassTree(new CharLiteralNode('T'), new SimplePredicate('T'), 1);
+      MetaClassTree lit_U = new MetaClassTree(new CharLiteralNode('U'), new SimplePredicate('U'), 1);
+      MetaClassTree lit_V = new MetaClassTree(new CharLiteralNode('V'), new SimplePredicate('V'), 1);
+      MetaClassTree lit_W = new MetaClassTree(new CharLiteralNode('W'), new SimplePredicate('W'), 1);
+      MetaClassTree lit_X = new MetaClassTree(new CharLiteralNode('X'), new SimplePredicate('X'), 1);
+      MetaClassTree lit_Y = new MetaClassTree(new CharLiteralNode('Y'), new SimplePredicate('Y'), 1);
+      MetaClassTree lit_Z = new MetaClassTree(new CharLiteralNode('Z'), new SimplePredicate('Z'), 1);
 
-      MetaClassTree lit_0 = new MetaClassTree(new CharLiteralNode('0'), new SimplePredicate('0'), -2);
-      MetaClassTree lit_1 = new MetaClassTree(new CharLiteralNode('1'), new SimplePredicate('1'), -2);
-      MetaClassTree lit_2 = new MetaClassTree(new CharLiteralNode('2'), new SimplePredicate('2'), -2);
-      MetaClassTree lit_3 = new MetaClassTree(new CharLiteralNode('3'), new SimplePredicate('3'), -2);
-      MetaClassTree lit_4 = new MetaClassTree(new CharLiteralNode('4'), new SimplePredicate('4'), -2);
-      MetaClassTree lit_5 = new MetaClassTree(new CharLiteralNode('5'), new SimplePredicate('5'), -2);
-      MetaClassTree lit_6 = new MetaClassTree(new CharLiteralNode('6'), new SimplePredicate('6'), -2);
-      MetaClassTree lit_7 = new MetaClassTree(new CharLiteralNode('7'), new SimplePredicate('7'), -2);
-      MetaClassTree lit_8 = new MetaClassTree(new CharLiteralNode('8'), new SimplePredicate('8'), -2);
-      MetaClassTree lit_9 = new MetaClassTree(new CharLiteralNode('9'), new SimplePredicate('9'), -2);
+      MetaClassTree lit_0 = new MetaClassTree(new CharLiteralNode('0'), new SimplePredicate('0'), 1);
+      MetaClassTree lit_1 = new MetaClassTree(new CharLiteralNode('1'), new SimplePredicate('1'), 1);
+      MetaClassTree lit_2 = new MetaClassTree(new CharLiteralNode('2'), new SimplePredicate('2'), 1);
+      MetaClassTree lit_3 = new MetaClassTree(new CharLiteralNode('3'), new SimplePredicate('3'), 1);
+      MetaClassTree lit_4 = new MetaClassTree(new CharLiteralNode('4'), new SimplePredicate('4'), 1);
+      MetaClassTree lit_5 = new MetaClassTree(new CharLiteralNode('5'), new SimplePredicate('5'), 1);
+      MetaClassTree lit_6 = new MetaClassTree(new CharLiteralNode('6'), new SimplePredicate('6'), 1);
+      MetaClassTree lit_7 = new MetaClassTree(new CharLiteralNode('7'), new SimplePredicate('7'), 1);
+      MetaClassTree lit_8 = new MetaClassTree(new CharLiteralNode('8'), new SimplePredicate('8'), 1);
+      MetaClassTree lit_9 = new MetaClassTree(new CharLiteralNode('9'), new SimplePredicate('9'), 1);
 
-      MetaClassTree cls_d = new MetaClassTree(class_d, pred_d, 3, lit_0, lit_1,
+      MetaClassTree cls_d = new MetaClassTree(class_d, pred_d, 2, lit_0, lit_1,
         lit_2, lit_3, lit_4, lit_5, lit_6, lit_7, lit_8, lit_9);
 
-      MetaClassTree cls_AZ = new MetaClassTree(class_AZ, pred_AZ, 3, lit_A,
+      MetaClassTree cls_AZ = new MetaClassTree(class_AZ, pred_AZ, 2, lit_A,
         lit_B, lit_C, lit_D, lit_E, lit_F, lit_G, lit_H, lit_I, lit_J, lit_K,
         lit_L, lit_M, lit_N, lit_O, lit_P, lit_Q, lit_R, lit_S, lit_T, lit_U,
         lit_V, lit_W, lit_X, lit_Y, lit_Z);
 
-      MetaClassTree cls_az = new MetaClassTree(class_az, pred_az, 3, lit_a,
+      MetaClassTree cls_az = new MetaClassTree(class_az, pred_az, 2, lit_a,
         lit_b, lit_c, lit_d, lit_e, lit_f, lit_g, lit_h, lit_i, lit_j, lit_k,
         lit_l, lit_m, lit_n, lit_o, lit_p, lit_q, lit_r, lit_s, lit_t, lit_u,
         lit_v, lit_w, lit_x, lit_y, lit_z);
 
-      MetaClassTree cls_w = new MetaClassTree(class_w, pred_w, 4, cls_d, cls_AZ, cls_az);
+      MetaClassTree cls_w = new MetaClassTree(class_w, pred_w, 3, cls_d, cls_AZ, cls_az);
 
       return cls_w;
     }
@@ -468,7 +485,7 @@ public class Formula {
     }
 
     BoolExpr var = this.createVariable(id);
-    MetaClassTree tree = new MetaClassTree(new CharLiteralNode(ch), new SimplePredicate(ch), -2);
+    MetaClassTree tree = new MetaClassTree(new CharLiteralNode(ch), new SimplePredicate(ch), 1);
 
     // Categorize this new tree as "miscellaneous".
     this.misc.add(tree);
