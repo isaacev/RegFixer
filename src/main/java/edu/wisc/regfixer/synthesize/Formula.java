@@ -558,11 +558,8 @@ public class Formula {
     if (this.opt.Check() == Status.UNSATISFIABLE) {
       throw new SynthesisFailure("unsatisfiable SAT formula");
     } else {
-      for (HoleId id : this.holes) {
-        for (MetaClassTree candidate : this.tree.getCandidateBranches(id)) {
-          System.out.println(PrintableTree.toString(candidate));
-        }
-      }
+      System.out.println();
+      System.out.println(PrintableTree.toString(this.tree));
 
       System.out.println(this.toString());
       this.model = this.opt.getModel();
