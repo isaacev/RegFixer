@@ -165,20 +165,6 @@ public class Formula {
       return this.children;
     }
 
-    private int sumChildWeights (HoleId id) {
-      int sum = 0;
-      for (MetaClassTree child : this.children) {
-        if (child.tally.containsKey(id)) {
-          sum += child.getLayerWeight();
-        }
-      }
-      return sum;
-    }
-
-    public int getLayerWeight () {
-      return this.layerWeight;
-    }
-
     public int getSATWeight (HoleId id) {
       if (this.tally.containsKey(id)) {
         return this.layerWeight - this.sumChildWeights(id);
@@ -238,45 +224,6 @@ public class Formula {
       }
 
       return false;
-    }
-
-    public List<MetaClassTree> getCandidateBranches (HoleId id) {
-      /**
-       * Literal-classes should only be considered for inclusion in the SAT
-       * formula if:
-       * - Class has more than 0 tallies
-       *
-       * Meta-classes should only be considered for inclusion in the SAT
-       * formula if the class meets all of the following criteria:
-       * - Class has more than 0 tallies
-       * - If class has child classes, at least 2 have tallies
-       */
-      List<MetaClassTree> trees = new LinkedList<>();
-
-      if (this.getTally(id) > 0) {
-        // countTalliedChildren is the number of child classes that match at
-        // least 1 character passing through the specified hole.
-        int countTalliedChildren = this.children.stream()
-          .filter(c -> c.getTally(id) > 0)
-          .collect(Collectors.toSet())
-          .size();
-
-        // If this class has at least 2 child classes then this class should be
-        // considered as a possible solution.
-        if (countTalliedChildren >= 2) {
-          trees.add(this);
-        } else if (this.children.size() == 0) {
-          trees.add(this);
-        }
-
-        // Recursively check child classes to determine if those classes should
-        // be considered as possible solutions.
-        for (MetaClassTree child : this.children) {
-          trees.addAll(child.getCandidateBranches(id));
-        }
-      }
-
-      return trees;
     }
 
     public String toString () {
@@ -374,73 +321,6 @@ public class Formula {
     }
   }
 
-  private static class MetaClassTally {
-    public Map<HoleId, Map<Predicate, Integer>> tally;
-    private Map<Predicate, Integer> weights;
-
-    public MetaClassTally () {
-      this.tally = new HashMap<>();
-      this.weights = new HashMap<>();
-    }
-
-    public boolean hasTally (HoleId id) {
-      return this.tally.containsKey(id);
-    }
-
-    public void initializeTally (HoleId id) {
-      this.tally.put(id, new HashMap<>());
-
-      // Adds \d meta-class (aka [0-9])
-      this.addMetaClassToTally(id, 3, Formula.pred_d);
-
-      // Adds \D meta-class (aka [^0-9])
-      this.addMetaClassToTally(id, 3, Formula.pred_D);
-
-      // Adds \w meta-class (aka [a-zA-Z0-9_])
-      this.addMetaClassToTally(id, 5, Formula.pred_w);
-
-      // Adds \W meta-class (aka [^a-zA-Z0-9_])
-      this.addMetaClassToTally(id, 5, Formula.pred_W);
-    }
-
-    private void addMetaClassToTally (HoleId id, int weight, Predicate pred) {
-      this.tally.get(id).put(pred, 0);
-      this.weights.put(pred, weight);
-    }
-
-    /**
-     * For each predicate associated with a hole a tally is being kept of how
-     * many characters passing through that hole are included in that predicate.
-     * This function is responsible for updating that tally every time it is
-     * called with a hole ID and a character. For each predicate associated with
-     * that hole, if the character satisifes the predicate, increment that
-     * predicate's tally by 1.
-     */
-    public void increment (HoleId id, Character ch) {
-      for (Map.Entry<Predicate, Integer> entry : this.getEntries(id)) {
-        if (entry.getKey().includes(ch)) {
-          entry.setValue(entry.getValue() + 1);
-        }
-      }
-    }
-
-    public Set<HoleId> getHoleIds () {
-      return this.tally.keySet();
-    }
-
-    public Set<Map.Entry<Predicate, Integer>> getEntries (HoleId id) {
-      return this.tally.get(id).entrySet();
-    }
-
-    public int getWeight (Predicate pred) {
-      if (this.weights.containsKey(pred)) {
-        return this.weights.get(pred);
-      } else {
-        return -2;
-      }
-    }
-  }
-
   private List<Set<Route>> positives;
   private List<Set<Route>> negatives;
 
@@ -454,7 +334,6 @@ public class Formula {
   private Map<HoleId, Set<BoolExpr>> holeToVars;
   private Map<BoolExpr, MetaClassTree> varToTree;
   private Map<BoolExpr, Predicate> varToPred;
-  private MetaClassTally tally;
   private MetaClassTree tree;
   private Set<MetaClassTree> misc;
 
@@ -479,7 +358,6 @@ public class Formula {
     this.holeToVars = new HashMap<>();
     this.varToTree = new HashMap<>();
     this.varToPred = new HashMap<>();
-    this.tally = new MetaClassTally();
     this.tree = MetaClassTree.initialize();
     this.misc = new HashSet<>();
 
@@ -537,9 +415,6 @@ public class Formula {
 
     for (HoleId holeId : spans.keySet()) {
       this.holes.add(holeId);
-      if (this.tally.hasTally(holeId) == false) {
-        this.tally.initializeTally(holeId);
-      }
 
       BoolExpr exprChars = this.encodeHoleInRoute(holeId, spans.get(holeId), posFlag);
 
@@ -597,54 +472,6 @@ public class Formula {
     // Register variable with variable -> tree mapping.
     this.varToTree.put(var, tree);
 
-    return var;
-  }
-
-  private BoolExpr encodeSingleChar (HoleId holeId, Set<Character> chars, boolean posFlag) {
-    BoolExpr exprChars = null;
-
-    for (Character ch : chars) {
-      Predicate pred = new SimplePredicate(ch);
-      CharClass cc = new CharLiteralNode(ch);
-      BoolExpr exprChar = this.registerPredicate(holeId, cc, pred);
-      this.opt.AssertSoft(exprChar, -2, "MAX_SAT");
-      this.tally.increment(holeId, ch);
-
-      if (posFlag) {
-        if (exprChars == null) {
-          exprChars = exprChar;
-        } else {
-          exprChars = this.ctx.mkAnd(exprChars, exprChar);
-        }
-      } else {
-        if (exprChars == null) {
-          exprChars = this.ctx.mkNot(exprChar);
-        } else {
-          exprChars = this.ctx.mkOr(exprChars, this.ctx.mkNot(exprChar));
-        }
-      }
-
-    }
-
-    return exprChars;
-  }
-
-  /**
-   * Each boolean variable in the SAT formula needs to be assigned a unique
-   * name, mapped to its corresponding hole (for record keeping), and mapped to
-   * its corresponding predicate (also for record keeping).
-   */
-  private BoolExpr registerPredicate (HoleId id, CharClass cc, Predicate pred) {
-    String name = String.format("%s_%d", id.toString(), this.nextVarId++);
-    BoolExpr var = this.ctx.mkBoolConst(name);
-
-    if (this.holeToVars.get(id) == null) {
-      this.holeToVars.put(id, new HashSet<>());
-    }
-
-    this.predToClass.put(pred, cc);
-    this.holeToVars.get(id).add(var);
-    this.varToPred.put(var, pred);
     return var;
   }
 
@@ -717,63 +544,6 @@ public class Formula {
     }
 
     return var;
-  }
-
-  private void encodeMetaCharClasses () {
-    BoolExpr exprs = null;
-
-    /**
-     * As individual characters were being added to the SAT formula a tally was
-     * being kept of which meta-classes fit the most characters. If any
-     * meta-classes fir MORE than 2 characters, that meta-class will be added to
-     * the SAT formula as a potential solution for its corresponding hole.
-     */
-    int METACLASS_THRESHOLD = 2;
-    for (HoleId id : this.tally.getHoleIds()) {
-      for (Map.Entry<Predicate, Integer> entry : this.tally.getEntries(id)) {
-        if (entry.getValue() > METACLASS_THRESHOLD) {
-          Predicate pred = entry.getKey();
-          CharClass cc = this.predToClass.get(pred);
-          this.encodeMetaCharClassForHole(id, cc, pred);
-        }
-      }
-    }
-  }
-
-  private void encodeMetaCharClassForHole (HoleId holeId, CharClass cc, Predicate pred) {
-    /**
-     * Create a SAT variable and associate that variable with this predicate. Give
-     * that variable a weight corresponding to how favorable the algorithm favors
-     * the predicate.
-     */
-    BoolExpr exprs = null;
-    BoolExpr expr = this.registerPredicate(holeId, cc, pred);
-    this.opt.AssertSoft(expr, this.tally.getWeight(pred), "MAX_SAT");
-
-    /**
-     * Any predicate passed to this method has already been determined to include
-     * at least 2 characters passing through this hole. However many other
-     * characters that are NOT included in this predicate may have also passed
-     * through this hole. The following loop checks each existing SAT variable
-     * associated with this hole and--if that variable corresponds to a character
-     * included in this predicate--logically links this predicate and the existing
-     * variable in the SAT formula.
-     */
-    for (BoolExpr existingVar : this.holeToVars.get(holeId)) {
-      Predicate existingPred = this.varToPred.get(existingVar);
-
-      if (pred.includes(existingPred)) {
-        if (exprs == null) {
-          exprs = this.ctx.mkOr(this.ctx.mkNot(expr), existingVar);
-        } else {
-          exprs = this.ctx.mkAnd(exprs, this.ctx.mkOr(this.ctx.mkNot(expr), existingVar));
-        }
-      }
-    }
-
-    if (exprs != null) {
-      this.opt.Add(exprs);
-    }
   }
 
   public Map<HoleId, CharClass> solve () throws SynthesisFailure {
