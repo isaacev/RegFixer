@@ -525,6 +525,7 @@ public class Formula {
     this.varToTree.put(var, tree);
 
     int weight = tree.getSATWeight(id);
+    this.opt.Add(var);
     this.opt.AssertSoft(var, weight, "MAX_SAT");
     return var;
   }
