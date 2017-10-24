@@ -9,4 +9,6 @@ public class BoxChars {
   public static final char corner_se = '╯';
   public static final char tee_n     = '┴';
   public static final char tee_s     = '┬';
+  public static final char tee_e     = '├';
+  public static final char tee_w     = '┤';
 }
