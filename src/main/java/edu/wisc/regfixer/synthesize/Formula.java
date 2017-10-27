@@ -237,7 +237,7 @@ public class Formula {
     }
 
     public String toString () {
-      String out = this.cc.toString();
+      String out = String.format("'%s'", this.cc.toString());
 
       for (Map.Entry<HoleId, Integer> entry : this.tally.entrySet()) {
         out += String.format("\n%s %d (%s)", entry.getKey(), entry.getValue(), this.getSATWeight(entry.getKey()));
