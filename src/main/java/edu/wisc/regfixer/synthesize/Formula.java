@@ -228,27 +228,9 @@ public class Formula {
        * Literal-classes should only be considered for inclusion in the SAT
        * formula iff:
        * - Class has more than 0 tallies
-       *
-       * Meta-classes should only be considered for inclusion in the SAT
-       * formula if the class meets all of the following criteria:
-       * - Class has more than 0 tallies
-       * - If class has child classes, at least 2 have tallies
        */
       if (this.getTally(id) > 0) {
-        if (this.children.size() == 0) {
-          return true;
-        }
-
-        // countTalliedChildren is the number of child classes that match at
-        // least 1 character passing through the specified hole.
-        int countTalliedChildren = this.children.stream()
-          .filter(c -> c.getTally(id) > 0)
-          .collect(Collectors.toSet())
-          .size();
-
-        if (countTalliedChildren >= 2) {
-          return true;
-        }
+        return true;
       }
 
       return false;
