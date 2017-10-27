@@ -595,6 +595,9 @@ public class Formula {
     } else {
       System.out.println();
       System.out.println(PrintableTree.toString(this.tree));
+      for (MetaClassTree tree : this.misc) {
+        System.out.println(PrintableTree.toString(tree));
+      }
 
       System.out.println(this.toString());
       this.model = this.opt.getModel();
