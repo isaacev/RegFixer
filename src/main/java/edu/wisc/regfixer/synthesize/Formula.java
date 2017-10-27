@@ -351,7 +351,6 @@ public class Formula {
 
   private int nextVarId;
   private Set<HoleId> holes;
-  private Map<Predicate, CharClass> predToClass;
   private Map<HoleId, Set<BoolExpr>> holeToVars;
   private Map<BoolExpr, MetaClassTree> varToTree;
   private Map<BoolExpr, Predicate> varToPred;
@@ -370,12 +369,6 @@ public class Formula {
     // Initialize structures for tracking state
     this.nextVarId = 0;
     this.holes = new HashSet<>();
-    this.predToClass = new HashMap<>();
-    this.predToClass.put(Formula.pred_d, Formula.class_d);
-    this.predToClass.put(Formula.pred_D, Formula.class_D);
-    this.predToClass.put(Formula.pred_w, Formula.class_w);
-    this.predToClass.put(Formula.pred_W, Formula.class_W);
-    this.predToClass.put(Formula.pred_azAZ, Formula.class_azAZ);
     this.holeToVars = new HashMap<>();
     this.varToTree = new HashMap<>();
     this.varToPred = new HashMap<>();
@@ -581,6 +574,7 @@ public class Formula {
       System.out.println(this.toString());
       this.model = this.opt.getModel();
       System.out.println(this.model);
+      System.exit(1);
     }
 
     /**
