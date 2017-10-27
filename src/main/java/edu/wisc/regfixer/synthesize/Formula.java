@@ -467,6 +467,7 @@ public class Formula {
       // Create a new tree and categorize this new tree as "miscellaneous".
       tree = new MetaClassTree(new CharLiteralNode(ch), new SimplePredicate(ch), 1);
       this.misc.add(tree);
+      tree.incrementTally(id, ch);
     }
 
     return this.encodeWeightedConstraint(id, tree);
