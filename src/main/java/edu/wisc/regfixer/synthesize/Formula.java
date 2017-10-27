@@ -165,17 +165,20 @@ public class Formula {
     }
 
     public MetaClassTree getFurthestTrueAncestor (Map<MetaClassTree, Boolean> evaluation) {
-      Boolean eval = evaluation.get(this);
-      if (eval == null || eval != true) {
+      MetaClassTree ancestor = null;
+      if (this.parent != null) {
+        ancestor = this.parent.getFurthestTrueAncestor(evaluation);
+      }
+
+      Boolean isTrue = evaluation.get(this);
+
+      if (ancestor != null) {
+        return ancestor;
+      } else if (isTrue != null && isTrue) {
+        return this;
+      } else {
         return null;
       }
-
-      if (this.parent == null) {
-        return this;
-      }
-
-      MetaClassTree ancestor = this.parent.getFurthestTrueAncestor(evaluation);
-      return (ancestor == null) ? this : ancestor;
     }
 
     public List<MetaClassTree> getBranches () {
