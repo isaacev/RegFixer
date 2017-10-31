@@ -224,7 +224,7 @@ public class CLI {
       }
     }
 
-    if (args.limit == null || args.limit <= 1) {
+    if (args.limit == null || args.limit < 1) {
       args.limit = 1000;
     }
 
