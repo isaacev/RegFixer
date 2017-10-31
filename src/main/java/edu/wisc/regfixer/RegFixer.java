@@ -132,60 +132,107 @@ public class RegFixer {
       throw new SynthesisFailure("failed dot test");
     }
 
-    Set<String> p = job.getCorpus().getPositiveExamples();
-    Set<String> n = job.getCorpus().getNegativeExamples();
+    Set<Range> P = job.getCorpus().getPositiveRanges();
+    Set<Range> N = job.getCorpus().getNegativeRanges();
     Synthesis synthesis = null;
 
+    /**
+     * The synthesis loop takes a regular expression template (the enumerant)
+     * which has 1 or more unknown character classes embedded in it. The job of
+     * this loop is--given sets of positive and negative example strings--to
+     * determine if character classes can be derrived for the unknown character
+     * classes that accept all the positive examples and reject all the negative
+     * examples.
+     */
     while (true) {
-      synthesis = enumerant.synthesize(p, n, config);
+      /**
+       * For each iteration of the loop, given the positive examples P and the
+       * negative examples N, a SAT formula is generated to attempt to
+       * synthesize character class solutions for each unknown character class
+       * in the enumerant.
+       */
+      synthesis = enumerant.synthesize(
+        job.getCorpus().getPositiveExamples(),
+        job.getCorpus().getSubstrings(N),
+        config);
 
       /**
-       * M = get all matches
-       * B []
-       *
-       *
-       * (l,u) in M is a bad match if:
-       * 1) there exists no positive match l' and u' such that l' < l <= u'
-       * 2) there exists a positive match l' and u' such that l = l' and u > u'
-       *
-       * if (l,u) satisfies both conditions then
-       *   add (l,u) to B
-       *
-       *
-       * if size of B > 0
-       *   n = n U B
-       * else
-       *   return synthesis
+       * It's possible that the solution synthesized by the SAT formula will not
+       * match only P but also may match some unexpected values O. Because 1 or
+       * more values exist in O is NOT sufficient to reject the enumerant as
+       * unsatisfiable yet. By incorporating some members of O into N the SAT
+       * synthesis can be retried and will eventually either reject the
+       * enumerant as unsatisfiable or derrive a perfect solution.
+       */
+      Set<Range> O = job.getCorpus().getMatches(synthesis);
+
+      /**
+       * Not all members of O should be added to N. A member 'o' of O should NOT
+       * be added to N iff there exists some 'p' of P such that:
+       * 1) 'o' == 'p'
+       * 2) the lower bound of 'o' > the lower bound of 'p'
+       * 3) the lower bound of 'o' < the upper bound of 'p'
        */
 
-      Set<Range> ranges = job.getCorpus().getMatches(synthesis);
-      Set<Range> badMatches = new TreeSet<>();
-
-      for (Range r : ranges) {
-        boolean cond1 = false;
-        boolean cond2 = false;
-        for (Range rPrime : job.getCorpus().getPositiveRanges()) {
-          if (!(rPrime.getLeftIndex() < r.getLeftIndex() && r.getLeftIndex() <= rPrime.getRightIndex())) {
-            cond1 = true;
-          }
-
-          if (r.getLeftIndex() == rPrime.getLeftIndex() && r.getRightIndex() > rPrime.getRightIndex()) {
-            cond2 = true;
-          }
-        }
-
-        if (cond1 && cond2) {
-          badMatches.add(r);
-        }
+      // Handle condition 1.
+      O.removeAll(job.getCorpus().getPositiveRanges());
+      if (O.size() == 0) {
+        return synthesis;
       }
 
+      // Handle conditions 2 and 3.
+      Set<Range> pendingN = new TreeSet<>();
+      outerLoop:
+      for (Range o : O) {
+        for (Range p : P) {
+          boolean cond1 = o.getLeftIndex() > p.getLeftIndex();
+          boolean cond2 = o.getLeftIndex() < p.getRightIndex();
+          if (cond1 && cond2) {
+            continue outerLoop;
+          }
+        }
+
+        pendingN.add(o);
+      }
+
+      /**
+       * If all 'o' that are eligible to be added to N are already contained in
+       * N then the synthesis loop fails because no new information can be
+       * learned that will improve the synthesized solutions.
+       */
+      if (N.containsAll(pendingN)) {
+        throw new SynthesisFailure("failed to find novel incorrect matches");
+      } else {
+        N.addAll(pendingN);
+      }
+
+      /*
+      Set<Range> ranges = job.getCorpus().getMatches(synthesis);
+      Set<Range> badMatches = new TreeSet<>(ranges);
+      badMatches.removeAll(job.getCorpus().getPositiveRanges());
+
       if (badMatches.size() > 0) {
+        Set<String> toAdd = new TreeSet<>();
+        outerLoop:
         for (Range r : badMatches) {
-          n.add(job.getCorpus().getSubstring(r));
+          for (Range s : job.getCorpus().getPositiveRanges()) {
+            if (s.startsBefore(r) && s.intersects(r)) {
+              continue outerLoop;
+            }
+          }
+
+          toAdd.add(job.getCorpus().getSubstring(r));
+        }
+
+        if (n.containsAll(toAdd) == false) {
+          n.addAll(toAdd);
+        } else {
+          throw new SynthesisFailure("failed to find more bad examples");
         }
       } else {
         return synthesis;
       }
+      */
     }
   }
 }
