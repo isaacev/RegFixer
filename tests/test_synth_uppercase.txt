@@ -1,9 +1,0 @@
-. .
----
-(43:46)
-(80:83)
-(184:187)
----
-Lorem elit, sed do eiusmod tempor incaliqua.  Ut enim ad minim veniam,
-consequat.  Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur.  Excepteur.
