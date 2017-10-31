@@ -291,6 +291,7 @@ public class Formula {
   private Map<BoolExpr, Predicate> varToPred;
   private MetaClassTree tree;
   private Set<MetaClassTree> misc;
+  private Map<HoleId, Map<Character, BoolExpr>> holeToCharToVar;
 
   public Formula (List<Set<Route>> positives, List<Set<Route>> negatives) {
     this.positives = positives;
@@ -310,6 +311,7 @@ public class Formula {
     this.varToTree = new HashMap<>();
     this.varToPred = new HashMap<>();
     this.tree = MetaClassTree.initialize();
+    this.holeToCharToVar = new HashMap<>();
     this.misc = new HashSet<>();
 
     // Build the formula and encode meta-class formulae
@@ -414,7 +416,19 @@ public class Formula {
       tree.incrementTally(id, ch);
     }
 
-    return this.encodeWeightedConstraint(id, tree);
+    if (this.holeToCharToVar.containsKey(id)) {
+      BoolExpr var = this.holeToCharToVar.get(id).get(ch);
+      if (var != null) {
+        return var;
+      }
+    } else {
+      this.holeToCharToVar.put(id, new HashMap<>());
+    }
+
+
+    BoolExpr var = this.encodeWeightedConstraint(id, tree);
+    this.holeToCharToVar.get(id).put(ch, var);
+    return var;
   }
 
   private Set<BoolExpr> encodeCharClass (HoleId id, MetaClassTree tree) {
