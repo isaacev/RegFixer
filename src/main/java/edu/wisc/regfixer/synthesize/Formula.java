@@ -559,16 +559,31 @@ public class Formula {
     if (this.opt.Check() == Status.UNSATISFIABLE) {
       throw new SynthesisFailure("unsatisfiable SAT formula");
     } else {
-      System.out.println();
-      System.out.println(PrintableTree.toString(this.tree));
-      for (MetaClassTree tree : this.misc) {
-        System.out.println(PrintableTree.toString(tree));
+      if (this.config.getBool("print-var-map")) {
+        System.out.println();
+        for (BoolExpr var : this.varToTree.keySet()) {
+          System.out.printf("%s\t : '%s'\n", var, this.varToTree.get(var).getCharClass());
+        }
       }
 
-      System.out.println(this.toString());
+      if (this.config.getBool("print-class-tree")) {
+        System.out.println();
+        System.out.println(PrintableTree.toString(this.tree));
+        for (MetaClassTree tree : this.misc) {
+          System.out.println(PrintableTree.toString(tree));
+        }
+      }
+
+      if (this.config.getBool("print-formula")) {
+        System.out.println();
+        System.out.println(this.opt.toString());
+      }
+
       this.model = this.opt.getModel();
-      System.out.println(this.model);
-      // System.exit(1);
+
+      if (this.config.getBool("print-model")) {
+        System.out.println(this.model);
+      }
     }
 
     /**
