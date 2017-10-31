@@ -168,19 +168,19 @@ public class RegFixer {
 
       /**
        * Not all members of O should be added to N. A member 'o' of O should NOT
-       * be added to N iff there exists some 'p' of P such that:
-       * 1) 'o' == 'p'
-       * 2) the lower bound of 'o' > the lower bound of 'p'
-       * 3) the lower bound of 'o' < the upper bound of 'p'
+       * be added to N iff there exists some 'p' of P such that 'o' == 'p' OR
+       * both of the following conditions hold:
+       * 1) the lower bound of 'o' > the lower bound of 'p'
+       * 2) the lower bound of 'o' < the upper bound of 'p'
        */
 
-      // Handle condition 1.
+      // Handle condition 'o' == 'p'.
       O.removeAll(job.getCorpus().getPositiveRanges());
       if (O.size() == 0) {
         return synthesis;
       }
 
-      // Handle conditions 2 and 3.
+      // Handle conditions 1 and 2.
       Set<Range> pendingN = new TreeSet<>();
       outerLoop:
       for (Range o : O) {
