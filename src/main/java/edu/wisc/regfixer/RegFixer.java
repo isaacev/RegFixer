@@ -205,34 +205,6 @@ public class RegFixer {
       } else {
         N.addAll(pendingN);
       }
-
-      /*
-      Set<Range> ranges = job.getCorpus().getMatches(synthesis);
-      Set<Range> badMatches = new TreeSet<>(ranges);
-      badMatches.removeAll(job.getCorpus().getPositiveRanges());
-
-      if (badMatches.size() > 0) {
-        Set<String> toAdd = new TreeSet<>();
-        outerLoop:
-        for (Range r : badMatches) {
-          for (Range s : job.getCorpus().getPositiveRanges()) {
-            if (s.startsBefore(r) && s.intersects(r)) {
-              continue outerLoop;
-            }
-          }
-
-          toAdd.add(job.getCorpus().getSubstring(r));
-        }
-
-        if (n.containsAll(toAdd) == false) {
-          n.addAll(toAdd);
-        } else {
-          throw new SynthesisFailure("failed to find more bad examples");
-        }
-      } else {
-        return synthesis;
-      }
-      */
     }
   }
 }
