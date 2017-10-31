@@ -57,6 +57,15 @@ public class CLI {
     @Parameter(names="--limit")
     private Integer limit = null;
 
+    @Parameter(names="--print-class-tree")
+    private boolean printClassTree = false;
+
+    @Parameter(names="--print-formula")
+    private boolean printFormula = false;
+
+    @Parameter(names="--print-model")
+    private boolean printModel = false;
+
     @Parameter
     private List<String> files = new ArrayList<>();
   }
@@ -150,6 +159,14 @@ public class CLI {
       + "\n          The maximum number of unsuccessful enumeration cycles that occur"
       + "\n          before a TimeoutException is thrown and the job aborts without a"
       + "\n          final result. Default value is 1000."
+      + "\n      --print-class-tree"
+      + "\n          For all SAT formulae, print the character class trees that track"
+      + "\n          how frequently each character class is used per hole."
+      + "\n      --print-formula"
+      + "\n          For all SAT formulae, print the formula represented as a string."
+      + "\n      --print-model"
+      + "\n          For all SAT satisfiable formulae, print the model mapping all of"
+      + "\n          formula's variables to their computed values."
       + "\n      <file>"
       + "\n          Read a benchmark file and use its contents to compute the repair"
       + "\n          of its regular expression. If this argument is not set, an error"
