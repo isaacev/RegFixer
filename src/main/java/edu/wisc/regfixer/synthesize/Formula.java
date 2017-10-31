@@ -625,7 +625,12 @@ public class Formula {
     if (solutions.size() == 0) {
       throw new SynthesisFailure("SAT produced no solutions for " + id.toString());
     } if (solutions.size() == 1) {
-      return solutions.iterator().next();
+      CharClass only = solutions.iterator().next();
+      if (only instanceof CharRangeNode) {
+        return new CharClassSetNode((CharRangeNode)only);
+      }
+
+      return only;
     } else {
       Collection<CharRangeNode> subClasses = new HashSet<>();
 
