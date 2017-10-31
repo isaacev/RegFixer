@@ -13,12 +13,17 @@ import edu.wisc.regfixer.enumerate.HoleId;
 import edu.wisc.regfixer.enumerate.HoleNode;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.Config;
 
 public class Synthesis {
   private RegexNode tree;
 
   public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
-    Formula formula = new Formula(positives, negatives);
+    this(enumerant, positives, negatives, new Config());
+  }
+
+  public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives, Config config) throws SynthesisFailure {
+    Formula formula = new Formula(positives, negatives, config);
     Map<HoleId, CharClass> holeSolutions = formula.solve();
 
     if (holeSolutions.size() != enumerant.getHoles().size()) {

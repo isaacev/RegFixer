@@ -25,6 +25,8 @@ import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.CharRangeNode;
 import edu.wisc.regfixer.parser.ConcreteCharClass;
 import edu.wisc.regfixer.util.PrintableTree;
+import edu.wisc.regfixer.Config;
+
 
 public class Formula {
   private static Predicate pred_d = new SimplePredicate('0', '9');
@@ -277,6 +279,7 @@ public class Formula {
 
   private List<Set<Route>> positives;
   private List<Set<Route>> negatives;
+  private Config config;
 
   private Context ctx;
   private Optimize opt;
@@ -294,8 +297,13 @@ public class Formula {
   private Map<HoleId, Map<Character, BoolExpr>> holeToCharToVar;
 
   public Formula (List<Set<Route>> positives, List<Set<Route>> negatives) {
+    this(positives, negatives, new Config());
+  }
+
+  public Formula (List<Set<Route>> positives, List<Set<Route>> negatives, Config config) {
     this.positives = positives;
     this.negatives = negatives;
+    this.config = config;
 
     // Initialize SAT formula objects
     this.ctx = new Context();

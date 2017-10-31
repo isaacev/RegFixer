@@ -20,6 +20,7 @@ import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 import edu.wisc.regfixer.synthesize.Synthesis;
 import edu.wisc.regfixer.synthesize.SynthesisFailure;
+import edu.wisc.regfixer.Config;
 import org.sat4j.specs.TimeoutException;
 
 public class Enumerant implements Comparable<Enumerant> {
@@ -158,6 +159,10 @@ public class Enumerant implements Comparable<Enumerant> {
   }
 
   public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {
+    return this.synthesize(p, n, new Config());
+  }
+
+  public Synthesis synthesize (Set<String> p, Set<String> n, Config config) throws SynthesisFailure {
     Automaton automaton = null;
 
     try {
@@ -183,7 +188,7 @@ public class Enumerant implements Comparable<Enumerant> {
       throw new SynthesisFailure(String.format(fmt, this.tree));
     }
 
-    return new Synthesis(this, positiveRuns, negativeRuns);
+    return new Synthesis(this, positiveRuns, negativeRuns, config);
   }
 
   @Override

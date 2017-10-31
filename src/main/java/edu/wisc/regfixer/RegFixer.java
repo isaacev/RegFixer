@@ -62,7 +62,7 @@ public class RegFixer {
       if (expansion == HoleNode.ExpansionChoice.Concat) {
         if (job.getCorpus().passesDotTest(enumerant)) {
           try {
-            synthesis = RegFixer.synthesisLoop(job, report, enumerant);
+            synthesis = RegFixer.synthesisLoop(job, report, enumerant, config);
           } catch (SynthesisFailure ex) {
             report.printEnumerantError(ex.getMessage());
             continue;
@@ -73,7 +73,7 @@ public class RegFixer {
       } else if (expansion == HoleNode.ExpansionChoice.Star) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
-            synthesis = RegFixer.synthesisLoop(job, report, enumerant);
+            synthesis = RegFixer.synthesisLoop(job, report, enumerant, config);
           } catch (SynthesisFailure ex) {
             report.printEnumerantError(ex.getMessage());
             continue;
@@ -83,7 +83,7 @@ public class RegFixer {
         }
       } else if (expansion == HoleNode.ExpansionChoice.Plus) {
         try {
-          synthesis = RegFixer.synthesisLoop(job, report, enumerant);
+          synthesis = RegFixer.synthesisLoop(job, report, enumerant, config);
         } catch (SynthesisFailure ex) {
           report.printEnumerantError(ex.getMessage());
           continue;
@@ -91,7 +91,7 @@ public class RegFixer {
       } else if (expansion == HoleNode.ExpansionChoice.Optional) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
-            synthesis = RegFixer.synthesisLoop(job, report, enumerant);
+            synthesis = RegFixer.synthesisLoop(job, report, enumerant, config);
           } catch (SynthesisFailure ex) {
             report.printEnumerantError(ex.getMessage());
             continue;
@@ -127,7 +127,7 @@ public class RegFixer {
     }
   }
 
-  private static Synthesis synthesisLoop (Job job, ReportStream report, Enumerant enumerant) throws SynthesisFailure {
+  private static Synthesis synthesisLoop (Job job, ReportStream report, Enumerant enumerant, Config config) throws SynthesisFailure {
     if (job.getCorpus().passesDotTest(enumerant) == false) {
       throw new SynthesisFailure("failed dot test");
     }
@@ -137,7 +137,7 @@ public class RegFixer {
     Synthesis synthesis = null;
 
     while (true) {
-      synthesis = enumerant.synthesize(p, n);
+      synthesis = enumerant.synthesize(p, n, config);
 
       /**
        * M = get all matches
