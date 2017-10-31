@@ -27,6 +27,10 @@ public class RegFixer {
   }
 
   public static String fix (Job job, ReportStream report, int loopLimit) throws TimeoutException {
+    return RegFixer.fix(job, report, loopLimit, new Config());
+  }
+
+  public static String fix (Job job, ReportStream report, int loopLimit, Config config) throws TimeoutException {
     report.printHeader("Given the regular expression:");
     report.printRegex(job.getTree());
 

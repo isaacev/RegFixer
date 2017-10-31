@@ -243,6 +243,11 @@ public class CLI {
 
     Job job = null;
 
+    Config config = new Config();
+    config.setBool("print-class-tree", args.printClassTree);
+    config.setBool("print-formula", args.printFormula);
+    config.setBool("print-model", args.printModel);
+
     try {
       job = Benchmark.readFromFile(args.files.get(0));
     } catch (IOException ex) {
@@ -257,7 +262,7 @@ public class CLI {
     }
 
     try {
-      RegFixer.fix(job, report, args.limit);
+      RegFixer.fix(job, report, args.limit, config);
     } catch (TimeoutException ex) {
       System.out.println("TIMEOUT EXCEPTION");
       return 1;
