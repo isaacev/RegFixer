@@ -40,6 +40,12 @@ public class Corpus {
     return this.corpus.substring(range.getLeftIndex(), range.getRightIndex());
   }
 
+  public Set<String> getSubstrings (Set<Range> ranges) {
+    return ranges.stream()
+      .map(r -> this.getSubstring(r))
+      .collect(Collectors.toCollection(TreeSet::new));
+  }
+
   public Set<Range> getPositiveRanges () {
     return this.positiveRanges;
   }
