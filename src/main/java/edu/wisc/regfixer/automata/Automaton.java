@@ -258,17 +258,17 @@ public class Automaton extends automata.Automaton {
       return empty();
     }
 
-    Automaton wunknown = null;
+    Automaton unknown = null;
 
     for (Automaton next : automata) {
-      if (wunknown == null) {
-        wunknown = next;
+      if (unknown == null) {
+        unknown = next;
       } else {
-        wunknown = concatenate(wunknown, next);
+        unknown = concatenate(unknown, next);
       }
     }
 
-    return wunknown;
+    return unknown;
   }
 
   public static Automaton union (Automaton first, Automaton second) throws TimeoutException {
@@ -304,17 +304,17 @@ public class Automaton extends automata.Automaton {
   }
 
   private static CharPred combinePredicates (List<CharPred> predicates) throws TimeoutException {
-    CharPred wunknown = null;
+    CharPred unknown = null;
 
     for (CharPred next : predicates) {
-      if (wunknown == null) {
-        wunknown = next;
+      if (unknown == null) {
+        unknown = next;
       } else {
-        wunknown = Automaton.solver.MkOr(wunknown, next);
+        unknown = Automaton.solver.MkOr(unknown, next);
       }
     }
 
-    return wunknown;
+    return unknown;
   }
 
   public static Automaton empty () throws TimeoutException {
@@ -383,14 +383,14 @@ public class Automaton extends automata.Automaton {
     } else if (node.getMin() < node.getMax()) {
       // min to max
       Automaton union = min;
-      Automaton wunknown = min;
+      Automaton unknown = min;
 
       for (int i = node.getMin(); i < node.getMax(); i++) {
         union = concatenate(union, sub);
-        wunknown = union(wunknown, union);
+        unknown = union(unknown, union);
       }
 
-      return wunknown;
+      return unknown;
     } else {
       // just min
       return min;
