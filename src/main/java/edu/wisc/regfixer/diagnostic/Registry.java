@@ -1,14 +1,14 @@
-package edu.wisc.regfixer;
+package edu.wisc.regfixer.diagnostic;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Config {
+public class Registry {
   private Map<String, Boolean> bools;
   private Map<String, Integer> ints;
   private Map<String, String> strs;
 
-  public Config () {
+  public Registry () {
     this.bools = new HashMap<String, Boolean>();
     this.ints  = new HashMap<String, Integer>();
     this.strs  = new HashMap<String, String>();
