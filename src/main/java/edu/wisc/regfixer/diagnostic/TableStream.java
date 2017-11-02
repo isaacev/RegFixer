@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import edu.wisc.regfixer.util.PrintableTree;
 import edu.wisc.regfixer.util.StringUtil;
 
 public class TableStream extends PrintStream {
@@ -37,7 +38,8 @@ public class TableStream extends PrintStream {
   private TableCol ordinal;
   private List<TableCol> cols;
   private int counter;
-  private List<Object> partialRow;
+  private Object[] partialRow;
+  private boolean freshLine = true;
 
   public TableStream (OutputStream out) {
     super(out);
@@ -46,6 +48,10 @@ public class TableStream extends PrintStream {
     this.cols       = new LinkedList<>();
     this.counter    = 0;
     this.partialRow = null;
+  }
+
+  public int count () {
+    return this.counter;
   }
 
   public void addOrdinalCol (String name, int width) {
@@ -57,7 +63,7 @@ public class TableStream extends PrintStream {
   }
 
   public void printBreak () {
-    String row = "";
+    String row = this.freshLine ? "" : "\n";
 
     if (this.ordinal != null) {
       row += "  ";
@@ -69,7 +75,7 @@ public class TableStream extends PrintStream {
   }
 
   public void printHeader () {
-    String names = "";
+    String names = this.freshLine ? "" : "\n";;
     String under = "";
 
     if (this.ordinal != null) {
@@ -92,7 +98,7 @@ public class TableStream extends PrintStream {
   }
 
   public void printRow (Object... vals) {
-    String row = "";
+    String row = this.freshLine ? "" : "\n";
 
     if (this.ordinal != null) {
       row += "  ";
@@ -123,12 +129,18 @@ public class TableStream extends PrintStream {
     }
 
     this.print(row);
-    this.partialRow = Arrays.asList(vals);
+    this.partialRow = vals;
+    this.freshLine = false;
   }
 
   public void finishRow (Object... vals) {
+    if (this.freshLine && this.partialRow != null) {
+      this.counter--;
+      this.printPartialRow(this.partialRow);
+    }
+
     String row = "";
-    int already = this.partialRow.size();
+    int already = this.partialRow.length;
 
     for (int i = 0; i < vals.length && i < this.cols.size() - already; i++) {
       row += "  ";
@@ -139,22 +151,42 @@ public class TableStream extends PrintStream {
     this.partialRow = null;
   }
 
+  public void printBlock (PrintableTree tree) {
+    this.printBlock(PrintableTree.toString(tree));
+  }
+
   public void printBlock (String block) {
     this.printBlock(block.split("\n"));
   }
 
   public void printBlock (String[] block) {
+    if (this.freshLine == false) {
+      this.println();
+    }
+
     for (int i = 0; i < block.length; i++) {
       String row = "";
 
       if (this.ordinal != null) {
         row += "  ";
         row += this.ordinal.toString("");
-        row += "  |";
+        row += "  | ";
       }
 
       row += block[i];
       this.println(row);
     }
+  }
+
+  @Override
+  public void println () {
+    super.println();
+    this.freshLine = true;
+  }
+
+  @Override
+  public void println (String arg) {
+    super.println(arg);
+    this.freshLine = true;
   }
 }
