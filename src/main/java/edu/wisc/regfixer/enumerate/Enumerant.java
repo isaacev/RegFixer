@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import edu.wisc.regfixer.automata.Automaton;
 import edu.wisc.regfixer.automata.Route;
+import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.OptionalNode;
 import edu.wisc.regfixer.parser.PlusNode;
@@ -20,7 +21,6 @@ import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 import edu.wisc.regfixer.synthesize.Synthesis;
 import edu.wisc.regfixer.synthesize.SynthesisFailure;
-import edu.wisc.regfixer.Config;
 import org.sat4j.specs.TimeoutException;
 
 public class Enumerant implements Comparable<Enumerant> {
@@ -159,10 +159,10 @@ public class Enumerant implements Comparable<Enumerant> {
   }
 
   public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {
-    return this.synthesize(p, n, new Config());
+    return this.synthesize(p, n, new Diagnostic());
   }
 
-  public Synthesis synthesize (Set<String> p, Set<String> n, Config config) throws SynthesisFailure {
+  public Synthesis synthesize (Set<String> p, Set<String> n, Diagnostic diag) throws SynthesisFailure {
     Automaton automaton = null;
 
     try {
@@ -188,7 +188,7 @@ public class Enumerant implements Comparable<Enumerant> {
       throw new SynthesisFailure(String.format(fmt, this.tree));
     }
 
-    return new Synthesis(this, positiveRuns, negativeRuns, config);
+    return new Synthesis(this, positiveRuns, negativeRuns, diag);
   }
 
   @Override

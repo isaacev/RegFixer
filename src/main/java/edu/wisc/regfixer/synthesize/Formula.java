@@ -17,6 +17,7 @@ import com.microsoft.z3.Model;
 import com.microsoft.z3.Optimize;
 import com.microsoft.z3.Status;
 import edu.wisc.regfixer.automata.Route;
+import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.enumerate.HoleId;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.CharClassSetNode;
@@ -25,7 +26,6 @@ import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.CharRangeNode;
 import edu.wisc.regfixer.parser.ConcreteCharClass;
 import edu.wisc.regfixer.util.PrintableTree;
-import edu.wisc.regfixer.Config;
 
 
 public class Formula {
@@ -279,7 +279,7 @@ public class Formula {
 
   private List<Set<Route>> positives;
   private List<Set<Route>> negatives;
-  private Config config;
+  private Diagnostic diag;
 
   private Context ctx;
   private Optimize opt;
@@ -297,13 +297,13 @@ public class Formula {
   private Map<HoleId, Map<Character, BoolExpr>> holeToCharToVar;
 
   public Formula (List<Set<Route>> positives, List<Set<Route>> negatives) {
-    this(positives, negatives, new Config());
+    this(positives, negatives, new Diagnostic());
   }
 
-  public Formula (List<Set<Route>> positives, List<Set<Route>> negatives, Config config) {
+  public Formula (List<Set<Route>> positives, List<Set<Route>> negatives, Diagnostic diag) {
     this.positives = positives;
     this.negatives = negatives;
-    this.config = config;
+    this.diag = diag;
 
     // Initialize SAT formula objects
     this.ctx = new Context();
@@ -559,30 +559,41 @@ public class Formula {
     if (this.opt.Check() == Status.UNSATISFIABLE) {
       throw new SynthesisFailure("unsatisfiable SAT formula");
     } else {
-      if (this.config.getBool("print-var-map")) {
-        System.out.println();
+      if (this.diag.getBool("print-var-map")) {
+        String header = String.format("\nVAR MAP for %d", this.diag.output().count());
+        this.diag.output().printBlock(header);
         for (BoolExpr var : this.varToTree.keySet()) {
-          System.out.printf("%s\t : '%s'\n", var, this.varToTree.get(var).getCharClass());
+          CharClass cc = this.varToTree.get(var).getCharClass();
+          String line = String.format("%-10s : '%s'\n", var, cc);
+          this.diag.output().printBlock(line);
         }
+        this.diag.output().printBreak();
       }
 
-      if (this.config.getBool("print-class-tree")) {
-        System.out.println();
-        System.out.println(PrintableTree.toString(this.tree));
+      if (this.diag.getBool("print-class-map")) {
+        String header = String.format("\nCLASS MAP for %d", this.diag.output().count());
+        this.diag.output().printBlock(header);
+        this.diag.output().printBlock(this.tree);
         for (MetaClassTree tree : this.misc) {
-          System.out.println(PrintableTree.toString(tree));
+          this.diag.output().printBlock(tree);
         }
+        this.diag.output().printBreak();
       }
 
-      if (this.config.getBool("print-formula")) {
-        System.out.println();
-        System.out.println(this.opt.toString());
+      if (this.diag.getBool("print-formula")) {
+        String header = String.format("\nFORMULA for %d", this.diag.output().count());
+        this.diag.output().printBlock(header);
+        this.diag.output().printBlock(this.opt.toString());
+        this.diag.output().printBreak();
       }
 
       this.model = this.opt.getModel();
 
-      if (this.config.getBool("print-model")) {
-        System.out.println(this.model);
+      if (this.diag.getBool("print-model")) {
+        String header = String.format("\nMODEL for %d", this.diag.output().count());
+        this.diag.output().printBlock(header);
+        this.diag.output().printBlock(this.model.toString());
+        this.diag.output().printBreak();
       }
     }
 

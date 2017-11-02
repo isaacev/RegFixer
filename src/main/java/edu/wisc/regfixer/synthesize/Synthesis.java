@@ -7,23 +7,23 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import edu.wisc.regfixer.automata.Route;
+import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Grafter;
 import edu.wisc.regfixer.enumerate.HoleId;
 import edu.wisc.regfixer.enumerate.HoleNode;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.RegexNode;
-import edu.wisc.regfixer.Config;
 
 public class Synthesis {
   private RegexNode tree;
 
   public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
-    this(enumerant, positives, negatives, new Config());
+    this(enumerant, positives, negatives, new Diagnostic());
   }
 
-  public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives, Config config) throws SynthesisFailure {
-    Formula formula = new Formula(positives, negatives, config);
+  public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives, Diagnostic diag) throws SynthesisFailure {
+    Formula formula = new Formula(positives, negatives, diag);
     Map<HoleId, CharClass> holeSolutions = formula.solve();
 
     if (holeSolutions.size() != enumerant.getHoles().size()) {

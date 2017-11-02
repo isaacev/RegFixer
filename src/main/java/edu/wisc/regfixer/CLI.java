@@ -14,9 +14,11 @@ import java.util.List;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import edu.wisc.regfixer.diagnostic.Diagnostic;
+import edu.wisc.regfixer.diagnostic.Registry;
+import edu.wisc.regfixer.diagnostic.ReportStream;
 import edu.wisc.regfixer.enumerate.Benchmark;
 import edu.wisc.regfixer.enumerate.Job;
-import edu.wisc.regfixer.util.ReportStream;
 import edu.wisc.regfixer.util.Ansi;
 
 public class CLI {
@@ -243,10 +245,18 @@ public class CLI {
 
     Job job = null;
 
-    Config config = new Config();
-    config.setBool("print-class-tree", args.printClassTree);
-    config.setBool("print-formula", args.printFormula);
-    config.setBool("print-model", args.printModel);
+    // Pipe any output to STDOUT.
+    ReportStream out = new ReportStream(System.out);
+
+    // Create a registry of diagnostic-related command-line flags.
+    Registry reg = new Registry();
+    reg.setBool("print-class-tree", args.printClassTree);
+    reg.setBool("print-formula", args.printFormula);
+    reg.setBool("print-model", args.printModel);
+
+    // Create a diagnostic object to manage diagnostic flags and any debugging
+    // output produced during execution.
+    Diagnostic diag = new Diagnostic(out, reg);
 
     try {
       job = Benchmark.readFromFile(args.files.get(0));
@@ -255,14 +265,12 @@ public class CLI {
       return 1;
     }
 
-    ReportStream report = new ReportStream(System.out, true, args.color);
-
     if (args.limit == null || args.limit <= 1) {
       args.limit = 1000;
     }
 
     try {
-      RegFixer.fix(job, report, args.limit, config);
+      RegFixer.fix(job, args.limit, diag);
     } catch (TimeoutException ex) {
       System.out.println("TIMEOUT EXCEPTION");
       return 1;
