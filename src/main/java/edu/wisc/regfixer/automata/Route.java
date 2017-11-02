@@ -3,16 +3,16 @@ package edu.wisc.regfixer.automata;
 import java.util.Map;
 import java.util.Set;
 
-import edu.wisc.regfixer.enumerate.HoleId;
+import edu.wisc.regfixer.enumerate.UnknownId;
 
 public class Route {
-  private Map<HoleId, Set<Character>> spans;
+  private Map<UnknownId, Set<Character>> spans;
 
-  public Route (Map<HoleId, Set<Character>> spans) {
+  public Route (Map<UnknownId, Set<Character>> spans) {
     this.spans = spans;
   }
 
-  public Map<HoleId, Set<Character>> getSpans () {
+  public Map<UnknownId, Set<Character>> getSpans () {
     return this.spans;
   }
 
@@ -38,7 +38,7 @@ public class Route {
   public String toString () {
     String accum = "";
 
-    for (Map.Entry<HoleId, Set<Character>> entry : this.spans.entrySet()) {
+    for (Map.Entry<UnknownId, Set<Character>> entry : this.spans.entrySet()) {
       if (accum.equals("") == false) {
         accum += "\n  ";
       }

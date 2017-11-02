@@ -7,7 +7,7 @@ import edu.wisc.regfixer.parser.StarNode;
 import java.util.LinkedList;
 import java.util.List;
 
-public class HoleNode implements RegexNode, Comparable<HoleNode> {
+public class UnknownNode implements RegexNode, Comparable<UnknownNode> {
   public static enum ExpansionChoice {
     Union,
     Concat,
@@ -27,31 +27,31 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
 
   private RegexNode child = null;
   private int age;
-  private HoleId id;
+  private UnknownId id;
   private List<ExpansionChoice> history;
 
-  private HoleNode () {
+  private UnknownNode () {
     this(new LinkedList<>());
   }
 
-  public HoleNode (ExpansionChoice latest) {
+  public UnknownNode (ExpansionChoice latest) {
     this();
     this.history.add(latest);
   }
 
-  public HoleNode (List<ExpansionChoice> history) {
-    this.age = HoleNode.nextAge++;
-    this.id = new HoleId();
+  public UnknownNode (List<ExpansionChoice> history) {
+    this.age = UnknownNode.nextAge++;
+    this.id = new UnknownId();
     this.history = history;
   }
 
-  public HoleNode expand (ExpansionChoice latest) {
+  public UnknownNode expand (ExpansionChoice latest) {
     List<ExpansionChoice> newHistory = new LinkedList<>(this.history);
     newHistory.add(latest);
-    return new HoleNode(newHistory);
+    return new UnknownNode(newHistory);
   }
 
-  public HoleId getHoleId () {
+  public UnknownId getId () {
     return this.id;
   }
 
@@ -94,7 +94,7 @@ public class HoleNode implements RegexNode, Comparable<HoleNode> {
   }
 
   @Override
-  public int compareTo (HoleNode other) {
+  public int compareTo (UnknownNode other) {
     return Integer.compare(this.age, other.age);
   }
 

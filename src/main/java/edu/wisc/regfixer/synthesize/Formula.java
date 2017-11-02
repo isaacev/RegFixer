@@ -18,7 +18,7 @@ import com.microsoft.z3.Optimize;
 import com.microsoft.z3.Status;
 import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
-import edu.wisc.regfixer.enumerate.HoleId;
+import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.CharClassSetNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
@@ -113,7 +113,7 @@ public class Formula {
     private int layer;
     private MetaClassTree parent;
     private List<MetaClassTree> children;
-    private Map<HoleId, Integer> tally;
+    private Map<UnknownId, Integer> tally;
 
     public MetaClassTree (CharClass cc, Predicate pred, int layer, MetaClassTree... children) {
       this(cc, pred, layer, Arrays.asList(children));
@@ -187,7 +187,7 @@ public class Formula {
       return this.children;
     }
 
-    public int getSATWeight (HoleId id) {
+    public int getSATWeight (UnknownId id) {
       int totalChildren = 0;
       for (MetaClassTree child : this.children) {
         if (child.tally.containsKey(id)) {
@@ -204,11 +204,11 @@ public class Formula {
       return this.pred.includes(ch);
     }
 
-    public int getTally (HoleId id) {
+    public int getTally (UnknownId id) {
       return (this.tally.containsKey(id)) ? this.tally.get(id) : 0;
     }
 
-    public MetaClassTree incrementTally (HoleId id, char ch) {
+    public MetaClassTree incrementTally (UnknownId id, char ch) {
       if (this.isSatisfied(ch) == false) {
         return null;
       }
@@ -225,7 +225,7 @@ public class Formula {
       return this;
     }
 
-    public boolean isCandidateBranch (HoleId id) {
+    public boolean isCandidateBranch (UnknownId id) {
       /**
        * Literal-classes should only be considered for inclusion in the SAT
        * formula iff:
@@ -241,7 +241,7 @@ public class Formula {
     public String toString () {
       String out = String.format("'%s'", this.cc.toString());
 
-      for (Map.Entry<HoleId, Integer> entry : this.tally.entrySet()) {
+      for (Map.Entry<UnknownId, Integer> entry : this.tally.entrySet()) {
         out += String.format("\n%s %d (%s)", entry.getKey(), entry.getValue(), this.getSATWeight(entry.getKey()));
       }
 
@@ -286,15 +286,15 @@ public class Formula {
   private Model model;
 
   private int nextVarId;
-  private Set<HoleId> holes;
-  private Map<HoleId, Set<BoolExpr>> holeToVars;
-  private Map<HoleId, List<IntExpr>> holeToWeights;
-  private Map<HoleId, Map<MetaClassTree, BoolExpr>> holeToTreeToVar;
+  private Set<UnknownId> unknowns;
+  private Map<UnknownId, Set<BoolExpr>> unknownToVars;
+  private Map<UnknownId, List<IntExpr>> unknownToWeights;
+  private Map<UnknownId, Map<MetaClassTree, BoolExpr>> unknownToTreeToVar;
   private Map<BoolExpr, MetaClassTree> varToTree;
   private Map<BoolExpr, Predicate> varToPred;
   private MetaClassTree tree;
   private Set<MetaClassTree> misc;
-  private Map<HoleId, Map<Character, BoolExpr>> holeToCharToVar;
+  private Map<UnknownId, Map<Character, BoolExpr>> unknownToCharToVar;
 
   public Formula (List<Set<Route>> positives, List<Set<Route>> negatives) {
     this(positives, negatives, new Diagnostic());
@@ -312,20 +312,20 @@ public class Formula {
 
     // Initialize structures for tracking state
     this.nextVarId = 0;
-    this.holes = new HashSet<>();
-    this.holeToVars = new HashMap<>();
-    this.holeToWeights = new HashMap<>();
-    this.holeToTreeToVar = new HashMap<>();
+    this.unknowns = new HashSet<>();
+    this.unknownToVars = new HashMap<>();
+    this.unknownToWeights = new HashMap<>();
+    this.unknownToTreeToVar = new HashMap<>();
     this.varToTree = new HashMap<>();
     this.varToPred = new HashMap<>();
     this.tree = MetaClassTree.initialize();
-    this.holeToCharToVar = new HashMap<>();
+    this.unknownToCharToVar = new HashMap<>();
     this.misc = new HashSet<>();
 
     // Build the formula and encode meta-class formulae
     this.encodeSingleCharClasses();
 
-    for (HoleId id : this.holes) {
+    for (UnknownId id : this.unknowns) {
       this.encodeCharClass(id, this.tree);
       this.encodeCharClassSummation(id);
     }
@@ -372,13 +372,13 @@ public class Formula {
   }
 
   private BoolExpr encodeRoute (Route route, boolean posFlag) {
-    Map<HoleId, Set<Character>> spans = route.getSpans();
+    Map<UnknownId, Set<Character>> spans = route.getSpans();
     BoolExpr exprRoute = null;
 
-    for (HoleId holeId : spans.keySet()) {
-      this.holes.add(holeId);
+    for (UnknownId id : spans.keySet()) {
+      this.unknowns.add(id);
 
-      BoolExpr exprChars = this.encodeHoleInRoute(holeId, spans.get(holeId), posFlag);
+      BoolExpr exprChars = this.encodeUnknownInRoute(id, spans.get(id), posFlag);
 
       if (exprRoute == null) {
         exprRoute = exprChars;
@@ -392,7 +392,7 @@ public class Formula {
     return exprRoute;
   }
 
-  private BoolExpr encodeHoleInRoute (HoleId id, Set<Character> chars, boolean posFlag) {
+  private BoolExpr encodeUnknownInRoute (UnknownId id, Set<Character> chars, boolean posFlag) {
     Set<BoolExpr> vars = new HashSet<>();
     for (Character ch : chars) {
       BoolExpr var = this.encodeChar(id, ch, posFlag);
@@ -414,7 +414,7 @@ public class Formula {
       });
   }
 
-  private BoolExpr encodeChar (HoleId id, char ch, boolean posFlag) {
+  private BoolExpr encodeChar (UnknownId id, char ch, boolean posFlag) {
     MetaClassTree tree = this.tree.incrementTally(id, ch);
 
     if (tree == null) {
@@ -424,22 +424,22 @@ public class Formula {
       tree.incrementTally(id, ch);
     }
 
-    if (this.holeToCharToVar.containsKey(id)) {
-      BoolExpr var = this.holeToCharToVar.get(id).get(ch);
+    if (this.unknownToCharToVar.containsKey(id)) {
+      BoolExpr var = this.unknownToCharToVar.get(id).get(ch);
       if (var != null) {
         return var;
       }
     } else {
-      this.holeToCharToVar.put(id, new HashMap<>());
+      this.unknownToCharToVar.put(id, new HashMap<>());
     }
 
 
     BoolExpr var = this.encodeWeightedConstraint(id, tree);
-    this.holeToCharToVar.get(id).put(ch, var);
+    this.unknownToCharToVar.get(id).put(ch, var);
     return var;
   }
 
-  private Set<BoolExpr> encodeCharClass (HoleId id, MetaClassTree tree) {
+  private Set<BoolExpr> encodeCharClass (UnknownId id, MetaClassTree tree) {
     // TODO
     // - call encodeCharClass(branch) which returns the SAT variables created
     //   from the tree's child classes
@@ -454,7 +454,7 @@ public class Formula {
       Set<BoolExpr> s = new HashSet<>();
 
       if (vars.size() == 0) {
-        s.add(this.holeToTreeToVar.get(id).get(tree));
+        s.add(this.unknownToTreeToVar.get(id).get(tree));
       } else {
         s.add(encodeMetaCharClass(id, vars, tree));
       }
@@ -465,8 +465,8 @@ public class Formula {
     return vars;
   }
 
-  private void encodeCharClassSummation (HoleId id) {
-    List<IntExpr> weightsList = this.holeToWeights.get(id);
+  private void encodeCharClassSummation (UnknownId id) {
+    List<IntExpr> weightsList = this.unknownToWeights.get(id);
     IntExpr[] weightsArr = new IntExpr[weightsList.size()];
 
     for (int i = 0; i < weightsList.size(); i++) {
@@ -476,45 +476,45 @@ public class Formula {
     this.opt.MkMaximize(this.ctx.mkAdd(weightsArr));
   }
 
-  private String createVariableName (HoleId id) {
+  private String createVariableName (UnknownId id) {
     return String.format("%s_%d", id, this.nextVarId++);
   }
 
-  private void saveWeightForSummation (HoleId id, IntExpr weight) {
-    if (this.holeToWeights.containsKey(id) == false) {
-      this.holeToWeights.put(id, new LinkedList<>());
+  private void saveWeightForSummation (UnknownId id, IntExpr weight) {
+    if (this.unknownToWeights.containsKey(id) == false) {
+      this.unknownToWeights.put(id, new LinkedList<>());
     }
 
-    this.holeToWeights.get(id).add(weight);
+    this.unknownToWeights.get(id).add(weight);
   }
 
-  // Register variable with hole -> variable mapping.
-  private void saveVar (HoleId id, MetaClassTree tree, BoolExpr var) {
-    if (this.holeToVars.containsKey(id) == false) {
-      this.holeToVars.put(id, new HashSet<>());
+  // Register variable with unknown -> variable mapping.
+  private void saveVar (UnknownId id, MetaClassTree tree, BoolExpr var) {
+    if (this.unknownToVars.containsKey(id) == false) {
+      this.unknownToVars.put(id, new HashSet<>());
     }
-    this.holeToVars.get(id).add(var);
+    this.unknownToVars.get(id).add(var);
 
-    if (this.holeToTreeToVar.containsKey(id) == false) {
-      this.holeToTreeToVar.put(id, new HashMap<>());
+    if (this.unknownToTreeToVar.containsKey(id) == false) {
+      this.unknownToTreeToVar.put(id, new HashMap<>());
     }
-    this.holeToTreeToVar.get(id).put(tree, var);
+    this.unknownToTreeToVar.get(id).put(tree, var);
   }
 
-  private BoolExpr createVariable (HoleId id) {
+  private BoolExpr createVariable (UnknownId id) {
     String name = String.format("%s_%d", id, this.nextVarId++);
     BoolExpr var = this.ctx.mkBoolConst(name);
 
-    // Register variable with hole -> variable mapping.
-    if (this.holeToVars.containsKey(id) == false) {
-      this.holeToVars.put(id, new HashSet<>());
+    // Register variable with unknown -> variable mapping.
+    if (this.unknownToVars.containsKey(id) == false) {
+      this.unknownToVars.put(id, new HashSet<>());
     }
-    this.holeToVars.get(id).add(var);
+    this.unknownToVars.get(id).add(var);
 
     return var;
   }
 
-  private BoolExpr encodeWeightedConstraint (HoleId id, MetaClassTree tree) {
+  private BoolExpr encodeWeightedConstraint (UnknownId id, MetaClassTree tree) {
     String name = this.createVariableName(id);
 
     // (declare-fun H1_x_v () Bool)
@@ -538,7 +538,7 @@ public class Formula {
     return var;
   }
 
-  private BoolExpr encodeMetaCharClass (HoleId id, Set<BoolExpr> vars, MetaClassTree tree) {
+  private BoolExpr encodeMetaCharClass (UnknownId id, Set<BoolExpr> vars, MetaClassTree tree) {
     BoolExpr var = this.encodeWeightedConstraint(id, tree);
     BoolExpr relations = vars
       .stream()
@@ -552,7 +552,7 @@ public class Formula {
     return var;
   }
 
-  public Map<HoleId, CharClass> solve () throws SynthesisFailure {
+  public Map<UnknownId, CharClass> solve () throws SynthesisFailure {
     /**
      * First, check that the formula was satisifed
      */
@@ -604,29 +604,29 @@ public class Formula {
      *   - add that ancestor to the set of solutions
      */
 
-    Map<HoleId, CharClass> solutions = new HashMap<>();
-    for (HoleId id : this.holes) {
-      solutions.put(id, solveHole(id));
+    Map<UnknownId, CharClass> solutions = new HashMap<>();
+    for (UnknownId id : this.unknowns) {
+      solutions.put(id, solveUnknown(id));
     }
 
     return solutions;
   }
 
-  public CharClass solveHole (HoleId id) throws SynthesisFailure {
+  public CharClass solveUnknown (UnknownId id) throws SynthesisFailure {
     Map<MetaClassTree, Boolean> treeIsTrue = new HashMap<>();
 
-    // Determine which character classes were evaluated to true for this hole.
-    for (BoolExpr var : this.holeToVars.get(id)) {
+    // Determine which character classes were evaluated to true for this unknown.
+    for (BoolExpr var : this.unknownToVars.get(id)) {
       MetaClassTree tree = this.varToTree.get(var);
       if (this.model.evaluate(var, false).isTrue()) {
         treeIsTrue.put(tree, true);
       }
     }
 
-    // For each true variable associated with the given hole, find its
+    // For each true variable associated with the given unknown, find its
     // corresponding tree and find the oldest true ancestor of that tree.
     Set<CharClass> solutions = new HashSet<>();
-    for (BoolExpr var : this.holeToVars.get(id)) {
+    for (BoolExpr var : this.unknownToVars.get(id)) {
       MetaClassTree ancestor = this.varToTree.get(var).getFurthestTrueAncestor(treeIsTrue);
       if (ancestor != null) {
         solutions.add(ancestor.getCharClass());

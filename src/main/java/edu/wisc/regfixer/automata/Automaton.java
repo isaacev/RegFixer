@@ -14,8 +14,8 @@ import automata.Move;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
-import edu.wisc.regfixer.enumerate.HoleNode;
-import edu.wisc.regfixer.enumerate.HoleId;
+import edu.wisc.regfixer.enumerate.UnknownNode;
+import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.parser.CharClassSetNode;
 import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
@@ -43,7 +43,7 @@ public class Automaton extends automata.Automaton {
   public static final CharPred NotWord = solver.MkNot(StdCharPred.WORD);
 
   private final SFA<CharPred, Character> sfa;
-  private int totalHoles = 0;
+  private int totalUnknowns = 0;
 
   public Automaton (RegexNode tree) throws TimeoutException {
     this.sfa = nodeToAutomaton(tree).sfa;
@@ -53,8 +53,8 @@ public class Automaton extends automata.Automaton {
     this.sfa = predicateToSFA(predicate);
   }
 
-  public void setTotalHoles (int totalHoles) {
-    this.totalHoles = totalHoles;
+  public void setTotalUnknowns (int totalUnknowns) {
+    this.totalUnknowns = totalUnknowns;
   }
 
   private Automaton (SFA<CharPred, Character> sfa) {
@@ -111,14 +111,14 @@ public class Automaton extends automata.Automaton {
           State newState = new State(move.to, parent, ch);
 
           // Check if the predicate relating to the automaton transition is
-          // associated with a hole ID and if so, associate the newly created
-          // state with that hole ID too.
+          // associated with a unknown ID and if so, associate the newly created
+          // state with that unknown ID too.
           if (move instanceof SFAInputMove) {
             SFAInputMove moveCast = (SFAInputMove) move;
 
-            if (moveCast.guard instanceof HolePred) {
-              HolePred predCast = (HolePred) moveCast.guard;
-              HoleId holdId = predCast.getHoleId();
+            if (moveCast.guard instanceof UnknownPred) {
+              UnknownPred predCast = (UnknownPred) moveCast.guard;
+              UnknownId holdId = predCast.getId();
               newState = new State(move.to, parent, ch, holdId);
             }
           }
@@ -142,19 +142,19 @@ public class Automaton extends automata.Automaton {
   }
 
   private Route traceFromState (State endState) {
-    Map<HoleId, Set<Character>> crosses = new HashMap<>();
+    Map<UnknownId, Set<Character>> crosses = new HashMap<>();
 
     State currState = endState;
     while (currState != null) {
-      if (currState.getValue() != null && currState.getHoleId() != null) {
+      if (currState.getValue() != null && currState.getId() != null) {
         char value = currState.getValue();
-        HoleId holeId = currState.getHoleId();
+        UnknownId id = currState.getId();
 
-        if (crosses.containsKey(holeId) == false) {
-          crosses.put(holeId, new HashSet<>());
+        if (crosses.containsKey(id) == false) {
+          crosses.put(id, new HashSet<>());
         }
 
-        crosses.get(holeId).add(value);
+        crosses.get(id).add(value);
       }
 
       currState = currState.getParent();
@@ -206,8 +206,8 @@ public class Automaton extends automata.Automaton {
       .collect(Collectors.toSet());
   }
 
-  public List<Map<HoleId, Set<Character>>> computeRuns (String source) throws TimeoutException {
-    List<Map<HoleId, Set<Character>>> accum = new LinkedList<>();
+  public List<Map<UnknownId, Set<Character>>> computeRuns (String source) throws TimeoutException {
+    List<Map<UnknownId, Set<Character>>> accum = new LinkedList<>();
 
     for (Route route : this.trace(source)) {
       accum.add(route.getSpans());
@@ -258,17 +258,17 @@ public class Automaton extends automata.Automaton {
       return empty();
     }
 
-    Automaton whole = null;
+    Automaton wunknown = null;
 
     for (Automaton next : automata) {
-      if (whole == null) {
-        whole = next;
+      if (wunknown == null) {
+        wunknown = next;
       } else {
-        whole = concatenate(whole, next);
+        wunknown = concatenate(wunknown, next);
       }
     }
 
-    return whole;
+    return wunknown;
   }
 
   public static Automaton union (Automaton first, Automaton second) throws TimeoutException {
@@ -295,8 +295,8 @@ public class Automaton extends automata.Automaton {
     return fromPredicate(StdCharPred.TRUE);
   }
 
-  public static Automaton fromHolePredicate (HoleId holeId) throws TimeoutException {
-    return fromPredicate(new HolePred(holeId));
+  public static Automaton fromUnknownPredicate (UnknownId id) throws TimeoutException {
+    return fromPredicate(new UnknownPred(id));
   }
 
   public static Automaton fromInversePredicates (List<CharPred> predicates) throws TimeoutException {
@@ -304,17 +304,17 @@ public class Automaton extends automata.Automaton {
   }
 
   private static CharPred combinePredicates (List<CharPred> predicates) throws TimeoutException {
-    CharPred whole = null;
+    CharPred wunknown = null;
 
     for (CharPred next : predicates) {
-      if (whole == null) {
-        whole = next;
+      if (wunknown == null) {
+        wunknown = next;
       } else {
-        whole = Automaton.solver.MkOr(whole, next);
+        wunknown = Automaton.solver.MkOr(wunknown, next);
       }
     }
 
-    return whole;
+    return wunknown;
   }
 
   public static Automaton empty () throws TimeoutException {
@@ -332,7 +332,7 @@ public class Automaton extends automata.Automaton {
     else if (node instanceof OptionalNode)     return optionalToAutomaton((OptionalNode) node);
     else if (node instanceof StarNode)         return starToAutomaton((StarNode) node);
     else if (node instanceof PlusNode)         return plusToAutomaton((PlusNode) node);
-    else if (node instanceof HoleNode)         return holeToAutomaton((HoleNode) node);
+    else if (node instanceof UnknownNode)         return unknownToAutomaton((UnknownNode) node);
     else if (node instanceof CharClassSetNode) return charClassSetToAutomaton((CharClassSetNode) node);
     else if (node instanceof CharDotNode)      return charDotToAutomaton((CharDotNode) node);
     else if (node instanceof CharEscapedNode)  return charEscapedToAutomaton((CharEscapedNode) node);
@@ -383,14 +383,14 @@ public class Automaton extends automata.Automaton {
     } else if (node.getMin() < node.getMax()) {
       // min to max
       Automaton union = min;
-      Automaton whole = min;
+      Automaton wunknown = min;
 
       for (int i = node.getMin(); i < node.getMax(); i++) {
         union = concatenate(union, sub);
-        whole = union(whole, union);
+        wunknown = union(wunknown, union);
       }
 
-      return whole;
+      return wunknown;
     } else {
       // just min
       return min;
@@ -410,8 +410,8 @@ public class Automaton extends automata.Automaton {
     return concatenate(sub, star(sub));
   }
 
-  private static Automaton holeToAutomaton (HoleNode node) throws TimeoutException {
-    return fromHolePredicate(node.getHoleId());
+  private static Automaton unknownToAutomaton (UnknownNode node) throws TimeoutException {
+    return fromUnknownPredicate(node.getId());
   }
 
   private static Automaton charClassSetToAutomaton (CharClassSetNode node) throws TimeoutException {

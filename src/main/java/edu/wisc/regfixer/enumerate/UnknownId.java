@@ -1,16 +1,16 @@
 package edu.wisc.regfixer.enumerate;
 
-public class HoleId {
+public class UnknownId {
   private int id;
 
-  public HoleId () {
-    this.id = HoleId.getNextId();
+  public UnknownId () {
+    this.id = UnknownId.getNextId();
   }
 
   @Override
   public boolean equals (Object obj) {
-    if (obj instanceof HoleId) {
-      return (this.id == ((HoleId) obj).id);
+    if (obj instanceof UnknownId) {
+      return (this.id == ((UnknownId) obj).id);
     }
 
     return false;
@@ -29,6 +29,6 @@ public class HoleId {
   private static int nextId = 0;
 
   private static int getNextId () {
-    return HoleId.nextId++;
+    return UnknownId.nextId++;
   }
 }

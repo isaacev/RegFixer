@@ -163,7 +163,7 @@ public class CLI {
       + "\n          final result. Default value is 1000."
       + "\n      --print-class-tree"
       + "\n          For all SAT formulae, print the character class trees that track"
-      + "\n          how frequently each character class is used per hole."
+      + "\n          how frequently each character class is used per unknown."
       + "\n      --print-formula"
       + "\n          For all SAT formulae, print the formula represented as a string."
       + "\n      --print-model"

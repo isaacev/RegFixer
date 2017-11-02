@@ -31,30 +31,30 @@ public class Enumerant implements Comparable<Enumerant> {
   public final static int CONCAT_COST   = 1;
 
   private final RegexNode tree;
-  private final Map<HoleId, HoleNode> holes;
+  private final Map<UnknownId, UnknownNode> unknowns;
   private final int cost;
-  private final HoleNode.ExpansionChoice expansion;
+  private final UnknownNode.ExpansionChoice expansion;
 
-  public Enumerant (RegexNode tree, HoleNode hole, int cost, HoleNode.ExpansionChoice expansion) {
-    this(tree, Arrays.asList(hole), cost, expansion);
+  public Enumerant (RegexNode tree, UnknownNode unknown, int cost, UnknownNode.ExpansionChoice expansion) {
+    this(tree, Arrays.asList(unknown), cost, expansion);
   }
 
-  public Enumerant (RegexNode tree, Collection<HoleNode> holes, int cost, HoleNode.ExpansionChoice expansion) {
-    Map<HoleId, HoleNode> map = new HashMap<>();
+  public Enumerant (RegexNode tree, Collection<UnknownNode> unknowns, int cost, UnknownNode.ExpansionChoice expansion) {
+    Map<UnknownId, UnknownNode> map = new HashMap<>();
 
-    for (HoleNode hole : holes) {
-      map.put(hole.getHoleId(), hole);
+    for (UnknownNode unknown : unknowns) {
+      map.put(unknown.getId(), unknown);
     }
 
     this.tree = tree;
-    this.holes = map;
+    this.unknowns = map;
     this.cost = cost;
     this.expansion = expansion;
   }
 
-  public Enumerant (RegexNode tree, Map<HoleId, HoleNode> holes, int cost) {
+  public Enumerant (RegexNode tree, Map<UnknownId, UnknownNode> unknowns, int cost) {
     this.tree = tree;
-    this.holes = holes;
+    this.unknowns = unknowns;
     this.cost = cost;
     this.expansion = null;
   }
@@ -63,39 +63,39 @@ public class Enumerant implements Comparable<Enumerant> {
     return this.tree;
   }
 
-  public Set<HoleNode> getHoles () {
-    return new HashSet<HoleNode>(this.holes.values());
+  public Set<UnknownNode> getUnknowns () {
+    return new HashSet<UnknownNode>(this.unknowns.values());
   }
 
-  public HoleNode getHole (HoleId holeId) {
-    return this.holes.get(holeId);
+  public UnknownNode getUnknown (UnknownId id) {
+    return this.unknowns.get(id);
   }
 
-  public boolean hasHole (HoleNode hole) {
-    return this.hasHole(hole.getHoleId());
+  public boolean hasUnknown (UnknownNode unknown) {
+    return this.hasUnknown(unknown.getId());
   }
 
-  public boolean hasHole (HoleId holeId) {
-    return this.holes.containsKey(holeId);
+  public boolean hasUnknown (UnknownId id) {
+    return this.unknowns.containsKey(id);
   }
 
   public int getCost () {
     return this.cost;
   }
 
-  public HoleNode.ExpansionChoice getExpansionChoice () {
+  public UnknownNode.ExpansionChoice getExpansionChoice () {
     return this.expansion;
   }
 
-  public Pattern toPattern (HoleNode.FillType type) {
-    for (HoleNode hole : this.holes.values()) {
-      hole.fill(type);
+  public Pattern toPattern (UnknownNode.FillType type) {
+    for (UnknownNode unknown : this.unknowns.values()) {
+      unknown.fill(type);
     }
 
     Pattern pattern = Pattern.compile(String.format("^%s$", this.tree));
 
-    for (HoleNode hole : this.holes.values()) {
-      hole.clear();
+    for (UnknownNode unknown : this.unknowns.values()) {
+      unknown.clear();
     }
 
     return pattern;
@@ -104,58 +104,58 @@ public class Enumerant implements Comparable<Enumerant> {
   public List<Enumerant> expand () {
     List<Enumerant> expansions = new LinkedList<>();
 
-    for (HoleNode hole : this.holes.values()) {
-      expansions.add(this.expandWithUnion(hole));
+    for (UnknownNode unknown : this.unknowns.values()) {
+      expansions.add(this.expandWithUnion(unknown));
 
-      if (hole.canInsertQuantifierNodes()) {
-        expansions.add(this.expandWithOptional(hole));
-        expansions.add(this.expandWithStar(hole));
-        expansions.add(this.expandWithPlus(hole));
+      if (unknown.canInsertQuantifierNodes()) {
+        expansions.add(this.expandWithOptional(unknown));
+        expansions.add(this.expandWithStar(unknown));
+        expansions.add(this.expandWithPlus(unknown));
       }
 
-      expansions.add(this.expandWithConcat(hole));
+      expansions.add(this.expandWithConcat(unknown));
     }
 
     return expansions;
   }
 
-  private Enumerant expandWithUnion (HoleNode hole) {
-    HoleNode hole1 = hole.expand(HoleNode.ExpansionChoice.Union);
-    HoleNode hole2 = hole.expand(HoleNode.ExpansionChoice.Union);
-    List<HoleNode> newHoles = Arrays.asList(hole1, hole2);
-    RegexNode newTree = new UnionNode(hole1, hole2);
-    Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.UNION_COST, HoleNode.ExpansionChoice.Union);
-    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Union);
+  private Enumerant expandWithUnion (UnknownNode unknown) {
+    UnknownNode unknown1 = unknown.expand(UnknownNode.ExpansionChoice.Union);
+    UnknownNode unknown2 = unknown.expand(UnknownNode.ExpansionChoice.Union);
+    List<UnknownNode> newUnknowns = Arrays.asList(unknown1, unknown2);
+    RegexNode newTree = new UnionNode(unknown1, unknown2);
+    Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.UNION_COST, UnknownNode.ExpansionChoice.Union);
+    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Union);
   }
 
-  private Enumerant expandWithOptional (HoleNode hole) {
-    HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Optional);
-    RegexNode newTree = new OptionalNode(newHole);
-    Enumerant twig = new Enumerant(newTree, newHole, Enumerant.OPTIONAL_COST, HoleNode.ExpansionChoice.Optional);
-    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Optional);
+  private Enumerant expandWithOptional (UnknownNode unknown) {
+    UnknownNode newUnknown = unknown.expand(UnknownNode.ExpansionChoice.Optional);
+    RegexNode newTree = new OptionalNode(newUnknown);
+    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.OPTIONAL_COST, UnknownNode.ExpansionChoice.Optional);
+    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Optional);
   }
 
-  private Enumerant expandWithStar (HoleNode hole) {
-    HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Star);
-    RegexNode newTree = new StarNode(newHole);
-    Enumerant twig = new Enumerant(newTree, newHole, Enumerant.STAR_COST, HoleNode.ExpansionChoice.Star);
-    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Star);
+  private Enumerant expandWithStar (UnknownNode unknown) {
+    UnknownNode newUnknown = unknown.expand(UnknownNode.ExpansionChoice.Star);
+    RegexNode newTree = new StarNode(newUnknown);
+    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.STAR_COST, UnknownNode.ExpansionChoice.Star);
+    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Star);
   }
 
-  private Enumerant expandWithPlus (HoleNode hole) {
-    HoleNode newHole = hole.expand(HoleNode.ExpansionChoice.Plus);
-    RegexNode newTree = new PlusNode(newHole);
-    Enumerant twig = new Enumerant(newTree, newHole, Enumerant.PLUS_COST, HoleNode.ExpansionChoice.Plus);
-    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Plus);
+  private Enumerant expandWithPlus (UnknownNode unknown) {
+    UnknownNode newUnknown = unknown.expand(UnknownNode.ExpansionChoice.Plus);
+    RegexNode newTree = new PlusNode(newUnknown);
+    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.PLUS_COST, UnknownNode.ExpansionChoice.Plus);
+    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Plus);
   }
 
-  private Enumerant expandWithConcat (HoleNode hole) {
-    HoleNode hole1 = hole.expand(HoleNode.ExpansionChoice.Concat);
-    HoleNode hole2 = hole.expand(HoleNode.ExpansionChoice.Concat);
-    List<HoleNode> newHoles = Arrays.asList(hole1, hole2);
-    RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newHoles));
-    Enumerant twig = new Enumerant(newTree, newHoles, Enumerant.CONCAT_COST, HoleNode.ExpansionChoice.Concat);
-    return Grafter.graft(this, hole, twig, HoleNode.ExpansionChoice.Concat);
+  private Enumerant expandWithConcat (UnknownNode unknown) {
+    UnknownNode unknown1 = unknown.expand(UnknownNode.ExpansionChoice.Concat);
+    UnknownNode unknown2 = unknown.expand(UnknownNode.ExpansionChoice.Concat);
+    List<UnknownNode> newUnknowns = Arrays.asList(unknown1, unknown2);
+    RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newUnknowns));
+    Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.CONCAT_COST, UnknownNode.ExpansionChoice.Concat);
+    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Concat);
   }
 
   public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {
