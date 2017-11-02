@@ -43,7 +43,6 @@ public class Automaton extends automata.Automaton {
   public static final CharPred NotWord = solver.MkNot(StdCharPred.WORD);
 
   private final SFA<CharPred, Character> sfa;
-  private int totalUnknowns = 0;
 
   public Automaton (RegexNode tree) throws TimeoutException {
     this.sfa = nodeToAutomaton(tree).sfa;
@@ -51,10 +50,6 @@ public class Automaton extends automata.Automaton {
 
   public Automaton (CharPred predicate) throws TimeoutException {
     this.sfa = predicateToSFA(predicate);
-  }
-
-  public void setTotalUnknowns (int totalUnknowns) {
-    this.totalUnknowns = totalUnknowns;
   }
 
   private Automaton (SFA<CharPred, Character> sfa) {
