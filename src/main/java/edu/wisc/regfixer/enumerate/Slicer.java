@@ -134,9 +134,28 @@ public class Slicer {
     List<UnknownNode.ExpansionChoice> newHistory = new LinkedList<>(history);
     newHistory.add(UnknownNode.ExpansionChoice.Repeat);
 
+    /**
+     * For each permutation of unknowns added to this node's children, add
+     * an enumerant with the original bounds an another enumerant with unknown
+     * bounds.So given:
+     * 
+     * (\d\w){1,3}
+     *
+     * Add (where ? represents an unknown):
+     *
+     * (?\w){1,3}
+     * (?\w){?,?}
+     * (\d?){1,3}
+     * (\d?){?,?}
+     * ?{1,3}
+     * ?{?,?}
+     */
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
       RepetitionNode branch = new RepetitionNode(partial.getTree(), node.getMin(), node.getMax());
       partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), UnknownNode.ExpansionChoice.Repeat));
+
+      branch = new RepetitionNode(partial.getTree(), new UnknownInt());
+      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost() + 1, UnknownNode.ExpansionChoice.Repeat));
     }
 
     UnknownNode unknown = new UnknownNode(history);
