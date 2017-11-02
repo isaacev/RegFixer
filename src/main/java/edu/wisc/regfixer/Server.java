@@ -14,7 +14,6 @@ import edu.wisc.regfixer.server.RequestError;
 import edu.wisc.regfixer.server.RequestPayload;
 import edu.wisc.regfixer.server.ResponseError;
 import edu.wisc.regfixer.server.ResponsePayload;
-import edu.wisc.regfixer.util.ReportStream;
 import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
 import static spark.Spark.get;
@@ -49,10 +48,9 @@ public class Server {
 
       String result = "";
       Job job = request.toJob();
-      ReportStream report = createReportStream(debug, job);
 
       try {
-        result = RegFixer.fix(job, report, loopLimit);
+        result = RegFixer.fix(job, loopLimit);
       } catch (TimeoutException ex) {
         res.status(408);
         return gson.toJson(new ResponseError("synthesis timeout"));
@@ -67,22 +65,5 @@ public class Server {
         return gson.toJson(new ResponsePayload(result));
       }
     });
-  }
-
-  private static ReportStream createReportStream (boolean debug, Job job) throws IOException {
-    if (debug == false) {
-      return new ReportStream();
-    }
-
-    String unixtime = String.valueOf(System.currentTimeMillis());
-    String uniqueId = job.toDigest().substring(0, 8);
-    String filename = String.format("debug_%s_%s.txt", unixtime, uniqueId);
-
-    Path filepath = Paths.get(System.getProperty("user.dir"), filename);
-    File file = new File(filepath.toString());
-    file.createNewFile();
-    FileOutputStream stream = new FileOutputStream(file);
-
-    return new ReportStream(stream);
   }
 }
