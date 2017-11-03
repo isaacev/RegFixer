@@ -43,9 +43,12 @@ public class Automaton extends automata.Automaton {
   public static final CharPred NotWord = solver.MkNot(StdCharPred.WORD);
 
   private final SFA<CharPred, Character> sfa;
+  public Map<UnknownId, Set<Integer>> unknownToStates = new HashMap<>();
 
   public Automaton (RegexNode tree) throws TimeoutException {
-    this.sfa = nodeToAutomaton(tree).sfa;
+    Automaton aut = nodeToAutomaton(tree);
+    this.sfa = aut.sfa;
+    this.unknownToStates = aut.unknownToStates;
   }
 
   public Automaton (CharPred predicate) throws TimeoutException {
@@ -245,7 +248,20 @@ public class Automaton extends automata.Automaton {
   }
 
   public static Automaton concatenate (Automaton first, Automaton second) throws TimeoutException {
-    return new Automaton(SFA.concatenate(first.sfa, second.sfa, Automaton.solver));
+    Automaton aut = new Automaton(SFA.concatenate(first.sfa, second.sfa, Automaton.solver));
+
+    // Offset will be added to all watched states of the second Automaton
+    // to ensure that the states of the first and second are disjointed.
+    int offset = first.sfa.getMaxStateId() + 1;
+    aut.unknownToStates.putAll(first.unknownToStates);
+    for (Map.Entry<UnknownId, Set<Integer>> entry : second.unknownToStates.entrySet()) {
+      aut.unknownToStates.put(entry.getKey(), new HashSet<>());
+      for (Integer state : entry.getValue()) {
+        aut.unknownToStates.get(entry.getKey()).add(state + offset);
+      }
+    }
+
+    return aut;
   }
 
   public static Automaton concatenate (List<Automaton> automata) throws TimeoutException {
@@ -267,11 +283,30 @@ public class Automaton extends automata.Automaton {
   }
 
   public static Automaton union (Automaton first, Automaton second) throws TimeoutException {
-    return new Automaton(SFA.union(first.sfa, second.sfa, Automaton.solver));
+    Automaton aut = new Automaton(SFA.union(first.sfa, second.sfa, Automaton.solver));
+
+    // Offset will be added to all watched states of the second Automaton
+    // to ensure that the states of the first and second are disjointed.
+    int offset = first.sfa.getMaxStateId() + 2;
+    aut.unknownToStates.putAll(first.unknownToStates);
+    for (Map.Entry<UnknownId, Set<Integer>> entry : second.unknownToStates.entrySet()) {
+      aut.unknownToStates.put(entry.getKey(), new HashSet<>());
+      for (Integer state : entry.getValue()) {
+        aut.unknownToStates.get(entry.getKey()).add(state + offset);
+      }
+    }
+
+    return aut;
   }
 
   public static Automaton star (Automaton only) throws TimeoutException {
-    return new Automaton(SFA.star(only.sfa, Automaton.solver));
+    Automaton aut = new Automaton(SFA.star(only.sfa, Automaton.solver));
+
+    // Transfer watched states from the child Automaton to the new Automaton
+    // without any need to rename states.
+    aut.unknownToStates.putAll(only.unknownToStates);
+
+    return aut;
   }
 
   public static Automaton fromPredicate (Character ch) throws TimeoutException {
@@ -365,8 +400,12 @@ public class Automaton extends automata.Automaton {
 
   private static Automaton repetitionWithUnknownBoundsToAutomaton (RepetitionNode node) throws TimeoutException {
     Automaton sub = nodeToAutomaton(node.getChild());
+    UnknownId unknown = node.getUnknownBound().getId();
+    Set<Integer> exitStates = new HashSet<>(sub.sfa.getFinalStates());
 
     Automaton aut = star(sub);
+    aut.unknownToStates.put(unknown, exitStates);
+    aut.unknownToStates.putAll(sub.unknownToStates);
 
     return aut;
   }
