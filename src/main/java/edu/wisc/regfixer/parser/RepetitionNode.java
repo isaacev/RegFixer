@@ -56,6 +56,10 @@ public class RepetitionNode implements RegexNode {
     return false;
   }
 
+  public UnknownInt getUnknownBound () {
+    return this.unknown;
+  }
+
   public int descendants () {
     return 1 + this.child.descendants();
   }

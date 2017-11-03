@@ -356,6 +356,22 @@ public class Automaton extends automata.Automaton {
   }
 
   private static Automaton repetitionToAutomaton (RepetitionNode node) throws TimeoutException {
+    if (node.hasUnknownBound()) {
+      return repetitionWithUnknownBoundsToAutomaton(node);
+    } else {
+      return repetitionWithKnownBoundsToAutomaton(node);
+    }
+  }
+
+  private static Automaton repetitionWithUnknownBoundsToAutomaton (RepetitionNode node) throws TimeoutException {
+    Automaton sub = nodeToAutomaton(node.getChild());
+
+    Automaton aut = star(sub);
+
+    return aut;
+  }
+
+  private static Automaton repetitionWithKnownBoundsToAutomaton (RepetitionNode node) throws TimeoutException {
     if (node.hasMax() && node.getMax() == 0) {
       return empty();
     }
