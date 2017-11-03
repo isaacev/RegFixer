@@ -31,18 +31,18 @@ public class Enumerant implements Comparable<Enumerant> {
   public final static int CONCAT_COST   = 1;
 
   private final RegexNode tree;
-  private final Map<UnknownId, UnknownNode> unknowns;
+  private final Map<UnknownId, Unknown> unknowns;
   private final int cost;
   private final UnknownNode.ExpansionChoice expansion;
 
-  public Enumerant (RegexNode tree, UnknownNode unknown, int cost, UnknownNode.ExpansionChoice expansion) {
+  public Enumerant (RegexNode tree, Unknown unknown, int cost, UnknownNode.ExpansionChoice expansion) {
     this(tree, Arrays.asList(unknown), cost, expansion);
   }
 
-  public Enumerant (RegexNode tree, Collection<UnknownNode> unknowns, int cost, UnknownNode.ExpansionChoice expansion) {
-    Map<UnknownId, UnknownNode> map = new HashMap<>();
+  public Enumerant (RegexNode tree, Collection<Unknown> unknowns, int cost, UnknownNode.ExpansionChoice expansion) {
+    Map<UnknownId, Unknown> map = new HashMap<>();
 
-    for (UnknownNode unknown : unknowns) {
+    for (Unknown unknown : unknowns) {
       map.put(unknown.getId(), unknown);
     }
 
@@ -52,7 +52,7 @@ public class Enumerant implements Comparable<Enumerant> {
     this.expansion = expansion;
   }
 
-  public Enumerant (RegexNode tree, Map<UnknownId, UnknownNode> unknowns, int cost) {
+  public Enumerant (RegexNode tree, Map<UnknownId, Unknown> unknowns, int cost) {
     this.tree = tree;
     this.unknowns = unknowns;
     this.cost = cost;
@@ -63,15 +63,15 @@ public class Enumerant implements Comparable<Enumerant> {
     return this.tree;
   }
 
-  public Set<UnknownNode> getUnknowns () {
-    return new HashSet<UnknownNode>(this.unknowns.values());
+  public Set<Unknown> getUnknowns () {
+    return new HashSet<Unknown>(this.unknowns.values());
   }
 
-  public UnknownNode getUnknown (UnknownId id) {
+  public Unknown getUnknown (UnknownId id) {
     return this.unknowns.get(id);
   }
 
-  public boolean hasUnknown (UnknownNode unknown) {
+  public boolean hasUnknown (Unknown unknown) {
     return this.hasUnknown(unknown.getId());
   }
 
@@ -88,14 +88,18 @@ public class Enumerant implements Comparable<Enumerant> {
   }
 
   public Pattern toPattern (UnknownNode.FillType type) {
-    for (UnknownNode unknown : this.unknowns.values()) {
-      unknown.fill(type);
+    for (Unknown unknown : this.unknowns.values()) {
+      if (unknown instanceof UnknownNode) {
+        ((UnknownNode)unknown).fill(type);
+      }
     }
 
     Pattern pattern = Pattern.compile(String.format("^%s$", this.tree));
 
-    for (UnknownNode unknown : this.unknowns.values()) {
-      unknown.clear();
+    for (Unknown unknown : this.unknowns.values()) {
+      if (unknown instanceof UnknownNode) {
+        ((UnknownNode)unknown).clear();
+      }
     }
 
     return pattern;
@@ -104,16 +108,20 @@ public class Enumerant implements Comparable<Enumerant> {
   public List<Enumerant> expand () {
     List<Enumerant> expansions = new LinkedList<>();
 
-    for (UnknownNode unknown : this.unknowns.values()) {
-      expansions.add(this.expandWithUnion(unknown));
+    for (Unknown u : this.unknowns.values()) {
+      if (u instanceof UnknownNode) {
+        UnknownNode unknown = (UnknownNode)u;
 
-      if (unknown.canInsertQuantifierNodes()) {
-        expansions.add(this.expandWithOptional(unknown));
-        expansions.add(this.expandWithStar(unknown));
-        expansions.add(this.expandWithPlus(unknown));
+        expansions.add(this.expandWithUnion(unknown));
+
+        if (unknown.canInsertQuantifierNodes()) {
+          expansions.add(this.expandWithOptional(unknown));
+          expansions.add(this.expandWithStar(unknown));
+          expansions.add(this.expandWithPlus(unknown));
+        }
+
+        expansions.add(this.expandWithConcat(unknown));
       }
-
-      expansions.add(this.expandWithConcat(unknown));
     }
 
     return expansions;
@@ -122,7 +130,7 @@ public class Enumerant implements Comparable<Enumerant> {
   private Enumerant expandWithUnion (UnknownNode unknown) {
     UnknownNode unknown1 = unknown.expand(UnknownNode.ExpansionChoice.Union);
     UnknownNode unknown2 = unknown.expand(UnknownNode.ExpansionChoice.Union);
-    List<UnknownNode> newUnknowns = Arrays.asList(unknown1, unknown2);
+    List<Unknown> newUnknowns = Arrays.asList(unknown1, unknown2);
     RegexNode newTree = new UnionNode(unknown1, unknown2);
     Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.UNION_COST, UnknownNode.ExpansionChoice.Union);
     return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Union);
@@ -152,8 +160,9 @@ public class Enumerant implements Comparable<Enumerant> {
   private Enumerant expandWithConcat (UnknownNode unknown) {
     UnknownNode unknown1 = unknown.expand(UnknownNode.ExpansionChoice.Concat);
     UnknownNode unknown2 = unknown.expand(UnknownNode.ExpansionChoice.Concat);
-    List<UnknownNode> newUnknowns = Arrays.asList(unknown1, unknown2);
-    RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newUnknowns));
+    List<UnknownNode> newUnknownNodes = Arrays.asList(unknown1, unknown2);
+    List<Unknown> newUnknowns = Arrays.asList((Unknown)unknown1, (Unknown)unknown2);
+    RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newUnknownNodes));
     Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.CONCAT_COST, UnknownNode.ExpansionChoice.Concat);
     return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Concat);
   }

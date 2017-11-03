@@ -10,6 +10,7 @@ import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Grafter;
+import edu.wisc.regfixer.enumerate.Unknown;
 import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.enumerate.UnknownNode;
 import edu.wisc.regfixer.parser.CharClass;
@@ -33,9 +34,12 @@ public class Synthesis {
     RegexNode solution = enumerant.getTree();
 
     for (Entry<UnknownId, CharClass> unknownSolution : unknownSolutions.entrySet()) {
-      UnknownNode unknown = enumerant.getUnknown(unknownSolution.getKey());
+      Unknown unknown = enumerant.getUnknown(unknownSolution.getKey());
       RegexNode twig = unknownSolution.getValue();
-      solution = Grafter.graft(solution, unknown, twig);
+
+      if (unknown instanceof UnknownNode) {
+        solution = Grafter.graft(solution, (UnknownNode)unknown, twig);
+      }
     }
 
     this.tree = solution;

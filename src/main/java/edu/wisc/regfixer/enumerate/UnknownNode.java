@@ -7,7 +7,7 @@ import edu.wisc.regfixer.parser.StarNode;
 import java.util.LinkedList;
 import java.util.List;
 
-public class UnknownNode implements RegexNode, Comparable<UnknownNode> {
+public class UnknownNode extends Unknown implements RegexNode, Comparable<UnknownNode> {
   public static enum ExpansionChoice {
     Union,
     Concat,
@@ -27,7 +27,6 @@ public class UnknownNode implements RegexNode, Comparable<UnknownNode> {
 
   private RegexNode child = null;
   private int age;
-  private UnknownId id;
   private List<ExpansionChoice> history;
 
   private UnknownNode () {
@@ -40,8 +39,8 @@ public class UnknownNode implements RegexNode, Comparable<UnknownNode> {
   }
 
   public UnknownNode (List<ExpansionChoice> history) {
+    super();
     this.age = UnknownNode.nextAge++;
-    this.id = new UnknownId();
     this.history = history;
   }
 
@@ -49,10 +48,6 @@ public class UnknownNode implements RegexNode, Comparable<UnknownNode> {
     List<ExpansionChoice> newHistory = new LinkedList<>(this.history);
     newHistory.add(latest);
     return new UnknownNode(newHistory);
-  }
-
-  public UnknownId getId () {
-    return this.id;
   }
 
   public boolean canInsertQuantifierNodes () {
@@ -100,7 +95,7 @@ public class UnknownNode implements RegexNode, Comparable<UnknownNode> {
 
   public String toString () {
     if (this.child == null) {
-      return "❑";
+      return super.toString();
     } else {
       return this.child.toString();
     }

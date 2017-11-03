@@ -1,16 +1,11 @@
 package edu.wisc.regfixer.enumerate;
 
-public class UnknownInt {
-  private UnknownId id;
+public class UnknownInt extends Unknown {
   private Integer child;
 
   public UnknownInt () {
-    this.id = new UnknownId();
+    super();
     this.child = null;
-  }
-
-  public UnknownId getId () {
-    return this.id;
   }
 
   public void fill (int child) {
@@ -23,7 +18,7 @@ public class UnknownInt {
 
   public String toString () {
     if (this.child == null) {
-      return "❑";
+      return super.toString();
     } else {
       return this.child.toString();
     }

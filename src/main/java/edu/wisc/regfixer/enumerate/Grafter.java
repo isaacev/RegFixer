@@ -14,13 +14,18 @@ import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 
 public class Grafter {
+  public static Enumerant graft (Enumerant original, UnknownInt unknown, int lower, int upper) {
+    // TODO
+    return null;
+  }
+
   public static Enumerant graft (Enumerant original, UnknownNode unknown, Enumerant twig, UnknownNode.ExpansionChoice expansion) {
     if (original.getUnknowns().contains(unknown) == false) {
       throw new IllegalArgumentException("unknown object must be in the partial tree");
     }
 
     RegexNode graftedTree = graftNode(original.getTree(), unknown, twig.getTree());
-    List<UnknownNode> graftedUnknowns = original.getUnknowns()
+    List<Unknown> graftedUnknowns = original.getUnknowns()
       .stream()
       .filter(h -> h != unknown)
       .collect(Collectors.toList());
@@ -35,7 +40,7 @@ public class Grafter {
   }
 
   private static RegexNode graftNode (RegexNode node, UnknownNode unknown, RegexNode twig) {
-         if (node instanceof UnknownNode)       { return graftUnknown((UnknownNode) node, unknown, twig); }
+         if (node instanceof UnknownNode)    { return graftUnknown((UnknownNode) node, unknown, twig); }
     else if (node instanceof ConcatNode)     { return graftConcat((ConcatNode) node, unknown, twig); }
     else if (node instanceof UnionNode)      { return graftUnion((UnionNode) node, unknown, twig); }
     else if (node instanceof RepetitionNode) { return graftRepetition((RepetitionNode) node, unknown, twig); }
