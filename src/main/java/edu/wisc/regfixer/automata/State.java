@@ -50,7 +50,7 @@ class State {
   public boolean equals (Object obj) {
     if (obj instanceof State) {
       State cast = (State) obj;
-      return (this.stateId == cast.stateId);
+      return (this.stateId == cast.stateId) && (this.parent == cast.parent);
     }
 
     return false;
