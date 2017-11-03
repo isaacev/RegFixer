@@ -1,5 +1,6 @@
 package edu.wisc.regfixer.parser;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class ConcatNode implements RegexNode {
@@ -7,6 +8,10 @@ public class ConcatNode implements RegexNode {
 
   public ConcatNode (List<RegexNode> children) {
     this.children = children;
+  }
+
+  public ConcatNode (RegexNode... children) {
+    this.children = Arrays.asList(children);
   }
 
   public List<RegexNode> getChildren () {
