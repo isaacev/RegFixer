@@ -1,26 +1,34 @@
 package edu.wisc.regfixer.enumerate;
 
-public class UnknownInt extends Unknown {
-  private Integer child;
+import edu.wisc.regfixer.parser.Bounds;
+
+public class UnknownInt extends Bounds implements Unknown {
+  private UnknownId id;
+  private Bounds bounds;
 
   public UnknownInt () {
-    super();
-    this.child = null;
+    super(0, null);
+    this.id = new UnknownId();
+    this.bounds = null;
   }
 
-  public void fill (int child) {
-    this.child = child;
+  public UnknownId getId () {
+    return this.id;
+  }
+
+  public void fill (Bounds bounds) {
+    this.bounds = bounds;
   }
 
   public void clear () {
-    this.child = null;
+    this.bounds = null;
   }
 
   public String toString () {
-    if (this.child == null) {
-      return super.toString();
+    if (this.bounds == null) {
+      return "{■}";
     } else {
-      return this.child.toString();
+      return this.bounds.toString();
     }
   }
 }

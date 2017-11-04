@@ -7,7 +7,7 @@ import edu.wisc.regfixer.parser.StarNode;
 import java.util.LinkedList;
 import java.util.List;
 
-public class UnknownNode extends Unknown implements RegexNode, Comparable<UnknownNode> {
+public class UnknownNode implements Unknown, RegexNode, Comparable<UnknownNode> {
   public static enum ExpansionChoice {
     Union,
     Concat,
@@ -25,6 +25,7 @@ public class UnknownNode extends Unknown implements RegexNode, Comparable<Unknow
 
   private static int nextAge = 0;
 
+  private UnknownId id;
   private RegexNode child = null;
   private int age;
   private List<ExpansionChoice> history;
@@ -34,14 +35,18 @@ public class UnknownNode extends Unknown implements RegexNode, Comparable<Unknow
   }
 
   public UnknownNode (ExpansionChoice latest) {
-    this();
+    this.id = new UnknownId();
     this.history.add(latest);
   }
 
   public UnknownNode (List<ExpansionChoice> history) {
-    super();
+    this.id = new UnknownId();
     this.age = UnknownNode.nextAge++;
     this.history = history;
+  }
+
+  public UnknownId getId () {
+    return this.id;
   }
 
   public UnknownNode expand (ExpansionChoice latest) {
@@ -95,7 +100,7 @@ public class UnknownNode extends Unknown implements RegexNode, Comparable<Unknow
 
   public String toString () {
     if (this.child == null) {
-      return super.toString();
+      return "■";
     } else {
       return this.child.toString();
     }
