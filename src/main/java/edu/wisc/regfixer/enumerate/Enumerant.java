@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import edu.wisc.regfixer.automata.Automaton;
 import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
+import edu.wisc.regfixer.parser.Bounds;
 import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.OptionalNode;
 import edu.wisc.regfixer.parser.PlusNode;
@@ -91,6 +92,8 @@ public class Enumerant implements Comparable<Enumerant> {
     for (Unknown unknown : this.unknowns.values()) {
       if (unknown instanceof UnknownNode) {
         ((UnknownNode)unknown).fill(type);
+      } else if (unknown instanceof UnknownInt) {
+        ((UnknownInt)unknown).fill(Bounds.atLeast(0));
       }
     }
 
