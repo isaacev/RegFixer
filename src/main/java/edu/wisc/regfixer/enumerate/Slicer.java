@@ -65,9 +65,9 @@ public class Slicer {
         if (midfix.size() == 1) {
           midfixPartials.addAll(sliceNode(midfix.get(0), newHistory));
         } else {
-          UnknownChar unknown = new UnknownChar(newHistory);
-          int descendants = midfix.stream().mapToInt(RegexNode::descendants).sum();
-          midfixPartials.add(new Enumerant(unknown, unknown, descendants, Expansion.Concat));
+          UnknownChar un = new UnknownChar(history, Expansion.Concat);
+          int cost = midfix.stream().mapToInt(RegexNode::descendants).sum();
+          midfixPartials.add(new Enumerant(un, un.getId(), cost, Expansion.Concat));
         }
 
         if (prefix.size() == 0 && suffix.size() == 0) {
@@ -83,7 +83,7 @@ public class Slicer {
             partialChildren.addAll(suffix);
 
             ConcatNode partialNode = new ConcatNode(partialChildren);
-            partials.add(new Enumerant(partialNode, midfixPartial.getUnknowns(), 0, Expansion.Concat));
+            partials.add(new Enumerant(partialNode, midfixPartial.getIds(), 0, Expansion.Concat));
           }
         }
       }
@@ -104,7 +104,7 @@ public class Slicer {
       }
 
       ConcatNode newNode = new ConcatNode(newChildren);
-      partials.add(new Enumerant(newNode, newUnknown, 1, Expansion.Concat));
+      partials.add(new Enumerant(newNode, newUnknown.getId(), 1, Expansion.Concat));
     }
 
     return partials;
@@ -117,16 +117,16 @@ public class Slicer {
 
     for (Enumerant partial : sliceNode(node.getLeftChild(), newHistory)) {
       UnionNode branch = new UnionNode(partial.getTree(), node.getRightChild());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), 0, Expansion.Union));
+      partials.add(new Enumerant(branch, partial.getIds(), 0, Expansion.Union));
     }
 
     for (Enumerant partial : sliceNode(node.getRightChild(), newHistory)) {
       UnionNode branch = new UnionNode(node.getLeftChild(), partial.getTree());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), 0, Expansion.Union));
+      partials.add(new Enumerant(branch, partial.getIds(), 0, Expansion.Union));
     }
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Union));
+    partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Union));
     return partials;
   }
 
@@ -153,14 +153,14 @@ public class Slicer {
      */
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
       RepetitionNode branch = new RepetitionNode(partial.getTree(), node.getBounds());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), Expansion.Repeat));
+      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Repeat));
 
       branch = new RepetitionNode(partial.getTree(), new UnknownBounds());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost() + 1, Expansion.Repeat));
+      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost() + 1, Expansion.Repeat));
     }
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Repeat));
+    partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Repeat));
     return partials;
   }
 
@@ -171,11 +171,11 @@ public class Slicer {
 
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
       OptionalNode branch = new OptionalNode(partial.getTree());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), Expansion.Optional));
+      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Optional));
     }
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Optional));
+    partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Optional));
     return partials;
   }
 
@@ -186,16 +186,16 @@ public class Slicer {
 
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
       StarNode branch = new StarNode(partial.getTree());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), Expansion.Star));
+      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Star));
     }
 
     // (R0)* -> (R0){■}
-    UnknownBounds UnknownBounds = new UnknownBounds();
-    RepetitionNode branch = new RepetitionNode(node.getChild(), UnknownBounds);
-    partials.add(new Enumerant(branch, Arrays.asList(UnknownBounds), 1, Expansion.Repeat));
+    UnknownBounds bounds = new UnknownBounds();
+    RepetitionNode branch = new RepetitionNode(node.getChild(), bounds);
+    partials.add(new Enumerant(branch, bounds.getId(), 1, Expansion.Repeat));
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Star));
+    partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Star));
     return partials;
   }
 
@@ -206,16 +206,16 @@ public class Slicer {
 
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
       PlusNode branch = new PlusNode(partial.getTree());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), Expansion.Plus));
+      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Plus));
     }
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Plus));
+    partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Plus));
     return partials;
   }
 
   private static List<Enumerant> sliceAtomic (List<Expansion> history) {
     UnknownChar unknown = new UnknownChar(history);
-    return Arrays.asList(new Enumerant(unknown, unknown, 1, Expansion.Concat));
+    return Arrays.asList(new Enumerant(unknown, unknown.getId(), 1, Expansion.Concat));
   }
 }
