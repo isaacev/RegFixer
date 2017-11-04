@@ -223,12 +223,18 @@ public class Formula {
 
     for (Set<Route> example : this.positives) {
       List<BoolExpr> exprs = encodeUnknownBounds(example, true);
-      this.opt.Assert(this.ctx.mkOr(exprs.toArray(new BoolExpr[exprs.size()])));
+
+      if (exprs.size() > 0) {
+        this.opt.Assert(this.ctx.mkOr(exprs.toArray(new BoolExpr[exprs.size()])));
+      }
     }
 
     for (Set<Route> example : this.negatives) {
       List<BoolExpr> exprs = encodeUnknownBounds(example, false);
-      this.opt.Assert(this.ctx.mkAnd(exprs.toArray(new BoolExpr[exprs.size()])));
+
+      if (exprs.size() > 0) {
+        this.opt.Assert(this.ctx.mkAnd(exprs.toArray(new BoolExpr[exprs.size()])));
+      }
     }
   }
 
