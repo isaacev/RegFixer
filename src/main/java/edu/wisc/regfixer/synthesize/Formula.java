@@ -46,7 +46,7 @@ public class Formula {
   private Set<MetaClassTree> misc;
   private Map<UnknownId, Map<Character, BoolExpr>> unknownToCharToVar;
 
-  private Set<UnknownId> UnknownBoundss;
+  private Set<UnknownId> unknownBounds;
   private Map<UnknownId, IntExpr> unknownToMinVar;
   private Map<UnknownId, IntExpr> unknownToMaxVar;
 
@@ -76,7 +76,7 @@ public class Formula {
     this.unknownToCharToVar = new HashMap<>();
     this.misc = new HashSet<>();
 
-    this.UnknownBoundss = new HashSet<>();
+    this.unknownBounds = new HashSet<>();
     this.unknownToMinVar = new HashMap<>();
     this.unknownToMaxVar = new HashMap<>();
 
@@ -202,7 +202,7 @@ public class Formula {
     for (Set<Route> s : data) {
       for (Route r : s) {
         for (UnknownId id : r.getExits().keySet()) {
-          this.UnknownBoundss.add(id);
+          this.unknownBounds.add(id);
         }
       }
     }
@@ -214,7 +214,7 @@ public class Formula {
     this.getAllRelevantUnknownExits(this.negatives);
 
     // Create all 'H?_max' and 'H?_min' variables for all relevant IDs.
-    for (UnknownId id : this.UnknownBoundss) {
+    for (UnknownId id : this.unknownBounds) {
       this.unknownToMinVar.put(id, this.ctx.mkIntConst(id.toString() + "_min"));
       this.unknownToMaxVar.put(id, this.ctx.mkIntConst(id.toString() + "_max"));
     }
@@ -243,7 +243,7 @@ public class Formula {
     Map<UnknownId, Integer> max = new HashMap<>();
     Map<UnknownId, Integer> min = new HashMap<>();
 
-    for (UnknownId id : this.UnknownBoundss) {
+    for (UnknownId id : this.unknownBounds) {
       max.put(id, -1);
       min.put(id, -1);
     }
@@ -275,7 +275,7 @@ public class Formula {
     // For each route, build a SAT expression that relates the 'min' and
     // 'max' variables associated with a given ID to the route's minimum
     // and maximum repeat values.
-    for (UnknownId id : this.UnknownBoundss) {
+    for (UnknownId id : this.unknownBounds) {
       // Compute minimum and maximum values to constrain this ID.
       ArithExpr maxVal = this.ctx.mkInt(max.get(id) > -1 ? max.get(id) : 0);
       ArithExpr minVal = this.ctx.mkInt(min.get(id) > -1 ? min.get(id) : 0);
@@ -536,7 +536,7 @@ public class Formula {
     }
 
     Map<UnknownId, Bounds> solutions = new HashMap<>();
-    for (UnknownId id : this.UnknownBoundss) {
+    for (UnknownId id : this.unknownBounds) {
       solutions.put(id, getBoundsSolution(id));
     }
     return solutions;
