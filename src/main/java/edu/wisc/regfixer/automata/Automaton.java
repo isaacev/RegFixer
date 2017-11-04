@@ -16,6 +16,7 @@ import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import edu.wisc.regfixer.enumerate.UnknownNode;
 import edu.wisc.regfixer.enumerate.UnknownId;
+import edu.wisc.regfixer.enumerate.UnknownInt;
 import edu.wisc.regfixer.parser.CharClassSetNode;
 import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
@@ -400,7 +401,7 @@ public class Automaton extends automata.Automaton {
   }
 
   private static Automaton repetitionToAutomaton (RepetitionNode node) throws TimeoutException {
-    if (node.hasUnknownBound()) {
+    if (node.getBounds() instanceof UnknownInt) {
       return repetitionWithUnknownBoundsToAutomaton(node);
     } else {
       return repetitionWithKnownBoundsToAutomaton(node);
@@ -409,7 +410,7 @@ public class Automaton extends automata.Automaton {
 
   private static Automaton repetitionWithUnknownBoundsToAutomaton (RepetitionNode node) throws TimeoutException {
     Automaton sub = nodeToAutomaton(node.getChild());
-    UnknownId unknown = node.getUnknownBound().getId();
+    UnknownId unknown = ((UnknownInt)node.getBounds()).getId();
     Set<Integer> exitStates = new HashSet<>(sub.sfa.getFinalStates());
 
     Automaton aut = star(sub);
@@ -420,14 +421,14 @@ public class Automaton extends automata.Automaton {
   }
 
   private static Automaton repetitionWithKnownBoundsToAutomaton (RepetitionNode node) throws TimeoutException {
-    if (node.hasMax() && node.getMax() == 0) {
+    if (node.getBounds().hasMax() && node.getBounds().getMax() == 0) {
       return empty();
     }
 
     Automaton sub = nodeToAutomaton(node.getChild());
     Automaton min = empty();
 
-    for (int i = 0; i < node.getMin(); i++) {
+    for (int i = 0; i < node.getBounds().getMin(); i++) {
       if (i == 0) {
         min = sub;
       } else {
@@ -435,16 +436,16 @@ public class Automaton extends automata.Automaton {
       }
     }
 
-    if (node.hasMax() == false) {
+    if (node.getBounds().hasMax() == false) {
       // min to infinite
       Automaton star = star(sub);
       return concatenate(min, star);
-    } else if (node.getMin() < node.getMax()) {
+    } else if (node.getBounds().getMin() < node.getBounds().getMax()) {
       // min to max
       Automaton union = min;
       Automaton unknown = min;
 
-      for (int i = node.getMin(); i < node.getMax(); i++) {
+      for (int i = node.getBounds().getMin(); i < node.getBounds().getMax(); i++) {
         union = concatenate(union, sub);
         unknown = union(unknown, union);
       }
