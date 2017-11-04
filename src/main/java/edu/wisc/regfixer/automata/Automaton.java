@@ -14,7 +14,7 @@ import automata.Move;
 import automata.sfa.SFA;
 import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
-import edu.wisc.regfixer.enumerate.UnknownNode;
+import edu.wisc.regfixer.enumerate.UnknownChar;
 import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.enumerate.UnknownBounds;
 import edu.wisc.regfixer.parser.CharClassSetNode;
@@ -372,7 +372,7 @@ public class Automaton extends automata.Automaton {
     else if (node instanceof OptionalNode)     return optionalToAutomaton((OptionalNode) node);
     else if (node instanceof StarNode)         return starToAutomaton((StarNode) node);
     else if (node instanceof PlusNode)         return plusToAutomaton((PlusNode) node);
-    else if (node instanceof UnknownNode)         return unknownToAutomaton((UnknownNode) node);
+    else if (node instanceof UnknownChar)         return unknownToAutomaton((UnknownChar) node);
     else if (node instanceof CharClassSetNode) return charClassSetToAutomaton((CharClassSetNode) node);
     else if (node instanceof CharDotNode)      return charDotToAutomaton((CharDotNode) node);
     else if (node instanceof CharEscapedNode)  return charEscapedToAutomaton((CharEscapedNode) node);
@@ -470,7 +470,7 @@ public class Automaton extends automata.Automaton {
     return concatenate(sub, star(sub));
   }
 
-  private static Automaton unknownToAutomaton (UnknownNode node) throws TimeoutException {
+  private static Automaton unknownToAutomaton (UnknownChar node) throws TimeoutException {
     return fromUnknownPredicate(node.getId());
   }
 

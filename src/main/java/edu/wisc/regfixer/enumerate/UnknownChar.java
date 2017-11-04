@@ -7,7 +7,7 @@ import edu.wisc.regfixer.parser.StarNode;
 import java.util.LinkedList;
 import java.util.List;
 
-public class UnknownNode implements Unknown, RegexNode, Comparable<UnknownNode> {
+public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> {
   public static enum ExpansionChoice {
     Union,
     Concat,
@@ -30,18 +30,18 @@ public class UnknownNode implements Unknown, RegexNode, Comparable<UnknownNode> 
   private int age;
   private List<ExpansionChoice> history;
 
-  private UnknownNode () {
+  private UnknownChar () {
     this(new LinkedList<>());
   }
 
-  public UnknownNode (ExpansionChoice latest) {
+  public UnknownChar (ExpansionChoice latest) {
     this.id = new UnknownId();
     this.history.add(latest);
   }
 
-  public UnknownNode (List<ExpansionChoice> history) {
+  public UnknownChar (List<ExpansionChoice> history) {
     this.id = new UnknownId();
-    this.age = UnknownNode.nextAge++;
+    this.age = UnknownChar.nextAge++;
     this.history = history;
   }
 
@@ -49,10 +49,10 @@ public class UnknownNode implements Unknown, RegexNode, Comparable<UnknownNode> 
     return this.id;
   }
 
-  public UnknownNode expand (ExpansionChoice latest) {
+  public UnknownChar expand (ExpansionChoice latest) {
     List<ExpansionChoice> newHistory = new LinkedList<>(this.history);
     newHistory.add(latest);
-    return new UnknownNode(newHistory);
+    return new UnknownChar(newHistory);
   }
 
   public boolean canInsertQuantifierNodes () {
@@ -94,7 +94,7 @@ public class UnknownNode implements Unknown, RegexNode, Comparable<UnknownNode> 
   }
 
   @Override
-  public int compareTo (UnknownNode other) {
+  public int compareTo (UnknownChar other) {
     return Integer.compare(this.age, other.age);
   }
 

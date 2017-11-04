@@ -7,7 +7,7 @@ import java.util.TreeSet;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Enumerants;
-import edu.wisc.regfixer.enumerate.UnknownNode;
+import edu.wisc.regfixer.enumerate.UnknownChar;
 import edu.wisc.regfixer.enumerate.Job;
 import edu.wisc.regfixer.enumerate.Range;
 import edu.wisc.regfixer.synthesize.Synthesis;
@@ -58,9 +58,9 @@ public class RegFixer {
 
       synthesis = null;
       diag.output().printPartialRow(enumerant.getCost(), enumerant.toString());
-      UnknownNode.ExpansionChoice expansion = enumerant.getExpansionChoice();
+      UnknownChar.ExpansionChoice expansion = enumerant.getExpansionChoice();
 
-      if (expansion == UnknownNode.ExpansionChoice.Concat) {
+      if (expansion == UnknownChar.ExpansionChoice.Concat) {
         if (job.getCorpus().passesDotTest(enumerant)) {
           try {
             synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
@@ -71,7 +71,7 @@ public class RegFixer {
         } else {
           diag.output().finishRow("failed dot test");
         }
-      } else if (expansion == UnknownNode.ExpansionChoice.Star) {
+      } else if (expansion == UnknownChar.ExpansionChoice.Star) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
             synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
@@ -82,14 +82,14 @@ public class RegFixer {
         } else {
           diag.output().finishRow("failed empty set test");
         }
-      } else if (expansion == UnknownNode.ExpansionChoice.Plus) {
+      } else if (expansion == UnknownChar.ExpansionChoice.Plus) {
         try {
           synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
         } catch (SynthesisFailure ex) {
           diag.output().finishRow(ex.getMessage());
           continue;
         }
-      } else if (expansion == UnknownNode.ExpansionChoice.Optional) {
+      } else if (expansion == UnknownChar.ExpansionChoice.Optional) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
             synthesis = RegFixer.synthesisLoop(job, enumerant, diag);

@@ -34,13 +34,13 @@ public class Enumerant implements Comparable<Enumerant> {
   private final RegexNode tree;
   private final Map<UnknownId, Unknown> unknowns;
   private final int cost;
-  private final UnknownNode.ExpansionChoice expansion;
+  private final UnknownChar.ExpansionChoice expansion;
 
-  public Enumerant (RegexNode tree, Unknown unknown, int cost, UnknownNode.ExpansionChoice expansion) {
+  public Enumerant (RegexNode tree, Unknown unknown, int cost, UnknownChar.ExpansionChoice expansion) {
     this(tree, Arrays.asList(unknown), cost, expansion);
   }
 
-  public Enumerant (RegexNode tree, Collection<Unknown> unknowns, int cost, UnknownNode.ExpansionChoice expansion) {
+  public Enumerant (RegexNode tree, Collection<Unknown> unknowns, int cost, UnknownChar.ExpansionChoice expansion) {
     Map<UnknownId, Unknown> map = new HashMap<>();
 
     for (Unknown unknown : unknowns) {
@@ -84,14 +84,14 @@ public class Enumerant implements Comparable<Enumerant> {
     return this.cost;
   }
 
-  public UnknownNode.ExpansionChoice getExpansionChoice () {
+  public UnknownChar.ExpansionChoice getExpansionChoice () {
     return this.expansion;
   }
 
-  public Pattern toPattern (UnknownNode.FillType type) {
+  public Pattern toPattern (UnknownChar.FillType type) {
     for (Unknown unknown : this.unknowns.values()) {
-      if (unknown instanceof UnknownNode) {
-        ((UnknownNode)unknown).fill(type);
+      if (unknown instanceof UnknownChar) {
+        ((UnknownChar)unknown).fill(type);
       } else if (unknown instanceof UnknownBounds) {
         ((UnknownBounds)unknown).fill(Bounds.atLeast(0));
       }
@@ -100,8 +100,8 @@ public class Enumerant implements Comparable<Enumerant> {
     Pattern pattern = Pattern.compile(String.format("^%s$", this.tree));
 
     for (Unknown unknown : this.unknowns.values()) {
-      if (unknown instanceof UnknownNode) {
-        ((UnknownNode)unknown).clear();
+      if (unknown instanceof UnknownChar) {
+        ((UnknownChar)unknown).clear();
       }
     }
 
@@ -112,8 +112,8 @@ public class Enumerant implements Comparable<Enumerant> {
     List<Enumerant> expansions = new LinkedList<>();
 
     for (Unknown u : this.unknowns.values()) {
-      if (u instanceof UnknownNode) {
-        UnknownNode unknown = (UnknownNode)u;
+      if (u instanceof UnknownChar) {
+        UnknownChar unknown = (UnknownChar)u;
 
         expansions.add(this.expandWithUnion(unknown));
 
@@ -130,44 +130,44 @@ public class Enumerant implements Comparable<Enumerant> {
     return expansions;
   }
 
-  private Enumerant expandWithUnion (UnknownNode unknown) {
-    UnknownNode unknown1 = unknown.expand(UnknownNode.ExpansionChoice.Union);
-    UnknownNode unknown2 = unknown.expand(UnknownNode.ExpansionChoice.Union);
+  private Enumerant expandWithUnion (UnknownChar unknown) {
+    UnknownChar unknown1 = unknown.expand(UnknownChar.ExpansionChoice.Union);
+    UnknownChar unknown2 = unknown.expand(UnknownChar.ExpansionChoice.Union);
     List<Unknown> newUnknowns = Arrays.asList(unknown1, unknown2);
     RegexNode newTree = new UnionNode(unknown1, unknown2);
-    Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.UNION_COST, UnknownNode.ExpansionChoice.Union);
-    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Union);
+    Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.UNION_COST, UnknownChar.ExpansionChoice.Union);
+    return Grafter.graft(this, unknown, twig, UnknownChar.ExpansionChoice.Union);
   }
 
-  private Enumerant expandWithOptional (UnknownNode unknown) {
-    UnknownNode newUnknown = unknown.expand(UnknownNode.ExpansionChoice.Optional);
+  private Enumerant expandWithOptional (UnknownChar unknown) {
+    UnknownChar newUnknown = unknown.expand(UnknownChar.ExpansionChoice.Optional);
     RegexNode newTree = new OptionalNode(newUnknown);
-    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.OPTIONAL_COST, UnknownNode.ExpansionChoice.Optional);
-    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Optional);
+    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.OPTIONAL_COST, UnknownChar.ExpansionChoice.Optional);
+    return Grafter.graft(this, unknown, twig, UnknownChar.ExpansionChoice.Optional);
   }
 
-  private Enumerant expandWithStar (UnknownNode unknown) {
-    UnknownNode newUnknown = unknown.expand(UnknownNode.ExpansionChoice.Star);
+  private Enumerant expandWithStar (UnknownChar unknown) {
+    UnknownChar newUnknown = unknown.expand(UnknownChar.ExpansionChoice.Star);
     RegexNode newTree = new StarNode(newUnknown);
-    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.STAR_COST, UnknownNode.ExpansionChoice.Star);
-    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Star);
+    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.STAR_COST, UnknownChar.ExpansionChoice.Star);
+    return Grafter.graft(this, unknown, twig, UnknownChar.ExpansionChoice.Star);
   }
 
-  private Enumerant expandWithPlus (UnknownNode unknown) {
-    UnknownNode newUnknown = unknown.expand(UnknownNode.ExpansionChoice.Plus);
+  private Enumerant expandWithPlus (UnknownChar unknown) {
+    UnknownChar newUnknown = unknown.expand(UnknownChar.ExpansionChoice.Plus);
     RegexNode newTree = new PlusNode(newUnknown);
-    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.PLUS_COST, UnknownNode.ExpansionChoice.Plus);
-    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Plus);
+    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.PLUS_COST, UnknownChar.ExpansionChoice.Plus);
+    return Grafter.graft(this, unknown, twig, UnknownChar.ExpansionChoice.Plus);
   }
 
-  private Enumerant expandWithConcat (UnknownNode unknown) {
-    UnknownNode unknown1 = unknown.expand(UnknownNode.ExpansionChoice.Concat);
-    UnknownNode unknown2 = unknown.expand(UnknownNode.ExpansionChoice.Concat);
-    List<UnknownNode> newUnknownNodes = Arrays.asList(unknown1, unknown2);
+  private Enumerant expandWithConcat (UnknownChar unknown) {
+    UnknownChar unknown1 = unknown.expand(UnknownChar.ExpansionChoice.Concat);
+    UnknownChar unknown2 = unknown.expand(UnknownChar.ExpansionChoice.Concat);
+    List<UnknownChar> newUnknownChars = Arrays.asList(unknown1, unknown2);
     List<Unknown> newUnknowns = Arrays.asList((Unknown)unknown1, (Unknown)unknown2);
-    RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newUnknownNodes));
-    Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.CONCAT_COST, UnknownNode.ExpansionChoice.Concat);
-    return Grafter.graft(this, unknown, twig, UnknownNode.ExpansionChoice.Concat);
+    RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newUnknownChars));
+    Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.CONCAT_COST, UnknownChar.ExpansionChoice.Concat);
+    return Grafter.graft(this, unknown, twig, UnknownChar.ExpansionChoice.Concat);
   }
 
   public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {

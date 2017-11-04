@@ -29,7 +29,7 @@ public class Grafter {
     return new Enumerant(graftedTree, graftedUnknowns, graftedCost, original.getExpansionChoice());
   }
 
-  public static Enumerant graft (Enumerant original, UnknownNode unknown, Enumerant twig, UnknownNode.ExpansionChoice expansion) {
+  public static Enumerant graft (Enumerant original, UnknownChar unknown, Enumerant twig, UnknownChar.ExpansionChoice expansion) {
     if (original.getUnknowns().contains(unknown) == false) {
       throw new IllegalArgumentException("unknown object must be in the partial tree");
     }
@@ -49,12 +49,12 @@ public class Grafter {
     return graftNode(original, id, scion);
   }
 
-  public static RegexNode graft (RegexNode original, UnknownNode unknown, Object scion) {
+  public static RegexNode graft (RegexNode original, UnknownChar unknown, Object scion) {
     return graftNode(original, unknown.getId(), scion);
   }
 
   private static RegexNode graftNode (RegexNode node, UnknownId id, Object scion) {
-         if (node instanceof UnknownNode)    { return graftUnknown((UnknownNode) node, id, scion); }
+         if (node instanceof UnknownChar)    { return graftUnknown((UnknownChar) node, id, scion); }
     else if (node instanceof ConcatNode)     { return graftConcat((ConcatNode) node, id, scion); }
     else if (node instanceof UnionNode)      { return graftUnion((UnionNode) node, id, scion); }
     else if (node instanceof RepetitionNode) { return graftRepetition((RepetitionNode) node, id, scion); }
@@ -69,7 +69,7 @@ public class Grafter {
     }
   }
 
-  private static RegexNode graftUnknown (UnknownNode node, UnknownId id, Object scion) {
+  private static RegexNode graftUnknown (UnknownChar node, UnknownId id, Object scion) {
     if (node.getId().equals(id)) {
       if (scion instanceof RegexNode) {
         return (RegexNode) scion;

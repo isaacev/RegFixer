@@ -63,17 +63,17 @@ public class Corpus {
   }
 
   public boolean passesDotTest (Enumerant enumerant) {
-    Pattern pattern = enumerant.toPattern(UnknownNode.FillType.Dot);
+    Pattern pattern = enumerant.toPattern(UnknownChar.FillType.Dot);
     return matchesStrings(pattern, this.positiveExamples);
   }
 
   public boolean passesDotStarTest (Enumerant enumerant) {
-    Pattern pattern = enumerant.toPattern(UnknownNode.FillType.DotStar);
+    Pattern pattern = enumerant.toPattern(UnknownChar.FillType.DotStar);
     return matchesStrings(pattern, this.positiveExamples);
   }
 
   public boolean passesEmptySetTest (Enumerant enumerant) {
-    Pattern pattern = enumerant.toPattern(UnknownNode.FillType.EmptySet);
+    Pattern pattern = enumerant.toPattern(UnknownChar.FillType.EmptySet);
     return doesNotMatchStrings(pattern, this.negativeExamples);
   }
 

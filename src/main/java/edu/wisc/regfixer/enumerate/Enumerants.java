@@ -33,7 +33,7 @@ public class Enumerants {
       }
     }
 
-    if (enumerant.getExpansionChoice() == UnknownNode.ExpansionChoice.Union) {
+    if (enumerant.getExpansionChoice() == UnknownChar.ExpansionChoice.Union) {
       return this.poll();
     } else {
       return enumerant;

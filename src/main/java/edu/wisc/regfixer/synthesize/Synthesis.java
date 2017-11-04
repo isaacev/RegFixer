@@ -12,7 +12,7 @@ import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Grafter;
 import edu.wisc.regfixer.enumerate.Unknown;
 import edu.wisc.regfixer.enumerate.UnknownId;
-import edu.wisc.regfixer.enumerate.UnknownNode;
+import edu.wisc.regfixer.enumerate.UnknownChar;
 import edu.wisc.regfixer.parser.Bounds;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.RegexNode;
@@ -41,7 +41,7 @@ public class Synthesis {
       Unknown unknown = enumerant.getUnknown(solution.getKey());
       RegexNode twig = solution.getValue();
 
-      if (unknown instanceof UnknownNode) {
+      if (unknown instanceof UnknownChar) {
         whole = Grafter.graft(whole, solution.getKey(), twig);
       }
     }
