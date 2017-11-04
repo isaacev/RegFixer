@@ -141,6 +141,7 @@ public class Automaton extends automata.Automaton {
 
   private Route traceFromState (State endState) {
     Map<UnknownId, Set<Character>> crosses = new HashMap<>();
+    Map<UnknownId, Integer> exits = new HashMap<>();
 
     State currState = endState;
     while (currState != null) {
@@ -155,10 +156,18 @@ public class Automaton extends automata.Automaton {
         crosses.get(id).add(value);
       }
 
+      for (Map.Entry<UnknownId, Set<Integer>> entry : this.unknownToStates.entrySet()) {
+        if (entry.getValue().contains(currState.getStateId())) {
+          UnknownId id = entry.getKey();
+          int old = exits.get(id) != null ? exits.get(id) : 0;
+          exits.put(id, old + 1);
+        }
+      }
+
       currState = currState.getParent();
     }
 
-    return new Route(crosses);
+    return new Route(crosses, exits);
   }
 
   public boolean accepts (String str) throws TimeoutException {
