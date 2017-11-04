@@ -39,12 +39,12 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
   }
 
   public UnknownChar (Expansion latest) {
-    this.id = new UnknownId();
+    this.id = new UnknownId(this);
     this.history.add(latest);
   }
 
   public UnknownChar (List<Expansion> history) {
-    this.id = new UnknownId();
+    this.id = new UnknownId(this);
     this.age = UnknownChar.nextAge++;
     this.history = history;
   }

@@ -2,9 +2,15 @@ package edu.wisc.regfixer.enumerate;
 
 public class UnknownId {
   private int id;
+  private Unknown unknown;
 
-  public UnknownId () {
+  public UnknownId (Unknown unknown) {
     this.id = UnknownId.getNextId();
+    this.unknown = unknown;
+  }
+
+  public Unknown getUnknown () {
+    return this.unknown;
   }
 
   @Override
