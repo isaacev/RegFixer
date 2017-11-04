@@ -29,6 +29,18 @@ public class Bounds {
     this.max = max;
   }
 
+  public int getMin () {
+    return this.min;
+  }
+
+  public boolean hasMax () {
+    return (this.max != null);
+  }
+
+  public int getMax () {
+    return this.max;
+  }
+
   public String toString () {
     if (this.max == null) {
       return String.format("{%d,}", this.min);
