@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import edu.wisc.regfixer.enumerate.Expansion;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.OptionalNode;
@@ -26,7 +27,7 @@ public class Slicer {
     return sliceNode(node, new LinkedList<>());
   }
 
-  private static List<Enumerant> sliceNode (RegexNode node, List<UnknownChar.ExpansionChoice> history) {
+  private static List<Enumerant> sliceNode (RegexNode node, List<Expansion> history) {
          if (node instanceof ConcatNode)     { return sliceConcat((ConcatNode) node, history); }
     else if (node instanceof UnionNode)      { return sliceUnion((UnionNode) node, history); }
     else if (node instanceof RepetitionNode) { return sliceRepetition((RepetitionNode) node, history); }
@@ -41,10 +42,10 @@ public class Slicer {
     }
   }
 
-  private static List<Enumerant> sliceConcat (ConcatNode node, List<UnknownChar.ExpansionChoice> history) {
+  private static List<Enumerant> sliceConcat (ConcatNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
-    List<UnknownChar.ExpansionChoice> newHistory = new LinkedList<>(history);
-    newHistory.add(UnknownChar.ExpansionChoice.Concat);
+    List<Expansion> newHistory = new LinkedList<>(history);
+    newHistory.add(Expansion.Concat);
 
     // Replace sub-lists of children with single unknowns
     List<RegexNode> children = node.getChildren();
@@ -66,7 +67,7 @@ public class Slicer {
         } else {
           UnknownChar unknown = new UnknownChar(newHistory);
           int descendants = midfix.stream().mapToInt(RegexNode::descendants).sum();
-          midfixPartials.add(new Enumerant(unknown, unknown, descendants, UnknownChar.ExpansionChoice.Concat));
+          midfixPartials.add(new Enumerant(unknown, unknown, descendants, Expansion.Concat));
         }
 
         if (prefix.size() == 0 && suffix.size() == 0) {
@@ -82,7 +83,7 @@ public class Slicer {
             partialChildren.addAll(suffix);
 
             ConcatNode partialNode = new ConcatNode(partialChildren);
-            partials.add(new Enumerant(partialNode, midfixPartial.getUnknowns(), 0, UnknownChar.ExpansionChoice.Concat));
+            partials.add(new Enumerant(partialNode, midfixPartial.getUnknowns(), 0, Expansion.Concat));
           }
         }
       }
@@ -103,36 +104,36 @@ public class Slicer {
       }
 
       ConcatNode newNode = new ConcatNode(newChildren);
-      partials.add(new Enumerant(newNode, newUnknown, 1, UnknownChar.ExpansionChoice.Concat));
+      partials.add(new Enumerant(newNode, newUnknown, 1, Expansion.Concat));
     }
 
     return partials;
   }
 
-  private static List<Enumerant> sliceUnion (UnionNode node, List<UnknownChar.ExpansionChoice> history) {
+  private static List<Enumerant> sliceUnion (UnionNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
-    List<UnknownChar.ExpansionChoice> newHistory = new LinkedList<>(history);
-    newHistory.add(UnknownChar.ExpansionChoice.Union);
+    List<Expansion> newHistory = new LinkedList<>(history);
+    newHistory.add(Expansion.Union);
 
     for (Enumerant partial : sliceNode(node.getLeftChild(), newHistory)) {
       UnionNode branch = new UnionNode(partial.getTree(), node.getRightChild());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), 0, UnknownChar.ExpansionChoice.Union));
+      partials.add(new Enumerant(branch, partial.getUnknowns(), 0, Expansion.Union));
     }
 
     for (Enumerant partial : sliceNode(node.getRightChild(), newHistory)) {
       UnionNode branch = new UnionNode(node.getLeftChild(), partial.getTree());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), 0, UnknownChar.ExpansionChoice.Union));
+      partials.add(new Enumerant(branch, partial.getUnknowns(), 0, Expansion.Union));
     }
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), UnknownChar.ExpansionChoice.Union));
+    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Union));
     return partials;
   }
 
-  private static List<Enumerant> sliceRepetition (RepetitionNode node, List<UnknownChar.ExpansionChoice> history) {
+  private static List<Enumerant> sliceRepetition (RepetitionNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
-    List<UnknownChar.ExpansionChoice> newHistory = new LinkedList<>(history);
-    newHistory.add(UnknownChar.ExpansionChoice.Repeat);
+    List<Expansion> newHistory = new LinkedList<>(history);
+    newHistory.add(Expansion.Repeat);
 
     /**
      * For each permutation of unknowns added to this node's children, add
@@ -152,69 +153,69 @@ public class Slicer {
      */
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
       RepetitionNode branch = new RepetitionNode(partial.getTree(), node.getBounds());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), UnknownChar.ExpansionChoice.Repeat));
+      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), Expansion.Repeat));
 
       branch = new RepetitionNode(partial.getTree(), new UnknownBounds());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost() + 1, UnknownChar.ExpansionChoice.Repeat));
+      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost() + 1, Expansion.Repeat));
     }
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), UnknownChar.ExpansionChoice.Repeat));
+    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Repeat));
     return partials;
   }
 
-  private static List<Enumerant> sliceOptional (OptionalNode node, List<UnknownChar.ExpansionChoice> history) {
+  private static List<Enumerant> sliceOptional (OptionalNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
-    List<UnknownChar.ExpansionChoice> newHistory = new LinkedList<>(history);
-    newHistory.add(UnknownChar.ExpansionChoice.Optional);
+    List<Expansion> newHistory = new LinkedList<>(history);
+    newHistory.add(Expansion.Optional);
 
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
       OptionalNode branch = new OptionalNode(partial.getTree());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), UnknownChar.ExpansionChoice.Optional));
+      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), Expansion.Optional));
     }
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), UnknownChar.ExpansionChoice.Optional));
+    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Optional));
     return partials;
   }
 
-  private static List<Enumerant> sliceStar (StarNode node, List<UnknownChar.ExpansionChoice> history) {
+  private static List<Enumerant> sliceStar (StarNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
-    List<UnknownChar.ExpansionChoice> newHistory = new LinkedList<>(history);
-    newHistory.add(UnknownChar.ExpansionChoice.Star);
+    List<Expansion> newHistory = new LinkedList<>(history);
+    newHistory.add(Expansion.Star);
 
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
       StarNode branch = new StarNode(partial.getTree());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), UnknownChar.ExpansionChoice.Star));
+      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), Expansion.Star));
     }
 
     // (R0)* -> (R0){■}
     UnknownBounds UnknownBounds = new UnknownBounds();
     RepetitionNode branch = new RepetitionNode(node.getChild(), UnknownBounds);
-    partials.add(new Enumerant(branch, Arrays.asList(UnknownBounds), 1, UnknownChar.ExpansionChoice.Repeat));
+    partials.add(new Enumerant(branch, Arrays.asList(UnknownBounds), 1, Expansion.Repeat));
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), UnknownChar.ExpansionChoice.Star));
+    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Star));
     return partials;
   }
 
-  private static List<Enumerant> slicePlus (PlusNode node, List<UnknownChar.ExpansionChoice> history) {
+  private static List<Enumerant> slicePlus (PlusNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
-    List<UnknownChar.ExpansionChoice> newHistory = new LinkedList<>(history);
-    newHistory.add(UnknownChar.ExpansionChoice.Plus);
+    List<Expansion> newHistory = new LinkedList<>(history);
+    newHistory.add(Expansion.Plus);
 
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
       PlusNode branch = new PlusNode(partial.getTree());
-      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), UnknownChar.ExpansionChoice.Plus));
+      partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), Expansion.Plus));
     }
 
     UnknownChar unknown = new UnknownChar(history);
-    partials.add(new Enumerant(unknown, unknown, node.descendants(), UnknownChar.ExpansionChoice.Plus));
+    partials.add(new Enumerant(unknown, unknown, node.descendants(), Expansion.Plus));
     return partials;
   }
 
-  private static List<Enumerant> sliceAtomic (List<UnknownChar.ExpansionChoice> history) {
+  private static List<Enumerant> sliceAtomic (List<Expansion> history) {
     UnknownChar unknown = new UnknownChar(history);
-    return Arrays.asList(new Enumerant(unknown, unknown, 1, UnknownChar.ExpansionChoice.Concat));
+    return Arrays.asList(new Enumerant(unknown, unknown, 1, Expansion.Concat));
   }
 }

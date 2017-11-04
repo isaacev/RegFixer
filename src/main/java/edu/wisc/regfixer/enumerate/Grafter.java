@@ -26,10 +26,10 @@ public class Grafter {
     }
     int graftedCost = original.getCost() + 1;
 
-    return new Enumerant(graftedTree, graftedUnknowns, graftedCost, original.getExpansionChoice());
+    return new Enumerant(graftedTree, graftedUnknowns, graftedCost, original.getExpansion());
   }
 
-  public static Enumerant graft (Enumerant original, UnknownChar unknown, Enumerant twig, UnknownChar.ExpansionChoice expansion) {
+  public static Enumerant graft (Enumerant original, UnknownChar unknown, Enumerant twig, Expansion expansion) {
     if (original.getUnknowns().contains(unknown) == false) {
       throw new IllegalArgumentException("unknown object must be in the partial tree");
     }

@@ -8,15 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> {
-  public static enum ExpansionChoice {
-    Union,
-    Concat,
-    Star,
-    Plus,
-    Optional,
-    Repeat,
-  }
-
   public static enum FillType {
     Dot,
     DotStar,
@@ -28,18 +19,18 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
   private UnknownId id;
   private RegexNode child = null;
   private int age;
-  private List<ExpansionChoice> history;
+  private List<Expansion> history;
 
   private UnknownChar () {
     this(new LinkedList<>());
   }
 
-  public UnknownChar (ExpansionChoice latest) {
+  public UnknownChar (Expansion latest) {
     this.id = new UnknownId();
     this.history.add(latest);
   }
 
-  public UnknownChar (List<ExpansionChoice> history) {
+  public UnknownChar (List<Expansion> history) {
     this.id = new UnknownId();
     this.age = UnknownChar.nextAge++;
     this.history = history;
@@ -49,8 +40,8 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
     return this.id;
   }
 
-  public UnknownChar expand (ExpansionChoice latest) {
-    List<ExpansionChoice> newHistory = new LinkedList<>(this.history);
+  public UnknownChar expand (Expansion latest) {
+    List<Expansion> newHistory = new LinkedList<>(this.history);
     newHistory.add(latest);
     return new UnknownChar(newHistory);
   }

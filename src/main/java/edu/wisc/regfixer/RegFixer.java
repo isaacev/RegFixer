@@ -8,6 +8,7 @@ import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Enumerants;
 import edu.wisc.regfixer.enumerate.UnknownChar;
+import edu.wisc.regfixer.enumerate.Expansion;
 import edu.wisc.regfixer.enumerate.Job;
 import edu.wisc.regfixer.enumerate.Range;
 import edu.wisc.regfixer.synthesize.Synthesis;
@@ -58,9 +59,9 @@ public class RegFixer {
 
       synthesis = null;
       diag.output().printPartialRow(enumerant.getCost(), enumerant.toString());
-      UnknownChar.ExpansionChoice expansion = enumerant.getExpansionChoice();
+      Expansion expansion = enumerant.getExpansion();
 
-      if (expansion == UnknownChar.ExpansionChoice.Concat) {
+      if (expansion == Expansion.Concat) {
         if (job.getCorpus().passesDotTest(enumerant)) {
           try {
             synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
@@ -71,7 +72,7 @@ public class RegFixer {
         } else {
           diag.output().finishRow("failed dot test");
         }
-      } else if (expansion == UnknownChar.ExpansionChoice.Star) {
+      } else if (expansion == Expansion.Star) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
             synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
@@ -82,14 +83,14 @@ public class RegFixer {
         } else {
           diag.output().finishRow("failed empty set test");
         }
-      } else if (expansion == UnknownChar.ExpansionChoice.Plus) {
+      } else if (expansion == Expansion.Plus) {
         try {
           synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
         } catch (SynthesisFailure ex) {
           diag.output().finishRow(ex.getMessage());
           continue;
         }
-      } else if (expansion == UnknownChar.ExpansionChoice.Optional) {
+      } else if (expansion == Expansion.Optional) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
             synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
