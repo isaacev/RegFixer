@@ -1,8 +1,8 @@
 package edu.wisc.regfixer.parser;
 
 public class Bounds {
-  private int min;
-  private Integer max;
+  protected int min;
+  protected Integer max;
 
   public static Bounds exactly (int n) {
     return new Bounds(n, n);
@@ -16,7 +16,7 @@ public class Bounds {
     return new Bounds(min, max);
   }
 
-  private Bounds (int min, Integer max) {
+  protected Bounds (int min, Integer max) {
     if (min < 0) {
       throw new IllegalArgumentException("illegal min < 0");
     }
