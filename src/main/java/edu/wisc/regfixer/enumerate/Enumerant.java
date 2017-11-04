@@ -2,7 +2,6 @@ package edu.wisc.regfixer.enumerate;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +12,6 @@ import java.util.Set;
 import edu.wisc.regfixer.automata.Automaton;
 import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
-import edu.wisc.regfixer.parser.Bounds;
 import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.OptionalNode;
 import edu.wisc.regfixer.parser.PlusNode;
