@@ -13,6 +13,7 @@ import edu.wisc.regfixer.enumerate.Grafter;
 import edu.wisc.regfixer.enumerate.Unknown;
 import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.enumerate.UnknownNode;
+import edu.wisc.regfixer.parser.Bounds;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.RegexNode;
 
@@ -25,24 +26,31 @@ public class Synthesis {
 
   public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives, Diagnostic diag) throws SynthesisFailure {
     Formula formula = new Formula(positives, negatives, diag);
-    Map<UnknownId, CharClass> unknownSolutions = formula.solve();
+    formula.solve();
 
-    if (unknownSolutions.size() != enumerant.getUnknowns().size()) {
+    Map<UnknownId, CharClass> charSolutions = formula.getCharSolutions();
+    Map<UnknownId, Bounds> boundsSolutions = formula.getBoundsSolutions();
+
+    if ((charSolutions.size() + boundsSolutions.size()) < enumerant.getUnknowns().size()) {
       throw new SynthesisFailure("no solution for some unknowns");
     }
 
-    RegexNode solution = enumerant.getTree();
+    RegexNode whole = enumerant.getTree();
 
-    for (Entry<UnknownId, CharClass> unknownSolution : unknownSolutions.entrySet()) {
-      Unknown unknown = enumerant.getUnknown(unknownSolution.getKey());
-      RegexNode twig = unknownSolution.getValue();
+    for (Entry<UnknownId, CharClass> solution : charSolutions.entrySet()) {
+      Unknown unknown = enumerant.getUnknown(solution.getKey());
+      RegexNode twig = solution.getValue();
 
       if (unknown instanceof UnknownNode) {
-        solution = Grafter.graft(solution, (UnknownNode)unknown, twig);
+        whole = Grafter.graft(whole, solution.getKey(), twig);
       }
     }
 
-    this.tree = solution;
+    for (Entry<UnknownId, Bounds> solution : boundsSolutions.entrySet()) {
+      whole = Grafter.graft(whole, solution.getKey(), solution.getValue());
+    }
+
+    this.tree = whole;
   }
 
   public RegexNode getTree () {
