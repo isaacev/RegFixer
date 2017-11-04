@@ -410,40 +410,40 @@ public class Formula {
   }
 
   public void solve () throws SynthesisFailure {
+    if (this.diag.getBool("print-var-map")) {
+      String header = String.format("\nVAR MAP for %d", this.diag.output().count());
+      this.diag.output().printBlock(header);
+      for (BoolExpr var : this.varToTree.keySet()) {
+        CharClass cc = this.varToTree.get(var).getCharClass();
+        String line = String.format("%-10s : '%s'\n", var, cc);
+        this.diag.output().printBlock(line);
+      }
+      this.diag.output().printBreak();
+    }
+
+    if (this.diag.getBool("print-class-map")) {
+      String header = String.format("\nCLASS MAP for %d", this.diag.output().count());
+      this.diag.output().printBlock(header);
+      this.diag.output().printBlock(this.tree);
+      for (MetaClassTree tree : this.misc) {
+        this.diag.output().printBlock(tree);
+      }
+      this.diag.output().printBreak();
+    }
+
+    if (this.diag.getBool("print-formula")) {
+      String header = String.format("\nFORMULA for %d", this.diag.output().count());
+      this.diag.output().printBlock(header);
+      this.diag.output().printBlock(this.opt.toString());
+      this.diag.output().printBreak();
+    }
+
     /**
      * First, check that the formula was satisifed
      */
     if (this.opt.Check() == Status.UNSATISFIABLE) {
       throw new SynthesisFailure("unsatisfiable SAT formula");
     } else {
-      if (this.diag.getBool("print-var-map")) {
-        String header = String.format("\nVAR MAP for %d", this.diag.output().count());
-        this.diag.output().printBlock(header);
-        for (BoolExpr var : this.varToTree.keySet()) {
-          CharClass cc = this.varToTree.get(var).getCharClass();
-          String line = String.format("%-10s : '%s'\n", var, cc);
-          this.diag.output().printBlock(line);
-        }
-        this.diag.output().printBreak();
-      }
-
-      if (this.diag.getBool("print-class-map")) {
-        String header = String.format("\nCLASS MAP for %d", this.diag.output().count());
-        this.diag.output().printBlock(header);
-        this.diag.output().printBlock(this.tree);
-        for (MetaClassTree tree : this.misc) {
-          this.diag.output().printBlock(tree);
-        }
-        this.diag.output().printBreak();
-      }
-
-      if (this.diag.getBool("print-formula")) {
-        String header = String.format("\nFORMULA for %d", this.diag.output().count());
-        this.diag.output().printBlock(header);
-        this.diag.output().printBlock(this.opt.toString());
-        this.diag.output().printBreak();
-      }
-
       // Use the SAT solver to attempt to resolve the variables and their constraints.
       this.model = this.opt.getModel();
 
