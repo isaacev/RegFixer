@@ -138,7 +138,7 @@ public class Slicer {
      * For each permutation of unknowns added to this node's children, add
      * an enumerant with the original bounds an another enumerant with unknown
      * bounds.So given:
-     * 
+     *
      * (\d\w){1,3}
      *
      * Add (where ? represents an unknown):
