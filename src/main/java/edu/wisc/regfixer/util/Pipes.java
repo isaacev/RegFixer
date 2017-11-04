@@ -1,9 +1,9 @@
 package edu.wisc.regfixer.util;
 
-import java.util.List;
-import java.util.LinkedList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Pipes {
   private static List<String> mapPositions (int[] start, int[] end, boolean ltr) {

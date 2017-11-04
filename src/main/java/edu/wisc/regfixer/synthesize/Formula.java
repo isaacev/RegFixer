@@ -30,7 +30,6 @@ import edu.wisc.regfixer.parser.CharRangeNode;
 import edu.wisc.regfixer.parser.ConcreteCharClass;
 import edu.wisc.regfixer.util.PrintableTree;
 
-
 public class Formula {
   private static Predicate pred_d = new SimplePredicate('0', '9');
   private static Predicate pred_D = new CompoundPredicate(false,

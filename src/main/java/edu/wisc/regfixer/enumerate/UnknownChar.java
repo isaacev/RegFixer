@@ -1,11 +1,12 @@
 package edu.wisc.regfixer.enumerate;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharLiteralNode;
 import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.parser.StarNode;
-import java.util.LinkedList;
-import java.util.List;
 
 public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> {
   public static enum FillType {

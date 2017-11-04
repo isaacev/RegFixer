@@ -1,7 +1,7 @@
 package edu.wisc.regfixer.enumerate;
 
-import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.Set;
 
 import edu.wisc.regfixer.parser.RegexNode;
 import org.apache.commons.codec.digest.DigestUtils;

@@ -3,16 +3,16 @@ package edu.wisc.regfixer.synthesize;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.Set;
 
 import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Grafter;
 import edu.wisc.regfixer.enumerate.Unknown;
-import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.enumerate.UnknownChar;
+import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.parser.Bounds;
 import edu.wisc.regfixer.parser.CharClass;
 import edu.wisc.regfixer.parser.RegexNode;

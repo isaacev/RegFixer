@@ -1,8 +1,8 @@
 package edu.wisc.regfixer.parser;
 
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CharClassSetNode implements CharClass {
   private boolean not;

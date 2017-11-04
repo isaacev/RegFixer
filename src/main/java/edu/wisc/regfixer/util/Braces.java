@@ -1,7 +1,7 @@
 package edu.wisc.regfixer.util;
 
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Braces {
   private static String drawBraces (int[] offsets, int[] joints, int[] widths, boolean facingDown) {
