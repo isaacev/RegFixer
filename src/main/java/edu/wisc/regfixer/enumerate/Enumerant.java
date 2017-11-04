@@ -32,78 +32,52 @@ public class Enumerant implements Comparable<Enumerant> {
   public final static int CONCAT_COST   = 1;
 
   private final RegexNode tree;
-  private final Map<UnknownId, Unknown> unknowns;
+  private final Set<UnknownId> ids;
   private final int cost;
-  private final Expansion expansion;
+  private final Expansion latest;
 
-  public Enumerant (RegexNode tree, Unknown unknown, int cost, Expansion expansion) {
-    this(tree, Arrays.asList(unknown), cost, expansion);
+  public Enumerant (RegexNode tree, UnknownId id, int cost, Expansion latest) {
+    this(tree, Arrays.asList(id), cost, latest);
   }
 
-  public Enumerant (RegexNode tree, Collection<Unknown> unknowns, int cost, Expansion expansion) {
-    Map<UnknownId, Unknown> map = new HashMap<>();
-
-    for (Unknown unknown : unknowns) {
-      map.put(unknown.getId(), unknown);
-    }
-
+  public Enumerant (RegexNode tree, Collection<UnknownId> ids, int cost, Expansion latest) {
     this.tree = tree;
-    this.unknowns = map;
+    this.ids = new HashSet<>(ids);
     this.cost = cost;
-    this.expansion = expansion;
-  }
-
-  public Enumerant (RegexNode tree, Map<UnknownId, Unknown> unknowns, int cost) {
-    this.tree = tree;
-    this.unknowns = unknowns;
-    this.cost = cost;
-    this.expansion = null;
+    this.latest = latest;
   }
 
   public RegexNode getTree () {
     return this.tree;
   }
 
-  public Set<Unknown> getUnknowns () {
-    return new HashSet<Unknown>(this.unknowns.values());
+  public Set<UnknownId> getIds () {
+    return this.ids;
   }
 
-  public Unknown getUnknown (UnknownId id) {
-    return this.unknowns.get(id);
-  }
-
-  public boolean hasUnknown (Unknown unknown) {
-    return this.hasUnknown(unknown.getId());
-  }
-
-  public boolean hasUnknown (UnknownId id) {
-    return this.unknowns.containsKey(id);
+  public boolean hasUnknownId (UnknownId id) {
+    return this.ids.contains(id);
   }
 
   public int getCost () {
     return this.cost;
   }
 
-  public Expansion getExpansion () {
-    return this.expansion;
+  public Expansion getLatestExpansion () {
+    return this.latest;
   }
 
   public Pattern toPattern (UnknownChar.FillType type) {
-    for (Unknown unknown : this.unknowns.values()) {
-      if (unknown instanceof UnknownChar) {
-        ((UnknownChar)unknown).fill(type);
-      } else if (unknown instanceof UnknownBounds) {
-        ((UnknownBounds)unknown).fill(Bounds.atLeast(0));
-      }
-    }
+    // Set temporary values for unknowns.
+    UnknownChar.setFill(type);
+    UnknownBounds.setFill();
 
+    // Build the pattern with temporary values replacing unknowns.
     Pattern pattern = Pattern.compile(String.format("^%s$", this.tree));
 
-    for (Unknown unknown : this.unknowns.values()) {
-      if (unknown instanceof UnknownChar) {
-        ((UnknownChar)unknown).clear();
-      }
-    }
+    // Clear the temporary values.
+    UnknownChar.clearFill();
+    UnknownBounds.clearFill();
 
     return pattern;
   }
@@ -111,10 +85,9 @@ public class Enumerant implements Comparable<Enumerant> {
   public List<Enumerant> expand () {
     List<Enumerant> expansions = new LinkedList<>();
 
-    for (Unknown u : this.unknowns.values()) {
-      if (u instanceof UnknownChar) {
-        UnknownChar unknown = (UnknownChar)u;
-
+    for (UnknownId id : this.ids) {
+      if (id.getUnknown() instanceof UnknownChar) {
+        UnknownChar unknown = (UnknownChar)id.getUnknown();
         expansions.add(this.expandWithUnion(unknown));
 
         if (unknown.canInsertQuantifierNodes()) {
@@ -131,43 +104,107 @@ public class Enumerant implements Comparable<Enumerant> {
   }
 
   private Enumerant expandWithUnion (UnknownChar unknown) {
-    UnknownChar unknown1 = unknown.expand(Expansion.Union);
-    UnknownChar unknown2 = unknown.expand(Expansion.Union);
-    List<Unknown> newUnknowns = Arrays.asList(unknown1, unknown2);
-    RegexNode newTree = new UnionNode(unknown1, unknown2);
-    Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.UNION_COST, Expansion.Union);
-    return Grafter.graft(this, unknown, twig, Expansion.Union);
+    // Create both unknown chars to be added to the regex tree.
+    UnknownChar un1 = new UnknownChar(unknown.getHistory(), Expansion.Union);
+    UnknownChar un2 = new UnknownChar(unknown.getHistory(), Expansion.Union);
+
+    // Create union node to added in place of the given 'unknown'.
+    RegexNode scion = new UnionNode(un1, un2);
+
+    // Graft scion onto the root regex tree.
+    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
+
+    // Build set of IDs custom to the new enumerant.
+    Set<UnknownId> ids = new HashSet<>();
+    ids.addAll(this.getIds());
+    ids.remove(unknown.getId());
+    ids.add(un1.getId());
+    ids.add(un2.getId());
+
+    // Build components into new enumerant.
+    return new Enumerant(root, ids, Enumerant.UNION_COST, Expansion.Union);
   }
 
   private Enumerant expandWithOptional (UnknownChar unknown) {
-    UnknownChar newUnknown = unknown.expand(Expansion.Optional);
-    RegexNode newTree = new OptionalNode(newUnknown);
-    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.OPTIONAL_COST, Expansion.Optional);
-    return Grafter.graft(this, unknown, twig, Expansion.Optional);
+    // Create an unknown char to be added to the regex tree.
+    UnknownChar un = new UnknownChar(unknown.getHistory(), Expansion.Optional);
+
+    // Create optional node to added in place of the given 'unknown'.
+    RegexNode scion = new OptionalNode(un);
+
+    // Graft scion onto the root regex tree.
+    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
+
+    // Build set of IDs custom to the new enumerant.
+    Set<UnknownId> ids = new HashSet<>();
+    ids.addAll(this.getIds());
+    ids.remove(unknown.getId());
+    ids.add(un.getId());
+
+    // Build components into new enumerant.
+    return new Enumerant(root, ids, Enumerant.OPTIONAL_COST, Expansion.Optional);
   }
 
   private Enumerant expandWithStar (UnknownChar unknown) {
-    UnknownChar newUnknown = unknown.expand(Expansion.Star);
-    RegexNode newTree = new StarNode(newUnknown);
-    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.STAR_COST, Expansion.Star);
-    return Grafter.graft(this, unknown, twig, Expansion.Star);
+    // Create an unknown char to be added to the regex tree.
+    UnknownChar un = new UnknownChar(unknown.getHistory(), Expansion.Star);
+
+    // Create star node to added in place of the given 'unknown'.
+    RegexNode scion = new StarNode(un);
+
+    // Graft scion onto the root regex tree.
+    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
+
+    // Build set of IDs custom to the new enumerant.
+    Set<UnknownId> ids = new HashSet<>();
+    ids.addAll(this.getIds());
+    ids.remove(unknown.getId());
+    ids.add(un.getId());
+
+    // Build components into new enumerant.
+    return new Enumerant(root, ids, Enumerant.STAR_COST, Expansion.Star);
   }
 
   private Enumerant expandWithPlus (UnknownChar unknown) {
-    UnknownChar newUnknown = unknown.expand(Expansion.Plus);
-    RegexNode newTree = new PlusNode(newUnknown);
-    Enumerant twig = new Enumerant(newTree, newUnknown, Enumerant.PLUS_COST, Expansion.Plus);
-    return Grafter.graft(this, unknown, twig, Expansion.Plus);
+    // Create an unknown char to be added to the regex tree.
+    UnknownChar un = new UnknownChar(unknown.getHistory(), Expansion.Plus);
+
+    // Create plus node to added in place of the given 'unknown'.
+    RegexNode scion = new PlusNode(un);
+
+    // Graft scion onto the root regex tree.
+    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
+
+    // Build set of IDs custom to the new enumerant.
+    Set<UnknownId> ids = new HashSet<>();
+    ids.addAll(this.getIds());
+    ids.remove(unknown.getId());
+    ids.add(un.getId());
+
+    // Build components into new enumerant.
+    return new Enumerant(root, ids, Enumerant.PLUS_COST, Expansion.Plus);
   }
 
   private Enumerant expandWithConcat (UnknownChar unknown) {
-    UnknownChar unknown1 = unknown.expand(Expansion.Concat);
-    UnknownChar unknown2 = unknown.expand(Expansion.Concat);
-    List<UnknownChar> newUnknownChars = Arrays.asList(unknown1, unknown2);
-    List<Unknown> newUnknowns = Arrays.asList((Unknown)unknown1, (Unknown)unknown2);
-    RegexNode newTree = new ConcatNode(new LinkedList<RegexNode>(newUnknownChars));
-    Enumerant twig = new Enumerant(newTree, newUnknowns, Enumerant.CONCAT_COST, Expansion.Concat);
-    return Grafter.graft(this, unknown, twig, Expansion.Concat);
+    // Create both unknown chars to be added to the regex tree.
+    UnknownChar un1 = new UnknownChar(unknown.getHistory(), Expansion.Concat);
+    UnknownChar un2 = new UnknownChar(unknown.getHistory(), Expansion.Concat);
+
+    // Create concatenation node to added in place of the given 'unknown'.
+    RegexNode scion = new ConcatNode(un1, un2);
+
+    // Graft scion onto the root regex tree.
+    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
+
+    // Build set of IDs custom to the new enumerant.
+    Set<UnknownId> ids = new HashSet<>();
+    ids.addAll(this.getIds());
+    ids.remove(unknown.getId());
+    ids.add(un1.getId());
+    ids.add(un2.getId());
+
+    // Build components into new enumerant.
+    return new Enumerant(root, ids, Enumerant.CONCAT_COST, Expansion.Concat);
   }
 
   public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {
