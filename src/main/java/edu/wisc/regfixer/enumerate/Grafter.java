@@ -14,43 +14,14 @@ import edu.wisc.regfixer.parser.RepetitionNode;
 import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 
+/**
+ * The Grafter class takes as input a regular expression syntax tree, the ID of
+ * an unknown within that tree to find, and some Object to replace that unknown
+ * with.
+ */
 public class Grafter {
-  public static Enumerant graft (Enumerant original, UnknownId id, Object twig) {
-    RegexNode graftedTree = graftNode(original.getTree(), id, twig);
-    List<Unknown> graftedUnknowns = original.getUnknowns()
-      .stream()
-      .filter(h -> h.getId() != id)
-      .collect(Collectors.toList());
-    if (twig instanceof Unknown) {
-      graftedUnknowns.add((Unknown)twig);
-    }
-    int graftedCost = original.getCost() + 1;
-
-    return new Enumerant(graftedTree, graftedUnknowns, graftedCost, original.getExpansion());
-  }
-
-  public static Enumerant graft (Enumerant original, UnknownChar unknown, Enumerant twig, Expansion expansion) {
-    if (original.getUnknowns().contains(unknown) == false) {
-      throw new IllegalArgumentException("unknown object must be in the partial tree");
-    }
-
-    RegexNode graftedTree = graftNode(original.getTree(), unknown.getId(), twig.getTree());
-    List<Unknown> graftedUnknowns = original.getUnknowns()
-      .stream()
-      .filter(h -> h != unknown)
-      .collect(Collectors.toList());
-    graftedUnknowns.addAll(twig.getUnknowns());
-    int graftedCost = original.getCost() + twig.getCost();
-
-    return new Enumerant(graftedTree, graftedUnknowns, graftedCost, expansion);
-  }
-
   public static RegexNode graft (RegexNode original, UnknownId id, Object scion) {
     return graftNode(original, id, scion);
-  }
-
-  public static RegexNode graft (RegexNode original, UnknownChar unknown, Object scion) {
-    return graftNode(original, unknown.getId(), scion);
   }
 
   private static RegexNode graftNode (RegexNode node, UnknownId id, Object scion) {
