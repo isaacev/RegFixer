@@ -31,7 +31,7 @@ public class Synthesis {
     Map<UnknownId, CharClass> charSolutions = formula.getCharSolutions();
     Map<UnknownId, Bounds> boundsSolutions = formula.getBoundsSolutions();
 
-    if ((charSolutions.size() + boundsSolutions.size()) < enumerant.getUnknowns().size()) {
+    if ((charSolutions.size() + boundsSolutions.size()) < enumerant.getIds().size()) {
       throw new SynthesisFailure("no solution for some unknowns");
     }
 
