@@ -9,6 +9,7 @@ import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.OptionalNode;
 import edu.wisc.regfixer.parser.PlusNode;
 import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.parser.Bounds;
 import edu.wisc.regfixer.parser.RepetitionNode;
 import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
@@ -24,7 +25,7 @@ public class Grafter {
       throw new IllegalArgumentException("unknown object must be in the partial tree");
     }
 
-    RegexNode graftedTree = graftNode(original.getTree(), unknown, twig.getTree());
+    RegexNode graftedTree = graftNode(original.getTree(), unknown.getId(), twig.getTree());
     List<Unknown> graftedUnknowns = original.getUnknowns()
       .stream()
       .filter(h -> h != unknown)
@@ -35,18 +36,22 @@ public class Grafter {
     return new Enumerant(graftedTree, graftedUnknowns, graftedCost, expansion);
   }
 
-  public static RegexNode graft (RegexNode original, UnknownNode unknown, RegexNode twig) {
-    return graftNode(original, unknown, twig);
+  public static RegexNode graft (RegexNode original, UnknownId id, Object scion) {
+    return graftNode(original, id, scion);
   }
 
-  private static RegexNode graftNode (RegexNode node, UnknownNode unknown, RegexNode twig) {
-         if (node instanceof UnknownNode)    { return graftUnknown((UnknownNode) node, unknown, twig); }
-    else if (node instanceof ConcatNode)     { return graftConcat((ConcatNode) node, unknown, twig); }
-    else if (node instanceof UnionNode)      { return graftUnion((UnionNode) node, unknown, twig); }
-    else if (node instanceof RepetitionNode) { return graftRepetition((RepetitionNode) node, unknown, twig); }
-    else if (node instanceof OptionalNode)   { return graftOptional((OptionalNode) node, unknown, twig); }
-    else if (node instanceof StarNode)       { return graftStar((StarNode) node, unknown, twig); }
-    else if (node instanceof PlusNode)       { return graftPlus((PlusNode) node, unknown, twig); }
+  public static RegexNode graft (RegexNode original, UnknownNode unknown, Object scion) {
+    return graftNode(original, unknown.getId(), scion);
+  }
+
+  private static RegexNode graftNode (RegexNode node, UnknownId id, Object scion) {
+         if (node instanceof UnknownNode)    { return graftUnknown((UnknownNode) node, id, scion); }
+    else if (node instanceof ConcatNode)     { return graftConcat((ConcatNode) node, id, scion); }
+    else if (node instanceof UnionNode)      { return graftUnion((UnionNode) node, id, scion); }
+    else if (node instanceof RepetitionNode) { return graftRepetition((RepetitionNode) node, id, scion); }
+    else if (node instanceof OptionalNode)   { return graftOptional((OptionalNode) node, id, scion); }
+    else if (node instanceof StarNode)       { return graftStar((StarNode) node, id, scion); }
+    else if (node instanceof PlusNode)       { return graftPlus((PlusNode) node, id, scion); }
     else if (node instanceof CharClass)      { return graftAtom(node); }
     else {
       System.err.printf("Unknown AST class: %s\n", node.getClass().getName());
@@ -55,21 +60,26 @@ public class Grafter {
     }
   }
 
-  private static RegexNode graftUnknown (UnknownNode node, UnknownNode unknown, RegexNode twig) {
-    if (unknown == node) {
-      return twig;
+  private static RegexNode graftUnknown (UnknownNode node, UnknownId id, Object scion) {
+    if (node.getId().equals(id)) {
+      if (scion instanceof RegexNode) {
+        return (RegexNode) scion;
+      } else {
+        String msg = String.format("cannot graft '%s'", scion);
+        throw new IllegalArgumentException(msg);
+      }
     } else {
       return node;
     }
   }
 
-  private static RegexNode graftConcat (ConcatNode node, UnknownNode unknown, RegexNode twig) {
+  private static RegexNode graftConcat (ConcatNode node, UnknownId id, Object scion) {
     List<RegexNode> children = node.getChildren();
     List<RegexNode> newChildren = new LinkedList<>(children);
     boolean childrenNoChange = true;
 
     for (int i = 0; i < children.size(); i++) {
-      RegexNode graftee = graftNode(children.get(i), unknown, twig);
+      RegexNode graftee = graftNode(children.get(i), id, scion);
 
       if (graftee != children.get(i)) {
         childrenNoChange = false;
@@ -84,9 +94,9 @@ public class Grafter {
     }
   }
 
-  private static RegexNode graftUnion (UnionNode node, UnknownNode unknown, RegexNode twig) {
-    RegexNode leftGraftee  = graftNode(node.getLeftChild(), unknown, twig);
-    RegexNode rightGraftee = graftNode(node.getRightChild(), unknown, twig);
+  private static RegexNode graftUnion (UnionNode node, UnknownId id, Object scion) {
+    RegexNode leftGraftee  = graftNode(node.getLeftChild(), id, scion);
+    RegexNode rightGraftee = graftNode(node.getRightChild(), id, scion);
 
     boolean leftNoChange  = (leftGraftee == node.getLeftChild());
     boolean rightNoChange = (rightGraftee == node.getRightChild());
@@ -97,20 +107,18 @@ public class Grafter {
     }
   }
 
-  private static RegexNode graftRepetition (RepetitionNode node, UnknownNode unknown, RegexNode twig) {
-    RegexNode graftee = graftNode(node.getChild(), unknown, twig);
+  private static RegexNode graftRepetition (RepetitionNode node, UnknownId id, Object scion) {
+    RegexNode graftee = graftNode(node.getChild(), id, scion);
 
     if (graftee == node.getChild()) {
       return node;
-    } else if (node.hasMax()) {
-      return new RepetitionNode(graftee, node.getMin(), node.getMax());
     } else {
-      return new RepetitionNode(graftee, node.getMin());
+      return new RepetitionNode(graftee, node.getBounds());
     }
   }
 
-  private static RegexNode graftOptional (OptionalNode node, UnknownNode unknown, RegexNode twig) {
-    RegexNode graftee = graftNode(node.getChild(), unknown, twig);
+  private static RegexNode graftOptional (OptionalNode node, UnknownId id, Object scion) {
+    RegexNode graftee = graftNode(node.getChild(), id, scion);
 
     if (graftee == node) {
       return node;
@@ -119,8 +127,8 @@ public class Grafter {
     }
   }
 
-  private static RegexNode graftStar (StarNode node, UnknownNode unknown, RegexNode twig) {
-    RegexNode graftee = graftNode(node.getChild(), unknown, twig);
+  private static RegexNode graftStar (StarNode node, UnknownId id, Object scion) {
+    RegexNode graftee = graftNode(node.getChild(), id, scion);
 
     if (graftee == node) {
       return node;
@@ -129,8 +137,8 @@ public class Grafter {
     }
   }
 
-  private static RegexNode graftPlus (PlusNode node, UnknownNode unknown, RegexNode twig) {
-    RegexNode graftee = graftNode(node.getChild(), unknown, twig);
+  private static RegexNode graftPlus (PlusNode node, UnknownId id, Object scion) {
+    RegexNode graftee = graftNode(node.getChild(), id, scion);
 
     if (graftee == node) {
       return node;
