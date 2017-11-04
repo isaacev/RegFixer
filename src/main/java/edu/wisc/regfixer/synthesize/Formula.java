@@ -36,7 +36,7 @@ public class Formula {
   private Model model;
 
   private int nextVarId;
-  private Set<UnknownId> unknowns;
+  private Set<UnknownId> unknownChars;
   private Map<UnknownId, Set<BoolExpr>> unknownToVars;
   private Map<UnknownId, List<IntExpr>> unknownToWeights;
   private Map<UnknownId, Map<MetaClassTree, BoolExpr>> unknownToTreeToVar;
@@ -66,7 +66,7 @@ public class Formula {
 
     // Initialize structures for tracking state
     this.nextVarId = 0;
-    this.unknowns = new HashSet<>();
+    this.unknownChars = new HashSet<>();
     this.unknownToVars = new HashMap<>();
     this.unknownToWeights = new HashMap<>();
     this.unknownToTreeToVar = new HashMap<>();
@@ -84,7 +84,7 @@ public class Formula {
     this.encodeSingleCharClasses();
     this.encodeRepetitionsForEachExample();
 
-    for (UnknownId id : this.unknowns) {
+    for (UnknownId id : this.unknownChars) {
       this.encodeCharClass(id, this.tree);
       this.encodeCharClassSummation(id);
     }
@@ -135,7 +135,7 @@ public class Formula {
     BoolExpr exprRoute = null;
 
     for (UnknownId id : spans.keySet()) {
-      this.unknowns.add(id);
+      this.unknownChars.add(id);
 
       BoolExpr exprChars = this.encodeUnknownInRoute(id, spans.get(id), posFlag);
 
@@ -468,7 +468,7 @@ public class Formula {
     }
 
     Map<UnknownId, CharClass> solutions = new HashMap<>();
-    for (UnknownId id : this.unknowns) {
+    for (UnknownId id : this.unknownChars) {
       solutions.put(id, getCharSolution(id));
     }
     return solutions;
