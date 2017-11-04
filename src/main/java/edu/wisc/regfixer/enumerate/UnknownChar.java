@@ -95,6 +95,10 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
   }
 
   public String toString () {
+    if (UnknownChar.fill == null) {
+      return "■";
+    }
+
     switch (UnknownChar.fill) {
       case Dot:
         return ".";
