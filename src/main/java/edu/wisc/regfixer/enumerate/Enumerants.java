@@ -33,7 +33,7 @@ public class Enumerants {
       }
     }
 
-    if (enumerant.getExpansion() == Expansion.Union) {
+    if (enumerant.getLatestExpansion() == Expansion.Union) {
       return this.poll();
     } else {
       return enumerant;

@@ -59,7 +59,7 @@ public class RegFixer {
 
       synthesis = null;
       diag.output().printPartialRow(enumerant.getCost(), enumerant.toString());
-      Expansion expansion = enumerant.getExpansion();
+      Expansion expansion = enumerant.getLatestExpansion();
 
       if (expansion == Expansion.Concat) {
         if (job.getCorpus().passesDotTest(enumerant)) {
