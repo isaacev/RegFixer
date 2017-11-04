@@ -117,8 +117,8 @@ public class Grafter {
   }
 
   private static RegexNode graftRepetition (RepetitionNode node, UnknownId id, Object scion) {
-    if (node.getBounds() instanceof UnknownInt && scion instanceof Bounds) {
-      UnknownInt unknown = (UnknownInt)node.getBounds();
+    if (node.getBounds() instanceof UnknownBounds && scion instanceof Bounds) {
+      UnknownBounds unknown = (UnknownBounds)node.getBounds();
       if (unknown.getId().equals(id)) {
         return new RepetitionNode(node.getChild(), (Bounds)scion);
       }

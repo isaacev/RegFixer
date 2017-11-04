@@ -16,7 +16,7 @@ import automata.sfa.SFAInputMove;
 import automata.sfa.SFAMove;
 import edu.wisc.regfixer.enumerate.UnknownNode;
 import edu.wisc.regfixer.enumerate.UnknownId;
-import edu.wisc.regfixer.enumerate.UnknownInt;
+import edu.wisc.regfixer.enumerate.UnknownBounds;
 import edu.wisc.regfixer.parser.CharClassSetNode;
 import edu.wisc.regfixer.parser.CharDotNode;
 import edu.wisc.regfixer.parser.CharEscapedNode;
@@ -401,7 +401,7 @@ public class Automaton extends automata.Automaton {
   }
 
   private static Automaton repetitionToAutomaton (RepetitionNode node) throws TimeoutException {
-    if (node.getBounds() instanceof UnknownInt) {
+    if (node.getBounds() instanceof UnknownBounds) {
       return repetitionWithUnknownBoundsToAutomaton(node);
     } else {
       return repetitionWithKnownBoundsToAutomaton(node);
@@ -410,7 +410,7 @@ public class Automaton extends automata.Automaton {
 
   private static Automaton repetitionWithUnknownBoundsToAutomaton (RepetitionNode node) throws TimeoutException {
     Automaton sub = nodeToAutomaton(node.getChild());
-    UnknownId unknown = ((UnknownInt)node.getBounds()).getId();
+    UnknownId unknown = ((UnknownBounds)node.getBounds()).getId();
     Set<Integer> exitStates = new HashSet<>(sub.sfa.getFinalStates());
 
     Automaton aut = star(sub);

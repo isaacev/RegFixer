@@ -2,11 +2,11 @@ package edu.wisc.regfixer.enumerate;
 
 import edu.wisc.regfixer.parser.Bounds;
 
-public class UnknownInt extends Bounds implements Unknown {
+public class UnknownBounds extends Bounds implements Unknown {
   private UnknownId id;
   private Bounds bounds;
 
-  public UnknownInt () {
+  public UnknownBounds () {
     super(0, null);
     this.id = new UnknownId();
     this.bounds = null;

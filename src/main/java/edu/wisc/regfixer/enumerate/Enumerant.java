@@ -92,8 +92,8 @@ public class Enumerant implements Comparable<Enumerant> {
     for (Unknown unknown : this.unknowns.values()) {
       if (unknown instanceof UnknownNode) {
         ((UnknownNode)unknown).fill(type);
-      } else if (unknown instanceof UnknownInt) {
-        ((UnknownInt)unknown).fill(Bounds.atLeast(0));
+      } else if (unknown instanceof UnknownBounds) {
+        ((UnknownBounds)unknown).fill(Bounds.atLeast(0));
       }
     }
 

@@ -154,7 +154,7 @@ public class Slicer {
       RepetitionNode branch = new RepetitionNode(partial.getTree(), node.getBounds());
       partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost(), UnknownNode.ExpansionChoice.Repeat));
 
-      branch = new RepetitionNode(partial.getTree(), new UnknownInt());
+      branch = new RepetitionNode(partial.getTree(), new UnknownBounds());
       partials.add(new Enumerant(branch, partial.getUnknowns(), partial.getCost() + 1, UnknownNode.ExpansionChoice.Repeat));
     }
 
@@ -189,9 +189,9 @@ public class Slicer {
     }
 
     // (R0)* -> (R0){■}
-    UnknownInt unknownInt = new UnknownInt();
-    RepetitionNode branch = new RepetitionNode(node.getChild(), unknownInt);
-    partials.add(new Enumerant(branch, Arrays.asList(unknownInt), 1, UnknownNode.ExpansionChoice.Repeat));
+    UnknownBounds UnknownBounds = new UnknownBounds();
+    RepetitionNode branch = new RepetitionNode(node.getChild(), UnknownBounds);
+    partials.add(new Enumerant(branch, Arrays.asList(UnknownBounds), 1, UnknownNode.ExpansionChoice.Repeat));
 
     UnknownNode unknown = new UnknownNode(history);
     partials.add(new Enumerant(unknown, unknown, node.descendants(), UnknownNode.ExpansionChoice.Star));
