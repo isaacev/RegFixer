@@ -38,12 +38,7 @@ public class Synthesis {
     RegexNode whole = enumerant.getTree();
 
     for (Entry<UnknownId, CharClass> solution : charSolutions.entrySet()) {
-      Unknown unknown = enumerant.getUnknown(solution.getKey());
-      RegexNode twig = solution.getValue();
-
-      if (unknown instanceof UnknownChar) {
-        whole = Grafter.graft(whole, solution.getKey(), twig);
-      }
+      whole = Grafter.graft(whole, solution.getKey(), solution.getValue());
     }
 
     for (Entry<UnknownId, Bounds> solution : boundsSolutions.entrySet()) {
