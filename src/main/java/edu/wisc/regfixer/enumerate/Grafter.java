@@ -15,9 +15,18 @@ import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 
 public class Grafter {
-  public static Enumerant graft (Enumerant original, UnknownInt unknown, int lower, int upper) {
-    // TODO
-    return null;
+  public static Enumerant graft (Enumerant original, UnknownId id, Object twig) {
+    RegexNode graftedTree = graftNode(original.getTree(), id, twig);
+    List<Unknown> graftedUnknowns = original.getUnknowns()
+      .stream()
+      .filter(h -> h.getId() != id)
+      .collect(Collectors.toList());
+    if (twig instanceof Unknown) {
+      graftedUnknowns.add((Unknown)twig);
+    }
+    int graftedCost = original.getCost() + 1;
+
+    return new Enumerant(graftedTree, graftedUnknowns, graftedCost, original.getExpansionChoice());
   }
 
   public static Enumerant graft (Enumerant original, UnknownNode unknown, Enumerant twig, UnknownNode.ExpansionChoice expansion) {
@@ -108,6 +117,13 @@ public class Grafter {
   }
 
   private static RegexNode graftRepetition (RepetitionNode node, UnknownId id, Object scion) {
+    if (node.getBounds() instanceof UnknownInt && scion instanceof Bounds) {
+      UnknownInt unknown = (UnknownInt)node.getBounds();
+      if (unknown.getId().equals(id)) {
+        return new RepetitionNode(node.getChild(), (Bounds)scion);
+      }
+    }
+
     RegexNode graftee = graftNode(node.getChild(), id, scion);
 
     if (graftee == node.getChild()) {
