@@ -9,16 +9,28 @@ import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.parser.StarNode;
 
 public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> {
-  public static enum FillType {
-    Dot,
-    DotStar,
-    EmptySet
-  }
+  // A bit of a hack...
+  //
+  // During enumeration of many possible regex templates it's necessary to
+  // build regular expressions of incomplete templates where each unknown char
+  // is rendered as a some temporary char-class before the whole expression is
+  // passed to the regex engine. As long as the 'fill' property is NULL, any
+  // call to UnknownChar#toString() will return '■' but if 'fill' is some other
+  // value the method will return the appropriate expression.
+  //
+  // It's important that any time this value is set to a non-NULL value it is
+  // reset back to NULL immediately to prevent bugs further in the enumeration
+  // process.
+  public static enum FillType { Dot, DotStar, EmptySet }
+  private static FillType fill = null;
+  private static void setFill (FillType which) { UnknownChar.fill = which; }
+  private static void clearFill () { UnknownChar.fill = null; }
 
+  // Used to compute a unique age for each UnknownChar generated so that older
+  // nodes can be expanded before younger nodes.
   private static int nextAge = 0;
 
   private UnknownId id;
-  private RegexNode child = null;
   private int age;
   private List<Expansion> history;
 
@@ -66,35 +78,22 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
     return 0;
   }
 
-  public void fill (FillType type) {
-    switch (type) {
-      case Dot:
-        this.child = new CharDotNode();
-        break;
-      case DotStar:
-        this.child = new StarNode(new CharDotNode());
-        break;
-      case EmptySet:
-        // FIXME
-        this.child = new CharLiteralNode('!');
-        break;
-    }
-  }
-
-  public void clear () {
-    this.child = null;
-  }
-
   @Override
   public int compareTo (UnknownChar other) {
     return Integer.compare(this.age, other.age);
   }
 
   public String toString () {
-    if (this.child == null) {
-      return "■";
-    } else {
-      return this.child.toString();
+    switch (UnknownChar.fill) {
+      case Dot:
+        return ".";
+      case DotStar:
+        return ".*";
+      case EmptySet:
+        // FIXME
+        return "\0000";
+      default:
+        return "■";
     }
   }
 }
