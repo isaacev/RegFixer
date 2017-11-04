@@ -23,8 +23,8 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
   // process.
   public static enum FillType { Dot, DotStar, EmptySet }
   private static FillType fill = null;
-  private static void setFill (FillType which) { UnknownChar.fill = which; }
-  private static void clearFill () { UnknownChar.fill = null; }
+  public static void setFill (FillType which) { UnknownChar.fill = which; }
+  public static void clearFill () { UnknownChar.fill = null; }
 
   // Used to compute a unique age for each UnknownChar generated so that older
   // nodes can be expanded before younger nodes.
