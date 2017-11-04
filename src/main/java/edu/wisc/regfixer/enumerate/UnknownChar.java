@@ -60,6 +60,10 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
     return this.id;
   }
 
+  public List<Expansion> getHistory () {
+    return this.history;
+  }
+
   public UnknownChar expand (Expansion latest) {
     List<Expansion> newHistory = new LinkedList<>(this.history);
     newHistory.add(latest);
