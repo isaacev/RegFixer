@@ -69,22 +69,16 @@ public class CLI {
     private List<String> files = new ArrayList<>();
   }
 
-  @Parameters(separators="=")
-  private static class ArgsTest {
-  }
-
   public static void main (String[] argv) {
     ArgsRoot root = new ArgsRoot();
     ArgsServe serve = new ArgsServe();
     ArgsFix fix = new ArgsFix();
-    ArgsTest test = new ArgsTest();
 
     JCommander cli = JCommander.newBuilder()
       .programName("regfixer")
       .addObject(root)
       .addCommand("serve", serve)
       .addCommand("fix", fix)
-      .addCommand("test", test)
       .build();
 
     cli.parse(argv);
@@ -111,10 +105,6 @@ public class CLI {
 
     if (cli.getParsedCommand().equals("fix")) {
       System.exit(handleFix(fix));
-    }
-
-    if (cli.getParsedCommand().equals("test")) {
-      System.exit(handleTest(test));
     }
   }
 
@@ -272,56 +262,6 @@ public class CLI {
     } catch (TimeoutException ex) {
       System.out.println("TIMEOUT EXCEPTION");
       return 1;
-    }
-
-    return 0;
-  }
-
-  private static int handleTest (ArgsTest args) {
-    File testingDir = new File("tests");
-    File[] testingFiles = testingDir.listFiles();
-
-    Arrays.sort(testingFiles, new Comparator<File>() {
-      @Override
-      public int compare (File a, File b) {
-        return a.getName().compareTo(b.getName());
-      }
-    });
-
-    if (testingFiles == null) {
-      System.err.println("cannot read directory ./tests");
-      return 1;
-    }
-
-    for (int i = 0; i < testingFiles.length; i++) {
-      if (testingFiles[i].isFile() && testingFiles[i].getName().matches("test_\\w+\\.txt")) {
-        Job job = null;
-
-        try {
-          job = Benchmark.readFromFile(testingFiles[i].getPath());
-        } catch (IOException ex) {
-          System.err.println("unable to read file: " + testingFiles[i].getPath());
-        }
-
-        try {
-          String solution = RegFixer.fix(job);
-
-          String expectedPath = "./tests/expect_" + testingFiles[i].getName().substring(5);
-          String expected = null;
-          try {
-            byte[] encoded = Files.readAllBytes(Paths.get(expectedPath));
-            expected = new String(encoded, StandardCharsets.UTF_8);
-          } catch (Exception ex) {}
-
-          if (expected == null) {
-            System.out.println(Ansi.Green.sprintf("  ✓ %-32s %s", testingFiles[i].getName(), solution));
-          } else {
-            System.out.println(Ansi.Green.sprintf("  ✓ %-32s %-32s %s", testingFiles[i].getName(), solution, expected));
-          }
-        } catch (TimeoutException ex) {
-          System.out.println(Ansi.Red.sprintf("  ✗ %-32s %s", testingFiles[i].getName(), "test timed out"));
-        }
-      }
     }
 
     return 0;
