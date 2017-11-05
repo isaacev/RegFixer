@@ -15,6 +15,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
+import edu.wisc.regfixer.diagnostic.NullOutputStream;
 import edu.wisc.regfixer.diagnostic.Registry;
 import edu.wisc.regfixer.diagnostic.ReportStream;
 import edu.wisc.regfixer.enumerate.Benchmark;
@@ -53,6 +54,9 @@ public class CLI {
 
   @Parameters(separators="=")
   private static class ArgsFix {
+    @Parameter(names="--quiet")
+    private boolean quiet = false;
+
     @Parameter(names="--limit")
     private Integer limit = null;
 
@@ -142,6 +146,11 @@ public class CLI {
       + "%n          SHA1 hash computed from formatting the repair requests inputs as"
       + "%n          a benchmark file."
       + "%n    fix [options] <file>"
+      + "%n      --quiet"
+      + "%n          If a solution is successfully determined, output only the result"
+      + "%n          to STDOUT. If a solution could not be found before the algorithm"
+      + "%n          timed out, print nothing and exit. This flag will stop any other"
+      + "%n          debugging output from being printed."
       + "%n      --limit <number>"
       + "%n          The maximum number of unsuccessful enumeration cycles that occur"
       + "%n          before a TimeoutException is thrown and the job aborts without a"
@@ -230,8 +239,12 @@ public class CLI {
 
     Job job = null;
 
-    // Pipe any output to STDOUT.
-    ReportStream out = new ReportStream(System.out);
+    // If the --quiet flag is set, send any report output to a null output
+    // stream which discards the data. If the --quiet flag is NOT set any
+    // output will be sent to STDOUT.
+    ReportStream out = new ReportStream(args.quiet
+      ? new NullOutputStream()
+      : System.out);
 
     // Create a registry of diagnostic-related command-line flags.
     Registry reg = new Registry();
@@ -256,11 +269,18 @@ public class CLI {
 
     try {
       String solution = RegFixer.fix(job, args.limit, diag);
+
       if (solution == null) {
         return 1;
+      } else if (args.quiet && solution != null) {
+        System.out.println(solution);
+        return 0;
       }
     } catch (TimeoutException ex) {
-      System.out.println("TIMEOUT EXCEPTION");
+      if (args.quiet == false) {
+        System.out.println("TIMEOUT EXCEPTION");
+      }
+
       return 1;
     }
 
