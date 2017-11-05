@@ -174,6 +174,11 @@ public class Slicer {
       partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Optional));
     }
 
+    // (R0)? -> (R0){■}
+    UnknownBounds bounds = new UnknownBounds();
+    RegexNode branch = new RepetitionNode(node.getChild(), bounds);
+    partials.add(new Enumerant(branch, bounds.getId(), 1, Expansion.Repeat));
+
     UnknownChar unknown = new UnknownChar(history);
     partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Optional));
     return partials;
@@ -208,6 +213,11 @@ public class Slicer {
       PlusNode branch = new PlusNode(partial.getTree());
       partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Plus));
     }
+
+    // (R0)+ -> (R0){■}
+    UnknownBounds bounds = new UnknownBounds();
+    RegexNode branch = new RepetitionNode(node.getChild(), bounds);
+    partials.add(new Enumerant(branch, bounds.getId(), 1, Expansion.Repeat));
 
     UnknownChar unknown = new UnknownChar(history);
     partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Plus));
