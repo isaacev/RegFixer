@@ -270,7 +270,10 @@ public class CLI {
     }
 
     try {
-      RegFixer.fix(job, args.limit, diag);
+      String solution = RegFixer.fix(job, args.limit, diag);
+      if (solution == null) {
+        return 1;
+      }
     } catch (TimeoutException ex) {
       System.out.println("TIMEOUT EXCEPTION");
       return 1;
