@@ -101,6 +101,13 @@ public class RegFixer {
         } else {
           diag.output().finishRow("failed empty set test");
         }
+      } else if (expansion == Expansion.Repeat) {
+        try {
+          synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
+        } catch (SynthesisFailure ex) {
+          diag.output().finishRow(ex.getMessage());
+          continue;
+        }
       }
 
       if (synthesis != null) {
