@@ -119,8 +119,11 @@ public class Enumerant implements Comparable<Enumerant> {
     ids.add(un1.getId());
     ids.add(un2.getId());
 
+    // Add cost of the expansion.
+    int cost = this.getCost() + Enumerant.UNION_COST;
+
     // Build components into new enumerant.
-    return new Enumerant(root, ids, Enumerant.UNION_COST, Expansion.Union);
+    return new Enumerant(root, ids, cost, Expansion.Union);
   }
 
   private Enumerant expandWithOptional (UnknownChar unknown) {
@@ -139,8 +142,11 @@ public class Enumerant implements Comparable<Enumerant> {
     ids.remove(unknown.getId());
     ids.add(un.getId());
 
+    // Add cost of the expansion.
+    int cost = this.getCost() + Enumerant.OPTIONAL_COST;
+
     // Build components into new enumerant.
-    return new Enumerant(root, ids, Enumerant.OPTIONAL_COST, Expansion.Optional);
+    return new Enumerant(root, ids, cost, Expansion.Optional);
   }
 
   private Enumerant expandWithStar (UnknownChar unknown) {
@@ -159,8 +165,11 @@ public class Enumerant implements Comparable<Enumerant> {
     ids.remove(unknown.getId());
     ids.add(un.getId());
 
+    // Add cost of the expansion.
+    int cost = this.getCost() + Enumerant.STAR_COST;
+
     // Build components into new enumerant.
-    return new Enumerant(root, ids, Enumerant.STAR_COST, Expansion.Star);
+    return new Enumerant(root, ids, cost, Expansion.Star);
   }
 
   private Enumerant expandWithPlus (UnknownChar unknown) {
@@ -179,8 +188,11 @@ public class Enumerant implements Comparable<Enumerant> {
     ids.remove(unknown.getId());
     ids.add(un.getId());
 
+    // Add cost of the expansion.
+    int cost = this.getCost() + Enumerant.PLUS_COST;
+
     // Build components into new enumerant.
-    return new Enumerant(root, ids, Enumerant.PLUS_COST, Expansion.Plus);
+    return new Enumerant(root, ids, cost, Expansion.Plus);
   }
 
   private Enumerant expandWithConcat (UnknownChar unknown) {
@@ -201,8 +213,11 @@ public class Enumerant implements Comparable<Enumerant> {
     ids.add(un1.getId());
     ids.add(un2.getId());
 
+    // Add cost of the expansion.
+    int cost = this.getCost() + Enumerant.CONCAT_COST;
+
     // Build components into new enumerant.
-    return new Enumerant(root, ids, Enumerant.CONCAT_COST, Expansion.Concat);
+    return new Enumerant(root, ids, cost, Expansion.Concat);
   }
 
   public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {
