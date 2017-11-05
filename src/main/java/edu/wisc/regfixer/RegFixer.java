@@ -108,6 +108,8 @@ public class RegFixer {
           diag.output().finishRow(ex.getMessage());
           continue;
         }
+      } else {
+        throw new RuntimeException("unknown expansion type");
       }
 
       if (synthesis != null) {
