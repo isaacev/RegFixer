@@ -6,7 +6,7 @@ Install the latest version of [Maven](https://maven.apache.org/).
 
 Run `mvn install` to compile & bundle the project. The finished JAR will be available in `target/`.
 
-## Running on terminal 
+## Running on terminal
 
 Running `java -jar target/regfixer.jar fix --limit 4000 tests/test_words.txt` should produce the following report:
 
@@ -42,39 +42,39 @@ And reject the strings:
 
 Search through possible transformations:
 
-  Order  |  Cost  Template                  Solution                        
+  Order  |  Cost  Template                  Solution
 ---------|--------------------------------------------------------------------
-  1      |  0     ■\w\w                     unsatisfiable SAT formula       
-  2      |  0     \w■\w                     unsatisfiable SAT formula       
-  3      |  0     ■\w                       failed dot test                 
-  4      |  0     \w■                       failed dot test                 
-  5      |  0     \w\w■                     unsatisfiable SAT formula       
-  6      |  1     \w■■\w                    failed dot test                 
-  7      |  1     \w\w■■                    failed dot test                 
-  8      |  1     \w\w\w■                   failed dot test                 
-  9      |  1     \w■\w\w                   failed dot test                 
-  10     |  1     \w\w■\w                   failed dot test                 
+  1      |  0     ■\w\w                     unsatisfiable SAT formula
+  2      |  0     \w■\w                     unsatisfiable SAT formula
+  3      |  0     ■\w                       failed dot test
+  4      |  0     \w■                       failed dot test
+  5      |  0     \w\w■                     unsatisfiable SAT formula
+  6      |  1     \w■■\w                    failed dot test
+  7      |  1     \w\w■■                    failed dot test
+  8      |  1     \w\w\w■                   failed dot test
+  9      |  1     \w■\w\w                   failed dot test
+  10     |  1     \w\w■\w                   failed dot test
 
   (lines removed for brevity)
 
-  3541   |  5     (■(■)+)+\w\w              failed dot test                 
-  3542   |  5     ■|(■)?|(■)+\w\w           unsatisfiable SAT formula       
-  3543   |  5     \w■(■)?■|(■)?\w           no solution for some holes      
-  3544   |  5     \w(■)?(■|■)+\w            no solution for some holes      
-  3545   |  5     \w\w■■(■■)+               failed dot test                 
-  3546   |  5     \w\w(■)?|((■)?■)?         unsatisfiable SAT formula       
-  3547   |  5     \w(■)*|■|■\w              unsatisfiable SAT formula       
-  3548   |  5     \w(■)?(■)?(■)?\w          no solution for some holes      
-  3549   |  5     \w\w■■|((■)?■)?           failed dot test                 
-  3550   |  5     \w\w■|((■■)?■)?           unsatisfiable SAT formula       
-  3551   |  5     ■(■)+|(■)?\w\w            no solution for some holes      
-  3552   |  5     \w\w■|((■)?(■)?)?         unsatisfiable SAT formula       
-  3553   |  5     (■)?■                     failed dot test                 
-  3554   |  5     ■■|■|(■)?|■\w\w           no solution for some holes      
-  3555   |  5     ■■|■|■■|■\w\w             no solution for some holes      
-  3556   |  5     (■)+■■\w\w\w              failed dot test                 
-  3557   |  5     ■■|■|■|(■)?\w\w           no solution for some holes      
-  3558   |  5     ■■■                       \d\d\d                          
+  3541   |  5     (■(■)+)+\w\w              failed dot test
+  3542   |  5     ■|(■)?|(■)+\w\w           unsatisfiable SAT formula
+  3543   |  5     \w■(■)?■|(■)?\w           no solution for some holes
+  3544   |  5     \w(■)?(■|■)+\w            no solution for some holes
+  3545   |  5     \w\w■■(■■)+               failed dot test
+  3546   |  5     \w\w(■)?|((■)?■)?         unsatisfiable SAT formula
+  3547   |  5     \w(■)*|■|■\w              unsatisfiable SAT formula
+  3548   |  5     \w(■)?(■)?(■)?\w          no solution for some holes
+  3549   |  5     \w\w■■|((■)?■)?           failed dot test
+  3550   |  5     \w\w■|((■■)?■)?           unsatisfiable SAT formula
+  3551   |  5     ■(■)+|(■)?\w\w            no solution for some holes
+  3552   |  5     \w\w■|((■)?(■)?)?         unsatisfiable SAT formula
+  3553   |  5     (■)?■                     failed dot test
+  3554   |  5     ■■|■|(■)?|■\w\w           no solution for some holes
+  3555   |  5     ■■|■|■■|■\w\w             no solution for some holes
+  3556   |  5     (■)+■■\w\w\w              failed dot test
+  3557   |  5     ■■|■|■|(■)?\w\w           no solution for some holes
+  3558   |  5     ■■■                       \d\d\d
 
 Results in the expression:
 
