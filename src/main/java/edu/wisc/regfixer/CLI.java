@@ -53,9 +53,6 @@ public class CLI {
 
   @Parameters(separators="=")
   private static class ArgsFix {
-    @Parameter(names="--color")
-    private boolean color = false;
-
     @Parameter(names="--limit")
     private Integer limit = null;
 
@@ -155,8 +152,6 @@ public class CLI {
       + "\n          SHA1 hash computed from formatting the repair requests inputs as"
       + "\n          a benchmark file."
       + "\n    fix [options] <file>"
-      + "\n      --color"
-      + "\n          If set, output will include ANSI color codes."
       + "\n      --limit <number>"
       + "\n          The maximum number of unsuccessful enumeration cycles that occur"
       + "\n          before a TimeoutException is thrown and the job aborts without a"
