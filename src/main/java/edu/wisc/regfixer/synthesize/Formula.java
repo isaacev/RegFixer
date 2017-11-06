@@ -86,8 +86,16 @@ public class Formula {
 
     // Create all 'H?_max' and 'H?_min' variables for all relevant IDs.
     for (UnknownId id : this.unknownBounds) {
-      this.unknownToMinVar.put(id, this.ctx.mkIntConst(id.toString() + "_min"));
-      this.unknownToMaxVar.put(id, this.ctx.mkIntConst(id.toString() + "_max"));
+      // Create minimum and maximum bound variables.
+      IntExpr minVar = this.ctx.mkIntConst(id.toString() + "_min");
+      IntExpr maxVar = this.ctx.mkIntConst(id.toString() + "_max");
+
+      // Associate minimum and maximum bound variables with appropriate ID.
+      this.unknownToMinVar.put(id, minVar);
+      this.unknownToMaxVar.put(id, maxVar);
+
+      // Force every minimum bound to be <= corresponding maximum bound.
+      this.opt.Assert(this.ctx.mkLe(minVar, maxVar));
     }
 
     // Build the formula and encode meta-class formulae
