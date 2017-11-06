@@ -80,9 +80,18 @@ public class Formula {
     this.unknownToMinVar = new HashMap<>();
     this.unknownToMaxVar = new HashMap<>();
 
+    // Build a list of all unknown IDs encountered by these automata routes.
+    this.getAllRelevantUnknownExits(this.positives);
+    this.getAllRelevantUnknownExits(this.negatives);
+
+    // Create all 'H?_max' and 'H?_min' variables for all relevant IDs.
+    for (UnknownId id : this.unknownBounds) {
+      this.unknownToMinVar.put(id, this.ctx.mkIntConst(id.toString() + "_min"));
+      this.unknownToMaxVar.put(id, this.ctx.mkIntConst(id.toString() + "_max"));
+    }
+
     // Build the formula and encode meta-class formulae
-    this.encodeSingleCharClasses();
-    this.encodeRepetitionsForEachExample();
+    this.encodeRoutes();
 
     for (UnknownId id : this.unknownChars) {
       this.encodeCharClass(id, this.tree);
@@ -98,6 +107,142 @@ public class Formula {
     for (Set<Route> routes : this.negatives) {
       this.encodeRoutes(routes, false);
     }
+  }
+
+  private void encodeRoutes () {
+    for (Set<Route> example : this.positives) {
+      this.encodePositiveExample(example);
+    }
+
+    for (Set<Route> example : this.negatives) {
+      this.encodeNegativeExample(example);
+    }
+  }
+
+  private void encodePositiveExample (Set<Route> example) {
+    BoolExpr whole = null;
+
+    for (Route route : example) {
+      BoolExpr charFormula = this.buildPositiveRouteFormula(route);
+      BoolExpr quantFormula = this.buildPositiveQuantifierFormula(route);
+
+      // If character and quantifier constraints both exist, AND them together.
+      BoolExpr part = null;
+      if (charFormula != null && quantFormula != null) {
+        part = this.ctx.mkAnd(charFormula, quantFormula);
+      } else if (charFormula != null) {
+        part = charFormula;
+      } else {
+        part = quantFormula;
+      }
+
+      // If this route didn't produce any constraints on either the accepted
+      // characters or the bounds for repetition, skip this route.
+      if (part == null) {
+        continue;
+      }
+
+      // Since the entire example is accepted if at least 1 route is accepted,
+      // OR this route's formula with the formulae of all the other routes for
+      // this positive example.
+      if (whole == null) {
+        whole = part;
+      } else {
+        whole = this.ctx.mkOr(whole, part);
+      }
+    }
+
+    if (whole != null) {
+      this.opt.Add(whole);
+    }
+  }
+
+  public BoolExpr buildPositiveRouteFormula (Route route) {
+    return encodeRoute(route, true);
+  }
+
+  public BoolExpr buildPositiveQuantifierFormula (Route route) {
+    BoolExpr whole = null;
+
+    for (Map.Entry<UnknownId, Integer> entry : route.getExits().entrySet()) {
+      IntNum countVal = this.ctx.mkInt(entry.getValue());
+      IntExpr minVar = unknownToMinVar.get(entry.getKey());
+      IntExpr maxVar = unknownToMaxVar.get(entry.getKey());
+      BoolExpr part = this.ctx.mkAnd(
+        this.ctx.mkLe(minVar, countVal),
+        this.ctx.mkGe(maxVar, countVal));
+
+      if (whole == null) {
+        whole = part;
+      } else {
+        whole = this.ctx.mkOr(whole, part);
+      }
+    }
+
+    return whole;
+  }
+
+  private void encodeNegativeExample (Set<Route> example) {
+    BoolExpr whole = null;
+
+    for (Route route : example) {
+      BoolExpr charFormula = this.buildNegativeRouteFormula(route);
+      BoolExpr quantFormula = this.buildNegativeQuantifierFormula(route);
+
+      // If character and quantifier both exist, OR them together.
+      BoolExpr part = null;
+      if (charFormula != null && quantFormula != null) {
+        part = this.ctx.mkOr(charFormula, quantFormula);
+      } else if (charFormula != null) {
+        part = charFormula;
+      } else {
+        part = quantFormula;
+      }
+
+      // If this route didn't produce any constraints on either the accepted
+      // characters or the bounds for repetition, skip this route.
+      if (part == null) {
+        continue;
+      }
+
+      // Since the entire example is rejected if no routes are accepted, AND
+      // this route's formula with the formula of all other routes for this
+      // negative example.
+      if (whole == null) {
+        whole = part;
+      } else {
+        whole = this.ctx.mkAnd(whole, part);
+      }
+    }
+
+    if (whole != null) {
+      this.opt.Add(whole);
+    }
+  }
+
+  public BoolExpr buildNegativeRouteFormula (Route route) {
+    return encodeRoute(route, false);
+  }
+
+  public BoolExpr buildNegativeQuantifierFormula (Route route) {
+    BoolExpr whole = null;
+
+    for (Map.Entry<UnknownId, Integer> entry : route.getExits().entrySet()) {
+      IntNum countVal = this.ctx.mkInt(entry.getValue());
+      IntExpr minVar = unknownToMinVar.get(entry.getKey());
+      IntExpr maxVar = unknownToMaxVar.get(entry.getKey());
+      BoolExpr part = this.ctx.mkOr(
+        this.ctx.mkGt(minVar, countVal),
+        this.ctx.mkLt(maxVar, countVal));
+
+      if (whole == null) {
+        whole = part;
+      } else {
+        whole = this.ctx.mkAnd(whole, part);
+      }
+    }
+
+    return whole;
   }
 
   private void encodeRoutes (Set<Route> routes, boolean posFlag) {
