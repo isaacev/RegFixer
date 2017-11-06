@@ -92,23 +92,15 @@ public class Formula {
 
   private void encodeSingleCharClasses () {
     for (Set<Route> routes : this.positives) {
-      BoolExpr expr = this.encodeRoutes(routes, true);
-
-      if (expr != null) {
-        this.opt.Add(expr);
-      }
+      this.encodeRoutes(routes, true);
     }
 
     for (Set<Route> routes : this.negatives) {
-      BoolExpr expr = this.encodeRoutes(routes, false);
-
-      if (expr != null) {
-        this.opt.Add(expr);
-      }
+      this.encodeRoutes(routes, false);
     }
   }
 
-  private BoolExpr encodeRoutes (Set<Route> routes, boolean posFlag) {
+  private void encodeRoutes (Set<Route> routes, boolean posFlag) {
     BoolExpr exprFinal = null;
 
     for (Route route : routes) {
@@ -127,7 +119,9 @@ public class Formula {
       }
     }
 
-    return exprFinal;
+    if (exprFinal != null) {
+      this.opt.Add(exprFinal);
+    }
   }
 
   private BoolExpr encodeRoute (Route route, boolean posFlag) {
