@@ -446,7 +446,7 @@ public class Formula {
       this.diag.output().printBreak();
     }
 
-    if (this.diag.getBool("print-class-map")) {
+    if (this.diag.getBool("print-class-tree")) {
       String header = String.format("\nCLASS MAP for %d", this.diag.output().count());
       this.diag.output().printBlock(header);
       this.diag.output().printBlock(this.tree);
