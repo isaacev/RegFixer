@@ -1,6 +1,8 @@
 package edu.wisc.regfixer.parser;
 
 public class Bounds {
+  public static final int MAX_BOUND = 1000;
+
   protected int min;
   protected Integer max;
 
@@ -51,6 +53,10 @@ public class Bounds {
       return String.format("{%d,}", this.min);
     } else if (this.min == this.max) {
       return String.format("{%d}", this.min);
+    } else if (this.max >= Bounds.MAX_BOUND && this.min == 0) {
+      return "*";
+    } else if (this.max >= Bounds.MAX_BOUND && this.min == 1) {
+      return "+";
     } else {
       return String.format("{%d,%d}", this.min, this.max);
     }
