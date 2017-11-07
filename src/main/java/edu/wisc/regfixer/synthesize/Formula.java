@@ -358,8 +358,15 @@ public class Formula {
     this.opt.MkMaximize(this.ctx.mkAdd(weightsArr));
   }
 
-  private String createVariableName (UnknownId id) {
-    return String.format("%s_%d", id, this.nextVarId++);
+  private String createVariableName (UnknownId id, MetaClassTree tree) {
+    String idName = id.toString();
+    String ccName = tree.getCharClass().toString();
+
+    ccName = ccName.replace("\\", "slash");
+    ccName = ccName.replace(" ", "space");
+    ccName = ccName.replace("\\t", "tab");
+
+    return String.format("%s_%s", idName, ccName);
   }
 
   private void saveWeightForSummation (UnknownId id, IntExpr weight) {
@@ -397,7 +404,7 @@ public class Formula {
   }
 
   private BoolExpr encodeWeightedConstraint (UnknownId id, MetaClassTree tree) {
-    String name = this.createVariableName(id);
+    String name = this.createVariableName(id, tree);
 
     // (declare-fun H1_x_v () Bool)
     BoolExpr var = this.ctx.mkBoolConst(name + "_v");
