@@ -57,6 +57,8 @@ public class Bounds {
       return "*";
     } else if (this.max >= Bounds.MAX_BOUND && this.min == 1) {
       return "+";
+    } else if (this.max >= Bounds.MAX_BOUND) {
+      return String.format("{%d,}", this.min);
     } else {
       return String.format("{%d,%d}", this.min, this.max);
     }
