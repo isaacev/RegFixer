@@ -18,6 +18,7 @@ import com.microsoft.z3.Optimize;
 import com.microsoft.z3.Status;
 import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
+import edu.wisc.regfixer.enumerate.UnknownBounds;
 import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.parser.Bounds;
 import edu.wisc.regfixer.parser.CharClass;
@@ -84,8 +85,12 @@ public class Formula {
     this.getAllRelevantUnknownExits(this.positives);
     this.getAllRelevantUnknownExits(this.negatives);
 
+    IntExpr zero = this.ctx.mkInt(0);
+
     // Create all 'H?_max' and 'H?_min' variables for all relevant IDs.
     for (UnknownId id : this.unknownBounds) {
+      UnknownBounds unknown = (UnknownBounds)(id.getUnknown());
+
       // Create minimum and maximum bound variables.
       IntExpr minVar = this.ctx.mkIntConst(id.toString() + "_min");
       IntExpr maxVar = this.ctx.mkIntConst(id.toString() + "_max");
@@ -96,6 +101,28 @@ public class Formula {
 
       // Force every minimum bound to be <= corresponding maximum bound.
       this.opt.Assert(this.ctx.mkLe(minVar, maxVar));
+      this.opt.Assert(this.ctx.mkGe(minVar, zero));
+      this.opt.Assert(this.ctx.mkGe(maxVar, zero));
+
+      // (declare-const H0_new_breadth Int)
+      // (declare-const H0_old_breadth Int)
+      // (declare-const H0_dif_breadth Int)
+      // (assert (= H0_old_breadth (- <old_max> <old_min>)))
+      // (assert (= H0_new_breadth (- H0_max H0_min)))
+      // (assert (= H0_dif_breadth (- H0_new_breadth H0_old_breadth)))
+      // (minimize (ite (>= H0_dif_breadth 0) H0_dif_breadth (- H0_dif_breadth)))
+      IntExpr newBreadth = this.ctx.mkIntConst(id.toString() + "_new_breadth");
+      IntExpr oldBreadth = this.ctx.mkIntConst(id.toString() + "_old_breadth");
+      IntExpr difBreadth = this.ctx.mkIntConst(id.toString() + "_dif_breadth");
+      int oldMin = unknown.getMin();
+      int oldMax = unknown.hasMax() ? unknown.getMax() : Bounds.MAX_BOUND;
+      this.opt.Assert(this.ctx.mkEq(oldBreadth, this.ctx.mkInt(oldMax - oldMin)));
+      this.opt.Assert(this.ctx.mkEq(newBreadth, this.ctx.mkSub(maxVar, minVar)));
+      this.opt.Assert(this.ctx.mkEq(difBreadth, this.ctx.mkSub(newBreadth, oldBreadth)));
+      this.opt.MkMinimize((ArithExpr)this.ctx.mkITE(
+        this.ctx.mkGe(difBreadth, zero),
+        difBreadth,
+        this.ctx.mkSub(zero, difBreadth)));
     }
 
     // Build the formula and encode meta-class formulae
