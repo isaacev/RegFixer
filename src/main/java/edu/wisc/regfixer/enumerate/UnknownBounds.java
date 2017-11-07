@@ -16,6 +16,11 @@ public class UnknownBounds extends Bounds implements Unknown {
     this.id = new UnknownId(this);
   }
 
+  public UnknownBounds (Bounds original) {
+    super(original);
+    this.id = new UnknownId(this);
+  }
+
   public UnknownId getId () {
     return this.id;
   }
