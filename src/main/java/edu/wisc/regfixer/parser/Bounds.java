@@ -16,6 +16,11 @@ public class Bounds {
     return new Bounds(min, max);
   }
 
+  public Bounds (Bounds other) {
+    this.min = other.min;
+    this.max = other.max;
+  }
+
   protected Bounds (int min, Integer max) {
     if (min < 0) {
       throw new IllegalArgumentException("illegal min < 0");
