@@ -9,8 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.TimeoutException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -68,6 +71,9 @@ public class CLI {
 
     @Parameter(names="--print-model")
     private boolean printModel = false;
+
+    @DynamicParameter(names = "-X", description = "Configuration flags")
+    private Map<String, String> configParams = new HashMap<>();
 
     @Parameter
     private List<String> files = new ArrayList<>();
@@ -251,6 +257,10 @@ public class CLI {
     reg.setBool("print-class-tree", args.printClassTree);
     reg.setBool("print-formula", args.printFormula);
     reg.setBool("print-model", args.printModel);
+
+    for (String name : args.configParams.keySet()) {
+      reg.setStr(name, args.configParams.get(name));
+    }
 
     // Create a diagnostic object to manage diagnostic flags and any debugging
     // output produced during execution.
