@@ -1,8 +1,10 @@
 package edu.wisc.regfixer.enumerate;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import edu.wisc.regfixer.enumerate.Expansion;
 import edu.wisc.regfixer.parser.CharClass;
@@ -130,34 +132,36 @@ public class Slicer {
     return partials;
   }
 
+  private static Enumerant mkRepetitionNode (Enumerant child) {
+    UnknownBounds unknown = new UnknownBounds();
+    Set<UnknownId> ids = new HashSet<>(child.getIds());
+    ids.add(unknown.getId());
+
+    RepetitionNode branch = new RepetitionNode(child.getTree(), unknown);
+
+    return new Enumerant(branch, ids, child.getCost() + 1, Expansion.Repeat);
+  }
+
+  private static Enumerant mkRepetitionNode (RegexNode child) {
+    UnknownBounds unknown = new UnknownBounds();
+
+    RepetitionNode branch = new RepetitionNode(child, unknown);
+
+    return new Enumerant(branch, unknown.getId(), 1, Expansion.Repeat);
+  }
+
   private static List<Enumerant> sliceRepetition (RepetitionNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
     List<Expansion> newHistory = new LinkedList<>(history);
     newHistory.add(Expansion.Repeat);
 
-    /**
-     * For each permutation of unknowns added to this node's children, add
-     * an enumerant with the original bounds an another enumerant with unknown
-     * bounds.So given:
-     *
-     * (\d\w){1,3}
-     *
-     * Add (where ? represents an unknown):
-     *
-     * (?\w){1,3}
-     * (?\w){?,?}
-     * (\d?){1,3}
-     * (\d?){?,?}
-     * ?{1,3}
-     * ?{?,?}
-     */
+    // Wrap child node permutations (with 1+ unknown) in unknown bounds.
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
-      RepetitionNode branch = new RepetitionNode(partial.getTree(), node.getBounds());
-      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Repeat));
-
-      branch = new RepetitionNode(partial.getTree(), new UnknownBounds());
-      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost() + 1, Expansion.Repeat));
+      partials.add(mkRepetitionNode(partial));
     }
+
+    // Wrap child node (with no unknowns) in unknown bounds.
+    partials.add(mkRepetitionNode(node.getChild()));
 
     UnknownChar unknown = new UnknownChar(history);
     partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Repeat));
@@ -167,17 +171,15 @@ public class Slicer {
   private static List<Enumerant> sliceOptional (OptionalNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
     List<Expansion> newHistory = new LinkedList<>(history);
-    newHistory.add(Expansion.Optional);
+    newHistory.add(Expansion.Repeat);
 
+    // Wrap child node permutations (with 1+ unknown) in unknown bounds.
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
-      OptionalNode branch = new OptionalNode(partial.getTree());
-      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Optional));
+      partials.add(mkRepetitionNode(partial));
     }
 
-    // (R0)? -> (R0){■}
-    UnknownBounds bounds = new UnknownBounds();
-    RegexNode branch = new RepetitionNode(node.getChild(), bounds);
-    partials.add(new Enumerant(branch, bounds.getId(), 1, Expansion.Repeat));
+    // Wrap child node (with no unknowns) in unknown bounds.
+    partials.add(mkRepetitionNode(node.getChild()));
 
     UnknownChar unknown = new UnknownChar(history);
     partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Optional));
@@ -187,17 +189,15 @@ public class Slicer {
   private static List<Enumerant> sliceStar (StarNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
     List<Expansion> newHistory = new LinkedList<>(history);
-    newHistory.add(Expansion.Star);
+    newHistory.add(Expansion.Repeat);
 
+    // Wrap child node permutations (with 1+ unknown) in unknown bounds.
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
-      StarNode branch = new StarNode(partial.getTree());
-      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Star));
+      partials.add(mkRepetitionNode(partial));
     }
 
-    // (R0)* -> (R0){■}
-    UnknownBounds bounds = new UnknownBounds();
-    RepetitionNode branch = new RepetitionNode(node.getChild(), bounds);
-    partials.add(new Enumerant(branch, bounds.getId(), 1, Expansion.Repeat));
+    // Wrap child node (with no unknowns) in unknown bounds.
+    partials.add(mkRepetitionNode(node.getChild()));
 
     UnknownChar unknown = new UnknownChar(history);
     partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Star));
@@ -207,17 +207,15 @@ public class Slicer {
   private static List<Enumerant> slicePlus (PlusNode node, List<Expansion> history) {
     List<Enumerant> partials = new LinkedList<>();
     List<Expansion> newHistory = new LinkedList<>(history);
-    newHistory.add(Expansion.Plus);
+    newHistory.add(Expansion.Repeat);
 
+    // Wrap child node permutations (with 1+ unknown) in unknown bounds.
     for (Enumerant partial : sliceNode(node.getChild(), newHistory)) {
-      PlusNode branch = new PlusNode(partial.getTree());
-      partials.add(new Enumerant(branch, partial.getIds(), partial.getCost(), Expansion.Plus));
+      partials.add(mkRepetitionNode(partial));
     }
 
-    // (R0)+ -> (R0){■}
-    UnknownBounds bounds = new UnknownBounds();
-    RegexNode branch = new RepetitionNode(node.getChild(), bounds);
-    partials.add(new Enumerant(branch, bounds.getId(), 1, Expansion.Repeat));
+    // Wrap child node (with no unknowns) in unknown bounds.
+    partials.add(mkRepetitionNode(node.getChild()));
 
     UnknownChar unknown = new UnknownChar(history);
     partials.add(new Enumerant(unknown, unknown.getId(), node.descendants(), Expansion.Plus));
