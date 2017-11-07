@@ -3,6 +3,7 @@ package edu.wisc.regfixer;
 import java.util.concurrent.TimeoutException;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Iterator;
 
 import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.enumerate.Enumerant;
@@ -179,6 +180,14 @@ public class RegFixer {
 
       // Handle condition 'o' == 'p'.
       O.removeAll(job.getCorpus().getPositiveRanges());
+
+      // Handle condition len('o') == 0.
+      for (Iterator<Range> iter = O.iterator(); iter.hasNext();) {
+        if (iter.next().length() == 0) {
+          iter.remove();
+        }
+      }
+
       if (O.size() == 0) {
         return synthesis;
       }
@@ -187,6 +196,10 @@ public class RegFixer {
       Set<Range> pendingN = new TreeSet<>();
       outerLoop:
       for (Range o : O) {
+        if (o.length() == 0) {
+          continue;
+        }
+
         for (Range p : P) {
           boolean cond1 = o.getLeftIndex() > p.getLeftIndex();
           boolean cond2 = o.getLeftIndex() < p.getRightIndex();
@@ -203,7 +216,7 @@ public class RegFixer {
        * N then the synthesis loop fails because no new information can be
        * learned that will improve the synthesized solutions.
        */
-      if (N.containsAll(pendingN)) {
+      if (N.size() > 0 && N.containsAll(pendingN)) {
         throw new SynthesisFailure("failed to find novel incorrect matches");
       } else {
         N.addAll(pendingN);
