@@ -86,6 +86,7 @@ public class Formula {
     this.getAllRelevantUnknownExits(this.negatives);
 
     IntExpr zero = this.ctx.mkInt(0);
+    IntExpr one  = this.ctx.mkInt(1);
 
     // Create all 'H?_max' and 'H?_min' variables for all relevant IDs.
     for (UnknownId id : this.unknownBounds) {
@@ -104,25 +105,28 @@ public class Formula {
       this.opt.Assert(this.ctx.mkGe(minVar, zero));
       this.opt.Assert(this.ctx.mkGe(maxVar, zero));
 
-      // (declare-const H0_new_breadth Int)
-      // (declare-const H0_old_breadth Int)
-      // (declare-const H0_dif_breadth Int)
-      // (assert (= H0_old_breadth (- <old_max> <old_min>)))
-      // (assert (= H0_new_breadth (- H0_max H0_min)))
-      // (assert (= H0_dif_breadth (- H0_new_breadth H0_old_breadth)))
-      // (minimize (ite (>= H0_dif_breadth 0) H0_dif_breadth (- H0_dif_breadth)))
-      IntExpr newBreadth = this.ctx.mkIntConst(id.toString() + "_new_breadth");
-      IntExpr oldBreadth = this.ctx.mkIntConst(id.toString() + "_old_breadth");
-      IntExpr difBreadth = this.ctx.mkIntConst(id.toString() + "_dif_breadth");
+      // (declare H0_min_cost Int)
+      // (declare H0_max_cost Int)
+      // (assert (= H0_min_cost (ite (= H0_min <old minimum>) 0 1)))
+      // (assert (= H0_max_cost (ite (= H0_max <old maximum>) 0 1)))
+      // (minimize (+ H0_min_cost H0_max_cost))
       int oldMin = unknown.getMin();
       int oldMax = unknown.hasMax() ? unknown.getMax() : Bounds.MAX_BOUND;
-      this.opt.Assert(this.ctx.mkEq(oldBreadth, this.ctx.mkInt(oldMax - oldMin)));
-      this.opt.Assert(this.ctx.mkEq(newBreadth, this.ctx.mkSub(maxVar, minVar)));
-      this.opt.Assert(this.ctx.mkEq(difBreadth, this.ctx.mkSub(newBreadth, oldBreadth)));
-      this.opt.MkMinimize((ArithExpr)this.ctx.mkITE(
-        this.ctx.mkGe(difBreadth, zero),
-        difBreadth,
-        this.ctx.mkSub(zero, difBreadth)));
+
+      IntExpr minCost = this.ctx.mkIntConst(id.toString() + "_min_cost");
+      IntExpr maxCost = this.ctx.mkIntConst(id.toString() + "_max_cost");
+
+      this.opt.Assert(this.ctx.mkEq(minCost, this.ctx.mkITE(
+        this.ctx.mkEq(minVar, this.ctx.mkInt(oldMin)),
+        zero,
+        one)));
+
+      this.opt.Assert(this.ctx.mkEq(maxCost, this.ctx.mkITE(
+        this.ctx.mkEq(maxVar, this.ctx.mkInt(oldMax)),
+        zero,
+        one)));
+
+      this.opt.MkMinimize(this.ctx.mkAdd(maxCost, minCost));
     }
 
     // Build the formula and encode meta-class formulae
