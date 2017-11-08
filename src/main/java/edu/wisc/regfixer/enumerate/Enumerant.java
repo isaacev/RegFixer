@@ -12,6 +12,7 @@ import java.util.Set;
 import edu.wisc.regfixer.automata.Automaton;
 import edu.wisc.regfixer.automata.Route;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
+import edu.wisc.regfixer.parser.Bounds;
 import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.OptionalNode;
 import edu.wisc.regfixer.parser.PlusNode;
@@ -70,7 +71,12 @@ public class Enumerant implements Comparable<Enumerant> {
   public Pattern toPattern (UnknownChar.FillType type) {
     // Set temporary values for unknowns.
     UnknownChar.setFill(type);
-    UnknownBounds.setFill();
+
+    if (type == UnknownChar.FillType.EmptySet) {
+      UnknownBounds.setFill(Bounds.exactly(0));
+    } else {
+      UnknownBounds.setFill();
+    }
 
     // Build the pattern with temporary values replacing unknowns.
     Pattern pattern = Pattern.compile(String.format("^%s$", this.tree));
