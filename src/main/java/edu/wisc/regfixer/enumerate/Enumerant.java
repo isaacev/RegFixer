@@ -16,6 +16,7 @@ import edu.wisc.regfixer.parser.ConcatNode;
 import edu.wisc.regfixer.parser.OptionalNode;
 import edu.wisc.regfixer.parser.PlusNode;
 import edu.wisc.regfixer.parser.RegexNode;
+import edu.wisc.regfixer.parser.RepetitionNode;
 import edu.wisc.regfixer.parser.StarNode;
 import edu.wisc.regfixer.parser.UnionNode;
 import edu.wisc.regfixer.synthesize.Synthesis;
@@ -28,6 +29,7 @@ public class Enumerant implements Comparable<Enumerant> {
   public final static int STAR_COST     = 3;
   public final static int PLUS_COST     = 2;
   public final static int CONCAT_COST   = 1;
+  public final static int REPEAT_COST   = 1;
 
   private final RegexNode tree;
   private final Set<UnknownId> ids;
@@ -92,6 +94,7 @@ public class Enumerant implements Comparable<Enumerant> {
           expansions.add(this.expandWithOptional(unknown));
           expansions.add(this.expandWithStar(unknown));
           expansions.add(this.expandWithPlus(unknown));
+          // expansions.add(this.expandWithUnknownQuantifier(unknown));
         }
 
         expansions.add(this.expandWithConcat(unknown));
@@ -124,6 +127,31 @@ public class Enumerant implements Comparable<Enumerant> {
 
     // Build components into new enumerant.
     return new Enumerant(root, ids, cost, Expansion.Union);
+  }
+
+  private Enumerant expandWithUnknownQuantifier (UnknownChar unknown) {
+    // Create an unknown char to be added to the regex tree.
+    UnknownChar child = new UnknownChar(unknown.getHistory(), Expansion.Repeat);
+    UnknownBounds bounds = new UnknownBounds();
+
+    // Create unknown node to add in place of the given 'unknown'.
+    RegexNode scion = new RepetitionNode(child, bounds);
+
+    // Graft scion onto the root regex tree.
+    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
+
+    // Build set of IDs custom to the new enumerant.
+    Set<UnknownId> ids = new HashSet<>();
+    ids.addAll(this.getIds());
+    ids.remove(unknown.getId());
+    ids.add(child.getId());
+    ids.add(bounds.getId());
+
+    // Add cost of the expansion.
+    int cost = this.getCost() + Enumerant.REPEAT_COST;
+
+    // Build components into new enumerant.
+    return new Enumerant(root, ids, cost, Expansion.Repeat);
   }
 
   private Enumerant expandWithOptional (UnknownChar unknown) {
