@@ -139,9 +139,15 @@ public class Formula {
     // Build the formula and encode meta-class formulae
     this.encodeRoutes();
 
+    List<ArithExpr> charCosts = new LinkedList<>();
     for (UnknownId id : this.unknownChars) {
       this.encodeCharClass(id, this.tree);
-      this.encodeCharClassSummation(id);
+      charCosts.add(this.encodeCharClassSummation(id));
+    }
+
+    if (charCosts.size() > 0) {
+      ArithExpr[] costArray = charCosts.toArray(new ArithExpr[charCosts.size()]);
+      this.opt.MkMaximize(this.ctx.mkAdd(costArray));
     }
   }
 
@@ -385,7 +391,7 @@ public class Formula {
     return vars;
   }
 
-  private void encodeCharClassSummation (UnknownId id) {
+  private ArithExpr encodeCharClassSummation (UnknownId id) {
     List<IntExpr> weightsList = this.unknownToWeights.get(id);
     IntExpr[] weightsArr = new IntExpr[weightsList.size()];
 
@@ -393,7 +399,7 @@ public class Formula {
       weightsArr[i] = weightsList.get(i);
     }
 
-    this.opt.MkMaximize(this.ctx.mkAdd(weightsArr));
+    return this.ctx.mkAdd(weightsArr);
   }
 
   private String createVariableName (UnknownId id, MetaClassTree tree) {
