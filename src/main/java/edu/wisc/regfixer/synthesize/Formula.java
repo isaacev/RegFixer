@@ -36,7 +36,6 @@ public class Formula {
   private Optimize opt;
   private Model model;
 
-  private int nextVarId;
   private Set<UnknownId> unknownChars;
   private Map<UnknownId, Set<BoolExpr>> unknownToVars;
   private Map<UnknownId, List<IntExpr>> unknownToWeights;
@@ -66,7 +65,6 @@ public class Formula {
     this.model = null;
 
     // Initialize structures for tracking state
-    this.nextVarId = 0;
     this.unknownChars = new HashSet<>();
     this.unknownToVars = new HashMap<>();
     this.unknownToWeights = new HashMap<>();
@@ -432,19 +430,6 @@ public class Formula {
       this.unknownToTreeToVar.put(id, new HashMap<>());
     }
     this.unknownToTreeToVar.get(id).put(tree, var);
-  }
-
-  private BoolExpr createVariable (UnknownId id) {
-    String name = String.format("%s_%d", id, this.nextVarId++);
-    BoolExpr var = this.ctx.mkBoolConst(name);
-
-    // Register variable with unknown -> variable mapping.
-    if (this.unknownToVars.containsKey(id) == false) {
-      this.unknownToVars.put(id, new HashSet<>());
-    }
-    this.unknownToVars.get(id).add(var);
-
-    return var;
   }
 
   private BoolExpr encodeWeightedConstraint (UnknownId id, MetaClassTree tree) {
