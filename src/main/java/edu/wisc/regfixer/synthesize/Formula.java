@@ -89,6 +89,7 @@ public class Formula {
     IntExpr one  = this.ctx.mkInt(1);
 
     // Create all 'H?_max' and 'H?_min' variables for all relevant IDs.
+    List<IntExpr> quantCosts = new LinkedList<>();
     for (UnknownId id : this.unknownBounds) {
       UnknownBounds unknown = (UnknownBounds)(id.getUnknown());
 
@@ -126,7 +127,13 @@ public class Formula {
         zero,
         one)));
 
-      this.opt.MkMinimize(this.ctx.mkAdd(maxCost, minCost));
+      quantCosts.add(maxCost);
+      quantCosts.add(minCost);
+    }
+
+    if (quantCosts.size() > 0) {
+      IntExpr[] costArray = quantCosts.toArray(new IntExpr[quantCosts.size()]);
+      this.opt.MkMinimize(this.ctx.mkAdd(costArray));
     }
 
     // Build the formula and encode meta-class formulae
