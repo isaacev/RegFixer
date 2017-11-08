@@ -73,7 +73,7 @@ public class RegFixer {
   }
 
   public static Result fix (Job job, int loopLimit, Diagnostic diag) throws TimeoutException {
-    long   duration           = System.nanoTime();
+    long   start              = System.nanoTime();
     int    templates          = 0;
     int    cost               = 0;
     String solution           = null;
@@ -105,6 +105,10 @@ public class RegFixer {
 
     int i = 0;
     while ((enumerant = enumerants.poll()) != null) {
+      if (isMoreThan30SecondsOld(start)) {
+        break;
+      }
+
       templates++;
       if (i++ >= loopLimit) {
         diag.output().printSectionHeader("enumeration loop limit reached");
@@ -118,7 +122,7 @@ public class RegFixer {
       if (expansion == Expansion.Concat) {
         if (job.getCorpus().passesDotTest(enumerant)) {
           try {
-            synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
+            synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
           } catch (SynthesisFailure ex) {
             diag.output().finishRow(ex.getMessage());
             continue;
@@ -130,7 +134,7 @@ public class RegFixer {
       } else if (expansion == Expansion.Star) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
-            synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
+            synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
           } catch (SynthesisFailure ex) {
             diag.output().finishRow(ex.getMessage());
             continue;
@@ -141,7 +145,7 @@ public class RegFixer {
         }
       } else if (expansion == Expansion.Plus) {
         try {
-          synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
+          synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
         } catch (SynthesisFailure ex) {
           diag.output().finishRow(ex.getMessage());
           continue;
@@ -149,7 +153,7 @@ public class RegFixer {
       } else if (expansion == Expansion.Optional) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
-            synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
+            synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
           } catch (SynthesisFailure ex) {
             diag.output().finishRow(ex.getMessage());
             continue;
@@ -160,7 +164,7 @@ public class RegFixer {
         }
       } else if (expansion == Expansion.Repeat) {
         try {
-          synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
+          synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
         } catch (SynthesisFailure ex) {
           diag.output().finishRow(ex.getMessage());
           continue;
@@ -170,13 +174,14 @@ public class RegFixer {
       }
 
       if (synthesis != null) {
-        duration = System.nanoTime() - duration;
         cost = enumerant.getCost();
         solution = synthesis.getTree().toString();
         diag.output().finishRow(synthesis.toString());
         break;
       }
     }
+
+    long duration = System.nanoTime() - start;
 
     if (synthesis != null) {
       diag.output().printSectionHeader("Results in the expression:");
@@ -190,7 +195,7 @@ public class RegFixer {
     }
   }
 
-  private static Synthesis synthesisLoop (Job job, Enumerant enumerant, Diagnostic diag) throws SynthesisFailure {
+  private static Synthesis synthesisLoop (Job job, Enumerant enumerant, Diagnostic diag, long start) throws SynthesisFailure {
     if (job.getCorpus().passesDotTest(enumerant) == false) {
       throw new SynthesisFailure("failed dot test");
     }
@@ -208,6 +213,10 @@ public class RegFixer {
      * examples.
      */
     while (true) {
+      if (isMoreThan30SecondsOld(start)) {
+        throw new SynthesisFailure("synthesis took too long");
+      }
+
       /**
        * For each iteration of the loop, given the positive examples P and the
        * negative examples N, a SAT formula is generated to attempt to
@@ -281,5 +290,10 @@ public class RegFixer {
         N.addAll(pendingN);
       }
     }
+  }
+
+  private static boolean isMoreThan30SecondsOld(long then) {
+    long now = System.nanoTime();
+    return then < (now - (30e9));
   }
 }

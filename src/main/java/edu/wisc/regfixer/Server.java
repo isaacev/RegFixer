@@ -50,7 +50,8 @@ public class Server {
       Job job = request.toJob();
 
       try {
-        result = RegFixer.fix(job, loopLimit);
+        RegFixer.Result output = RegFixer.fix(job, loopLimit);
+        result = (output.hasSolution) ? output.solution : null;
       } catch (TimeoutException ex) {
         res.status(408);
         return gson.toJson(new ResponseError("synthesis timeout"));
