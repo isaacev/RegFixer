@@ -72,6 +72,9 @@ public class CLI {
     @Parameter(names="--print-model")
     private boolean printModel = false;
 
+    @Parameter(names="--csv")
+    private boolean csv = false;
+
     @DynamicParameter(names = "-X", description = "Configuration flags")
     private Map<String, String> configParams = new HashMap<>();
 
@@ -278,12 +281,17 @@ public class CLI {
     }
 
     try {
-      String solution = RegFixer.fix(job, args.limit, diag);
+      RegFixer.Result result = RegFixer.fix(job, args.limit, diag);
 
-      if (solution == null) {
+      if (args.csv) {
+        System.out.println(result.toString());
+        return 0;
+      }
+
+      if (result.hasSolution == false) {
         return 1;
-      } else if (args.quiet && solution != null) {
-        System.out.println(solution);
+      } else if (args.quiet && result.hasSolution) {
+        System.out.println(result.solution);
         return 0;
       }
     } catch (TimeoutException ex) {

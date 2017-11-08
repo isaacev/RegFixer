@@ -16,19 +16,71 @@ import edu.wisc.regfixer.synthesize.Synthesis;
 import edu.wisc.regfixer.synthesize.SynthesisFailure;
 
 public class RegFixer {
-  public static String fix (Job job) throws TimeoutException {
+  public static class Result {
+    public final long    duration;
+    public final int     templates;
+    public final boolean hasSolution;
+    public final int     cost;
+    public final String  solution;
+    public final int     failedDotTest;
+    public final int     failedDotStarTest;
+    public final int     failedEmptySetTest;
+
+    public Result (long duration, int templates, int cost, String solution, int failedDotTest, int failedDotStarTest, int failedEmptySetTest) {
+      this.duration           = duration;
+      this.templates          = templates;
+      this.hasSolution        = true;
+      this.cost               = cost;
+      this.solution           = solution;
+      this.failedDotTest      = failedDotTest;
+      this.failedDotStarTest  = failedDotStarTest;
+      this.failedEmptySetTest = failedEmptySetTest;
+    }
+
+    public Result (long duration, int templates, int failedDotTest, int failedDotStarTest, int failedEmptySetTest) {
+      this.duration           = duration;
+      this.templates          = templates;
+      this.hasSolution        = false;
+      this.cost               = 0;
+      this.solution           = null;
+      this.failedDotTest      = failedDotTest;
+      this.failedDotStarTest  = failedDotStarTest;
+      this.failedEmptySetTest = failedEmptySetTest;
+    }
+
+    public String toString () {
+      return String.format("%dms,%d,%s,\"%s\",%d,%d,%d",
+        Math.round(this.duration / 1e6),
+        this.templates,
+        (this.hasSolution) ? Integer.toString(this.cost) : "",
+        (this.hasSolution) ? this.solution : "",
+        this.failedDotTest,
+        this.failedDotStarTest,
+        this.failedEmptySetTest);
+    }
+  }
+
+  public static Result fix (Job job) throws TimeoutException {
     return RegFixer.fix(job, new Diagnostic());
   }
 
-  public static String fix (Job job, Diagnostic diag) throws TimeoutException {
+  public static Result fix (Job job, Diagnostic diag) throws TimeoutException {
     return RegFixer.fix(job, 1000, diag);
   }
 
-  public static String fix (Job job, int loopLimit) throws TimeoutException {
+  public static Result fix (Job job, int loopLimit) throws TimeoutException {
     return RegFixer.fix(job, loopLimit, new Diagnostic());
   }
 
-  public static String fix (Job job, int loopLimit, Diagnostic diag) throws TimeoutException {
+  public static Result fix (Job job, int loopLimit, Diagnostic diag) throws TimeoutException {
+    long   duration           = System.nanoTime();
+    int    templates          = 0;
+    int    cost               = 0;
+    String solution           = null;
+    int    failedDotTest      = 0;
+    int    failedDotStarTest  = 0;
+    int    failedEmptySetTest = 0;
+
     diag.output().printSectionHeader("Given the regular expression:");
     diag.output().printIndent(job.getTree().toString());
 
@@ -53,6 +105,7 @@ public class RegFixer {
 
     int i = 0;
     while ((enumerant = enumerants.poll()) != null) {
+      templates++;
       if (i++ >= loopLimit) {
         diag.output().printSectionHeader("enumeration loop limit reached");
         throw new TimeoutException("enumeration loop limit reached");
@@ -71,6 +124,7 @@ public class RegFixer {
             continue;
           }
         } else {
+          failedDotTest++;
           diag.output().finishRow("failed dot test");
         }
       } else if (expansion == Expansion.Star) {
@@ -82,6 +136,7 @@ public class RegFixer {
             continue;
           }
         } else {
+          failedEmptySetTest++;
           diag.output().finishRow("failed empty set test");
         }
       } else if (expansion == Expansion.Plus) {
@@ -100,6 +155,7 @@ public class RegFixer {
             continue;
           }
         } else {
+          failedEmptySetTest++;
           diag.output().finishRow("failed empty set test");
         }
       } else if (expansion == Expansion.Repeat) {
@@ -114,6 +170,9 @@ public class RegFixer {
       }
 
       if (synthesis != null) {
+        duration = System.nanoTime() - duration;
+        cost = enumerant.getCost();
+        solution = synthesis.getTree().toString();
         diag.output().finishRow(synthesis.toString());
         break;
       }
@@ -123,11 +182,11 @@ public class RegFixer {
       diag.output().printSectionHeader("Results in the expression:");
       diag.output().printIndent(synthesis.getTree().toString());
       diag.output().printSectionHeader("All done");
-      return synthesis.getTree().toString();
+      return new Result(duration, templates, cost, solution, failedDotTest, failedDotStarTest, failedEmptySetTest);
     } else {
       diag.output().printSectionHeader("Unable to compute a repair");
       diag.output().printSectionHeader("All done");
-      return null;
+      return new Result(duration, templates, failedDotTest, failedDotStarTest, failedEmptySetTest);
     }
   }
 
