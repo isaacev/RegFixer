@@ -102,7 +102,7 @@ local web application available at http://localhost:8080/
 - Server.java: class related with the configuration of server
 
 ## Note
-- java classes that Issac and Sang developed are in src/main/java/edu.wisc.regfixer, and rest directories/files are forked libraries
+- java classes that Isaac and Sang developed are in src/main/java/edu.wisc.regfixer, and rest directories/files are forked libraries
 - the main class can be found in src/main/java/edu.wisc.regfixer/CLI
 - nested call stacks can be track from there (‘handleFix’ method)
 - It output more accurate result using Sang’s branch (major difference is SAT_Formula.java)
