@@ -291,7 +291,7 @@ public class RegFixer {
        * N then the synthesis loop fails because no new information can be
        * learned that will improve the synthesized solutions.
        */
-      if (N.size() > 0 && N.containsAll(pendingN)) {
+      if (pendingN.size() == 0 || N.containsAll(pendingN)) {
         throw new SynthesisFailure("failed to find novel incorrect matches");
       } else {
         N.addAll(pendingN);
