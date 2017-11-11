@@ -102,13 +102,13 @@ public class RegFixer {
 
     int i = 0;
     while ((enumerant = enumerants.poll()) != null) {
+      if (enumerant.getCost() > COST_CUTOFF) {
+        break;
+      }
+
       templates++;
       if (i++ >= loopLimit) {
         throw new TimeoutException("enumeration loop limit reached");
-      }
-
-      if (enumerant.getCost() > COST_CUTOFF) {
-        break;
       }
 
       Synthesis synthesis = null;
