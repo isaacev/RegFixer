@@ -97,10 +97,7 @@ public class Enumerant implements Comparable<Enumerant> {
         expansions.add(this.expandWithUnion(unknown));
 
         if (unknown.canInsertQuantifierNodes()) {
-          expansions.add(this.expandWithOptional(unknown));
-          expansions.add(this.expandWithStar(unknown));
-          expansions.add(this.expandWithPlus(unknown));
-          // expansions.add(this.expandWithUnknownQuantifier(unknown));
+          expansions.add(this.expandWithUnknownQuantifier(unknown));
         }
 
         expansions.add(this.expandWithConcat(unknown));
@@ -158,75 +155,6 @@ public class Enumerant implements Comparable<Enumerant> {
 
     // Build components into new enumerant.
     return new Enumerant(root, ids, cost, Expansion.Repeat);
-  }
-
-  private Enumerant expandWithOptional (UnknownChar unknown) {
-    // Create an unknown char to be added to the regex tree.
-    UnknownChar un = new UnknownChar(unknown.getHistory(), Expansion.Optional);
-
-    // Create optional node to added in place of the given 'unknown'.
-    RegexNode scion = new OptionalNode(un);
-
-    // Graft scion onto the root regex tree.
-    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
-
-    // Build set of IDs custom to the new enumerant.
-    Set<UnknownId> ids = new HashSet<>();
-    ids.addAll(this.getIds());
-    ids.remove(unknown.getId());
-    ids.add(un.getId());
-
-    // Add cost of the expansion.
-    int cost = this.getCost() + Enumerant.OPTIONAL_COST;
-
-    // Build components into new enumerant.
-    return new Enumerant(root, ids, cost, Expansion.Optional);
-  }
-
-  private Enumerant expandWithStar (UnknownChar unknown) {
-    // Create an unknown char to be added to the regex tree.
-    UnknownChar un = new UnknownChar(unknown.getHistory(), Expansion.Star);
-
-    // Create star node to added in place of the given 'unknown'.
-    RegexNode scion = new StarNode(un);
-
-    // Graft scion onto the root regex tree.
-    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
-
-    // Build set of IDs custom to the new enumerant.
-    Set<UnknownId> ids = new HashSet<>();
-    ids.addAll(this.getIds());
-    ids.remove(unknown.getId());
-    ids.add(un.getId());
-
-    // Add cost of the expansion.
-    int cost = this.getCost() + Enumerant.STAR_COST;
-
-    // Build components into new enumerant.
-    return new Enumerant(root, ids, cost, Expansion.Star);
-  }
-
-  private Enumerant expandWithPlus (UnknownChar unknown) {
-    // Create an unknown char to be added to the regex tree.
-    UnknownChar un = new UnknownChar(unknown.getHistory(), Expansion.Plus);
-
-    // Create plus node to added in place of the given 'unknown'.
-    RegexNode scion = new PlusNode(un);
-
-    // Graft scion onto the root regex tree.
-    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
-
-    // Build set of IDs custom to the new enumerant.
-    Set<UnknownId> ids = new HashSet<>();
-    ids.addAll(this.getIds());
-    ids.remove(unknown.getId());
-    ids.add(un.getId());
-
-    // Add cost of the expansion.
-    int cost = this.getCost() + Enumerant.PLUS_COST;
-
-    // Build components into new enumerant.
-    return new Enumerant(root, ids, cost, Expansion.Plus);
   }
 
   private Enumerant expandWithConcat (UnknownChar unknown) {
