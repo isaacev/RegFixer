@@ -113,7 +113,6 @@ public class RegFixer {
 
       templates++;
       if (i++ >= loopLimit) {
-        diag.output().printSectionHeader("enumeration loop limit reached");
         throw new TimeoutException("enumeration loop limit reached");
       }
 
