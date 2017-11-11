@@ -15,10 +15,14 @@ import edu.wisc.regfixer.enumerate.UnknownChar;
 import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.parser.Bounds;
 import edu.wisc.regfixer.parser.CharClass;
+import edu.wisc.regfixer.parser.CharClassSetNode;
+import edu.wisc.regfixer.parser.CharLiteralNode;
+import edu.wisc.regfixer.parser.CharRangeNode;
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class Synthesis {
   private RegexNode tree;
+  private int totalCharLiterals;
 
   public Synthesis (Enumerant enumerant, List<Set<Route>> positives, List<Set<Route>> negatives) throws SynthesisFailure {
     this(enumerant, positives, negatives, new Diagnostic());
@@ -37,8 +41,21 @@ public class Synthesis {
 
     RegexNode whole = enumerant.getTree();
 
+    int totalCharLiterals = 0;
     for (Entry<UnknownId, CharClass> solution : charSolutions.entrySet()) {
-      whole = Grafter.graft(whole, solution.getKey(), solution.getValue());
+      CharClass cc = solution.getValue();
+      whole = Grafter.graft(whole, solution.getKey(), cc);
+
+      // Count single character literal classes included in the solution.
+      if (cc instanceof CharLiteralNode) {
+        totalCharLiterals++;
+      } else if (cc instanceof CharClassSetNode) {
+        for (CharRangeNode cr : ((CharClassSetNode)cc).getSubClasses()) {
+          if (cr.isSingle() && cr.getLeftChild() instanceof CharLiteralNode) {
+            totalCharLiterals++;
+          }
+        }
+      }
     }
 
     for (Entry<UnknownId, Bounds> solution : boundsSolutions.entrySet()) {
@@ -46,10 +63,15 @@ public class Synthesis {
     }
 
     this.tree = whole;
+    this.totalCharLiterals = totalCharLiterals;
   }
 
   public RegexNode getTree () {
     return this.tree;
+  }
+
+  public int getFitness () {
+    return this.totalCharLiterals;
   }
 
   public Pattern toPattern (boolean withAnchors) {

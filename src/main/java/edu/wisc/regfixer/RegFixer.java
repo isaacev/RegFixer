@@ -1,9 +1,11 @@
 package edu.wisc.regfixer;
 
 import java.util.concurrent.TimeoutException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Iterator;
 
 import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.enumerate.Enumerant;
@@ -76,7 +78,7 @@ public class RegFixer {
     long   start              = System.nanoTime();
     int    templates          = 0;
     int    cost               = 0;
-    String solution           = null;
+    Map<String, Integer> solutions = new HashMap<>();
     int    failedDotTest      = 0;
     int    failedDotStarTest  = 0;
     int    failedEmptySetTest = 0;
@@ -101,7 +103,7 @@ public class RegFixer {
 
     Enumerants enumerants = new Enumerants(job.getTree(), job.getCorpus());
     Enumerant enumerant = null;
-    Synthesis synthesis = null;
+    int COST_CUTOFF = Integer.MAX_VALUE;
 
     int i = 0;
     while ((enumerant = enumerants.poll()) != null) {
@@ -115,7 +117,11 @@ public class RegFixer {
         throw new TimeoutException("enumeration loop limit reached");
       }
 
-      synthesis = null;
+      if (enumerant.getCost() > COST_CUTOFF) {
+        break;
+      }
+
+      Synthesis synthesis = null;
       diag.output().printPartialRow(enumerant.getCost(), enumerant.toString());
       Expansion expansion = enumerant.getLatestExpansion();
 
@@ -174,18 +180,36 @@ public class RegFixer {
       }
 
       if (synthesis != null) {
-        cost = enumerant.getCost();
-        solution = synthesis.getTree().toString();
-        diag.output().finishRow(synthesis.toString());
-        break;
+        String sol = synthesis.toString();
+        int fit = synthesis.getFitness();
+        solutions.put(sol, fit);
+
+        diag.output().finishRow(sol);
+        COST_CUTOFF = enumerant.getCost();
       }
     }
 
     long duration = System.nanoTime() - start;
 
-    if (synthesis != null) {
-      diag.output().printSectionHeader("Results in the expression:");
-      diag.output().printIndent(synthesis.getTree().toString());
+    if (solutions.size() > 0) {
+      String solution = null;
+      diag.output().printSectionHeader("Finds the following solutions (and the corresponding fitness):");
+      for (Map.Entry<String, Integer> entry : solutions.entrySet()) {
+        diag.output().printIndent(String.format("%4d %s", entry.getValue(), entry.getKey()));
+
+        if (solution == null) {
+          solution = entry.getKey();
+        } else if (solutions.get(solution) < entry.getValue()) {
+          solution = entry.getKey();
+        }
+      }
+
+      // diag.output().printSectionHeader("Results in the expression:");
+      // diag.output().printIndent(synthesis.getTree().toString());
+      // diag.output().printSectionHeader("With a specificity of:");
+      // diag.output().printIndent(Integer.toString(synthesis.getFitness()));
+      diag.output().printSectionHeader("Computed in:");
+      diag.output().printIndent(String.format("%dms", Math.round(duration / 1e6)));
       diag.output().printSectionHeader("All done");
       return new Result(duration, templates, cost, solution, failedDotTest, failedDotStarTest, failedEmptySetTest);
     } else {
