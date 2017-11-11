@@ -218,7 +218,7 @@ public class Enumerant implements Comparable<Enumerant> {
       ids.add(frozenUnknown.getId());
     }
 
-    return new Enumerant(root, ids, this.getCost(), this.getLatestExpansion());
+    return new Enumerant(root, ids, this.getCost(), Expansion.Freeze);
   }
 
   public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {

@@ -7,4 +7,5 @@ public enum Expansion {
   Plus,
   Optional,
   Repeat,
+  Freeze,
 }

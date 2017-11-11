@@ -33,10 +33,15 @@ public class Enumerants {
       }
     }
 
-    if (enumerant.getLatestExpansion() == Expansion.Union) {
-      return this.poll();
-    } else {
-      return enumerant;
+    switch (enumerant.getLatestExpansion()) {
+      case Union:
+      case Freeze:
+        // In these expansion cases, the template is garunteed to not produce a
+        // better solution than its parent (but is kept in the queue for
+        // search completeness reasons) so return the next possible template.
+        return this.poll();
+      default:
+        return enumerant;
     }
   }
 
