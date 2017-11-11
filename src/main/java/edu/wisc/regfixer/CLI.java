@@ -267,7 +267,8 @@ public class CLI {
 
     // Create a diagnostic object to manage diagnostic flags and any debugging
     // output produced during execution.
-    Diagnostic diag = new Diagnostic(out, reg);
+    Timing tim = new Timing();
+    Diagnostic diag = new Diagnostic(out, reg, tim);
 
     try {
       job = Benchmark.readFromFile(args.files.get(0));
