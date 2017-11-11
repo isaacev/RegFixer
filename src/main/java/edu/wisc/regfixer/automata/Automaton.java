@@ -70,11 +70,9 @@ public class Automaton extends automata.Automaton {
 
   private List<State> getEpsClosure (List<State> frontier) {
     List<State> reached = new LinkedList<>(frontier);
-    Set<Integer> seenStateIds = new HashSet<>();
-    for (State s : frontier) {
-      seenStateIds.add(s.getStateId());
-    }
-
+    Set<Integer> seenStateIds = frontier.stream()
+      .map(s -> s.getStateId())
+      .collect(Collectors.toSet());
     LinkedList<State> toVisit = new LinkedList<>(frontier);
 
     while (toVisit.size() > 0) {
