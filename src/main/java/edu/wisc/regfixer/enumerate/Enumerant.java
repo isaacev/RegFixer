@@ -40,6 +40,16 @@ public class Enumerant implements Comparable<Enumerant> {
   private final int cost;
   private final Expansion latest;
 
+  @FunctionalInterface
+  public static interface ExpansionFunction {
+    Enumerant apply(UnknownChar unknown) throws ForbiddenExpansionException;
+  }
+
+  @FunctionalInterface
+  public static interface MultExpansionFunction {
+    Enumerant apply(Collection<UnknownChar> unknowns) throws ForbiddenExpansionException;
+  }
+
   public Enumerant (RegexNode tree, UnknownId id, int cost, Expansion latest) {
     this(tree, Arrays.asList(id), cost, latest);
   }
@@ -108,11 +118,11 @@ public class Enumerant implements Comparable<Enumerant> {
       }
 
       // Perform expansion converting unknown char -> union, quantifier, and concat.
-      expansions.add(this.expandWithUnion(unknown));
+      this.addExpansion(expansions, unknown, this::expandWithUnion);
       if (unknown.canInsertQuantifierNodes()) {
-        expansions.add(this.expandWithUnknownQuantifier(unknown));
+        this.addExpansion(expansions, unknown, this::expandWithUnknownQuantifier);
       }
-      expansions.add(this.expandWithConcat(unknown));
+      this.addExpansion(expansions, unknown, this::expandWithConcat);
 
       // Freeze any unfrozen unknown character classes younger than the current unknown.
       TreeSet<UnknownChar> toFreeze = new TreeSet<UnknownChar>(Collections.reverseOrder());
@@ -124,20 +134,46 @@ public class Enumerant implements Comparable<Enumerant> {
         }
       }
       if (toFreeze.size() > 0) {
-        expansions.add(expandWithFrozenUnknown(toFreeze));
+        this.addExpansion(expansions, toFreeze, this::expandWithFrozenUnknown);
       }
     }
 
     return expansions;
   }
 
-  private Enumerant expandWithUnion (UnknownChar unknown) {
+  private void addExpansion (List<Enumerant> expansions, UnknownChar unknown, ExpansionFunction expander) {
+    Enumerant expansion = null;
+    try {
+      expansion = expander.apply(unknown);
+    } catch (ForbiddenExpansionException ex) {
+      return;
+    }
+
+    if (expansion != null) {
+      expansions.add(expansion);
+    }
+  }
+
+  private void addExpansion (List<Enumerant> expansions, Collection<UnknownChar> unknowns, MultExpansionFunction expander) {
+    Enumerant expansion = null;
+    try {
+      expansion = expander.apply(unknowns);
+    } catch (ForbiddenExpansionException ex) {
+      return;
+    }
+
+    if (expansion != null) {
+      expansions.add(expansion);
+    }
+  }
+
+  private Enumerant expandWithUnion (UnknownChar unknown) throws ForbiddenExpansionException {
     // Create both unknown chars to be added to the regex tree.
     UnknownChar un1 = new UnknownChar(unknown.getHistory(), Expansion.Union);
     UnknownChar un2 = new UnknownChar(unknown.getHistory(), Expansion.Union);
 
     // Create union node to added in place of the given 'unknown'.
-    RegexNode scion = new UnionNode(un1, un2);
+    RegexNode scion = new UnionNode(un1, un2, true);
 
     // Graft scion onto the root regex tree.
     RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
@@ -156,7 +192,7 @@ public class Enumerant implements Comparable<Enumerant> {
     return new Enumerant(root, ids, cost, Expansion.Union);
   }
 
-  private Enumerant expandWithUnknownQuantifier (UnknownChar unknown) {
+  private Enumerant expandWithUnknownQuantifier (UnknownChar unknown) throws ForbiddenExpansionException {
     // Create an unknown char to be added to the regex tree.
     UnknownChar child = new UnknownChar(unknown.getHistory(), Expansion.Repeat);
     UnknownBounds bounds = new UnknownBounds();
@@ -181,7 +217,7 @@ public class Enumerant implements Comparable<Enumerant> {
     return new Enumerant(root, ids, cost, Expansion.Repeat);
   }
 
-  private Enumerant expandWithConcat (UnknownChar unknown) {
+  private Enumerant expandWithConcat (UnknownChar unknown) throws ForbiddenExpansionException {
     // Create both unknown chars to be added to the regex tree.
     UnknownChar un1 = new UnknownChar(unknown.getHistory(), Expansion.Concat);
     UnknownChar un2 = new UnknownChar(unknown.getHistory(), Expansion.Concat);
@@ -206,7 +242,7 @@ public class Enumerant implements Comparable<Enumerant> {
     return new Enumerant(root, ids, cost, Expansion.Concat);
   }
 
-  private Enumerant expandWithFrozenUnknown (Collection<UnknownChar> unknowns) {
+  private Enumerant expandWithFrozenUnknown (Collection<UnknownChar> unknowns) throws ForbiddenExpansionException {
     RegexNode root = this.tree;
     Set<UnknownId> ids = new HashSet<>(this.ids);
     for (UnknownChar unknown : unknowns) {

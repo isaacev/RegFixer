@@ -3,10 +3,18 @@ package edu.wisc.regfixer.parser;
 public class UnionNode implements RegexNode {
   private RegexNode left;
   private RegexNode right;
+  private boolean synthetic;
 
   public UnionNode (RegexNode left, RegexNode right) {
     this.left = left;
     this.right = right;
+    this.synthetic = false;
+  }
+
+  public UnionNode (RegexNode left, RegexNode right, boolean isSynthetic) {
+    this.left = left;
+    this.right = right;
+    this.synthetic = isSynthetic;
   }
 
   public RegexNode getLeftChild () {
@@ -15,6 +23,10 @@ public class UnionNode implements RegexNode {
 
   public RegexNode getRightChild () {
     return this.right;
+  }
+
+  public boolean isSynthetic () {
+    return this.synthetic;
   }
 
   public int descendants () {
