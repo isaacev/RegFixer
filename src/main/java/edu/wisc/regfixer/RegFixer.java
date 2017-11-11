@@ -19,7 +19,6 @@ import edu.wisc.regfixer.synthesize.SynthesisFailure;
 
 public class RegFixer {
   public static class Result {
-    public final long    duration;
     public final int     templates;
     public final boolean hasSolution;
     public final int     cost;
@@ -28,8 +27,7 @@ public class RegFixer {
     public final int     failedDotStarTest;
     public final int     failedEmptySetTest;
 
-    public Result (long duration, int templates, int cost, String solution, int failedDotTest, int failedDotStarTest, int failedEmptySetTest) {
-      this.duration           = duration;
+    public Result (int templates, int cost, String solution, int failedDotTest, int failedDotStarTest, int failedEmptySetTest) {
       this.templates          = templates;
       this.hasSolution        = true;
       this.cost               = cost;
@@ -39,8 +37,7 @@ public class RegFixer {
       this.failedEmptySetTest = failedEmptySetTest;
     }
 
-    public Result (long duration, int templates, int failedDotTest, int failedDotStarTest, int failedEmptySetTest) {
-      this.duration           = duration;
+    public Result (int templates, int failedDotTest, int failedDotStarTest, int failedEmptySetTest) {
       this.templates          = templates;
       this.hasSolution        = false;
       this.cost               = 0;
@@ -51,8 +48,7 @@ public class RegFixer {
     }
 
     public String toString () {
-      return String.format("%dms,%d,%s,\"%s\",%d,%d,%d",
-        Math.round(this.duration / 1e6),
+      return String.format("%d,%s,\"%s\",%d,%d,%d",
         this.templates,
         (this.hasSolution) ? Integer.toString(this.cost) : "",
         (this.hasSolution) ? this.solution : "",
@@ -75,7 +71,6 @@ public class RegFixer {
   }
 
   public static Result fix (Job job, int loopLimit, Diagnostic diag) throws TimeoutException {
-    long   start              = System.nanoTime();
     int    templates          = 0;
     int    cost               = 0;
     Map<String, Integer> solutions = new HashMap<>();
@@ -107,10 +102,6 @@ public class RegFixer {
 
     int i = 0;
     while ((enumerant = enumerants.poll()) != null) {
-      if (isMoreThan30SecondsOld(start)) {
-        break;
-      }
-
       templates++;
       if (i++ >= loopLimit) {
         throw new TimeoutException("enumeration loop limit reached");
@@ -127,7 +118,7 @@ public class RegFixer {
       if (expansion == Expansion.Concat) {
         if (job.getCorpus().passesDotTest(enumerant)) {
           try {
-            synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
+            synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
           } catch (SynthesisFailure ex) {
             diag.output().finishRow(ex.getMessage());
             continue;
@@ -139,7 +130,7 @@ public class RegFixer {
       } else if (expansion == Expansion.Star) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
-            synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
+            synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
           } catch (SynthesisFailure ex) {
             diag.output().finishRow(ex.getMessage());
             continue;
@@ -150,7 +141,7 @@ public class RegFixer {
         }
       } else if (expansion == Expansion.Plus) {
         try {
-          synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
+          synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
         } catch (SynthesisFailure ex) {
           diag.output().finishRow(ex.getMessage());
           continue;
@@ -158,7 +149,7 @@ public class RegFixer {
       } else if (expansion == Expansion.Optional) {
         if (job.getCorpus().passesEmptySetTest(enumerant)) {
           try {
-            synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
+            synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
           } catch (SynthesisFailure ex) {
             diag.output().finishRow(ex.getMessage());
             continue;
@@ -169,7 +160,7 @@ public class RegFixer {
         }
       } else if (expansion == Expansion.Repeat) {
         try {
-          synthesis = RegFixer.synthesisLoop(job, enumerant, diag, start);
+          synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
         } catch (SynthesisFailure ex) {
           diag.output().finishRow(ex.getMessage());
           continue;
@@ -187,8 +178,6 @@ public class RegFixer {
         COST_CUTOFF = enumerant.getCost();
       }
     }
-
-    long duration = System.nanoTime() - start;
 
     if (solutions.size() > 0) {
       String solution = null;
@@ -208,17 +197,16 @@ public class RegFixer {
       // diag.output().printSectionHeader("With a specificity of:");
       // diag.output().printIndent(Integer.toString(synthesis.getFitness()));
       diag.output().printSectionHeader("Computed in:");
-      diag.output().printIndent(String.format("%dms", Math.round(duration / 1e6)));
       diag.output().printSectionHeader("All done");
-      return new Result(duration, templates, cost, solution, failedDotTest, failedDotStarTest, failedEmptySetTest);
+      return new Result(templates, cost, solution, failedDotTest, failedDotStarTest, failedEmptySetTest);
     } else {
       diag.output().printSectionHeader("Unable to compute a repair");
       diag.output().printSectionHeader("All done");
-      return new Result(duration, templates, failedDotTest, failedDotStarTest, failedEmptySetTest);
+      return new Result(templates, failedDotTest, failedDotStarTest, failedEmptySetTest);
     }
   }
 
-  private static Synthesis synthesisLoop (Job job, Enumerant enumerant, Diagnostic diag, long start) throws SynthesisFailure {
+  private static Synthesis synthesisLoop (Job job, Enumerant enumerant, Diagnostic diag) throws SynthesisFailure {
     if (job.getCorpus().passesDotTest(enumerant) == false) {
       throw new SynthesisFailure("failed dot test");
     }
@@ -236,10 +224,6 @@ public class RegFixer {
      * examples.
      */
     while (true) {
-      if (isMoreThan30SecondsOld(start)) {
-        throw new SynthesisFailure("synthesis took too long");
-      }
-
       /**
        * For each iteration of the loop, given the positive examples P and the
        * negative examples N, a SAT formula is generated to attempt to
@@ -313,10 +297,5 @@ public class RegFixer {
         N.addAll(pendingN);
       }
     }
-  }
-
-  private static boolean isMoreThan30SecondsOld(long then) {
-    long now = System.nanoTime();
-    return then < (now - (30e9));
   }
 }
