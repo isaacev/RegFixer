@@ -21,10 +21,10 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
   // It's important that any time this value is set to a non-NULL value it is
   // reset back to NULL immediately to prevent bugs further in the enumeration
   // process.
-  public static enum FillType { Dot, DotStar, EmptySet }
-  private static FillType fill = null;
+  public static enum FillType { Dot, DotStar, EmptySet, Unfrozen, Default }
+  private static FillType fill = FillType.Default;
   public static void setFill (FillType which) { UnknownChar.fill = which; }
-  public static void clearFill () { UnknownChar.fill = null; }
+  public static void clearFill () { UnknownChar.fill = FillType.Default; }
 
   // Used to compute a unique age for each UnknownChar generated so that older
   // nodes can be expanded before younger nodes.
@@ -108,14 +108,6 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
   }
 
   public String toString () {
-    if (UnknownChar.fill == null) {
-      if (this.frozen) {
-        return "▓";
-      } else {
-        return "■";
-      }
-    }
-
     switch (UnknownChar.fill) {
       case Dot:
         return ".";
@@ -124,6 +116,10 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
       case EmptySet:
         // FIXME
         return "\0000";
+      case Default:
+        if (this.isFrozen()) {
+          return "▓";
+        }
       default:
         return "■";
     }
