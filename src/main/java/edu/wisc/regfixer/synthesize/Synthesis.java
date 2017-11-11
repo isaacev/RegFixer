@@ -44,7 +44,7 @@ public class Synthesis {
     int totalCharLiterals = 0;
     for (Entry<UnknownId, CharClass> solution : charSolutions.entrySet()) {
       CharClass cc = solution.getValue();
-      whole = Grafter.graft(whole, solution.getKey(), cc);
+      whole = Grafter.silentGraft(whole, solution.getKey(), cc);
 
       // Count single character literal classes included in the solution.
       if (cc instanceof CharLiteralNode) {
@@ -59,7 +59,7 @@ public class Synthesis {
     }
 
     for (Entry<UnknownId, Bounds> solution : boundsSolutions.entrySet()) {
-      whole = Grafter.graft(whole, solution.getKey(), solution.getValue());
+      whole = Grafter.silentGraft(whole, solution.getKey(), solution.getValue());
     }
 
     this.tree = whole;

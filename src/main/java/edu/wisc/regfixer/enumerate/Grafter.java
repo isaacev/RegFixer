@@ -20,6 +20,20 @@ import edu.wisc.regfixer.parser.UnionNode;
  * with.
  */
 public class Grafter {
+  private static boolean checkForbiddenExpansions = true;
+
+  public static RegexNode silentGraft (RegexNode original, UnknownId id, Object scion) {
+    try {
+      Grafter.checkForbiddenExpansions = false;
+      RegexNode graftee = graft(original, id, scion);
+      Grafter.checkForbiddenExpansions = true;
+      return graftee;
+    } catch (ForbiddenExpansionException ex) {
+      Grafter.checkForbiddenExpansions = true;
+      return null;
+    }
+  }
+
   public static RegexNode graft (RegexNode original, UnknownId id, Object scion) throws ForbiddenExpansionException {
     return graftNode(original, id, scion);
   }
@@ -66,7 +80,9 @@ public class Grafter {
         newChildren.set(i, graftee);
 
         if (scion instanceof ConcatNode && i > 0) {
-          throw new ForbiddenExpansionException("non-first child of concat cannot be expanded with concat");
+          if (checkForbiddenExpansions) {
+            throw new ForbiddenExpansionException("non-first child of concat cannot be expanded with concat");
+          }
         }
       }
     }
@@ -82,7 +98,9 @@ public class Grafter {
     if (scion instanceof UnionNode) {
       if (node.getRightChild() instanceof UnknownChar) {
         if (((UnknownChar)node.getRightChild()).getId() == id) {
-          throw new ForbiddenExpansionException("right side of union cannot be expanded with union");
+          if (checkForbiddenExpansions) {
+            throw new ForbiddenExpansionException("right side of union cannot be expanded with union");
+          }
         }
       }
     }
@@ -98,7 +116,9 @@ public class Grafter {
       UnionNode union = new UnionNode(leftGraftee, rightGraftee, node.isSynthetic());
 
       if (leftGraftee.descendants() <= rightGraftee.descendants() && node.isSynthetic()) {
-        throw new ForbiddenExpansionException("right side of union cannot have >= nodes than left side");
+        if (checkForbiddenExpansions) {
+          throw new ForbiddenExpansionException("right side of union cannot have >= nodes than left side");
+        }
       }
 
       return union;
