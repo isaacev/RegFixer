@@ -2,12 +2,15 @@ package edu.wisc.regfixer.enumerate;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.TreeSet;
 
 import edu.wisc.regfixer.automata.Automaton;
 import edu.wisc.regfixer.automata.Route;
@@ -91,16 +94,37 @@ public class Enumerant implements Comparable<Enumerant> {
   public List<Enumerant> expand () {
     List<Enumerant> expansions = new LinkedList<>();
 
-    for (UnknownId id : this.ids) {
-      if (id.getUnknown() instanceof UnknownChar) {
-        UnknownChar unknown = (UnknownChar)id.getUnknown();
-        expansions.add(this.expandWithUnion(unknown));
+    // Create a sorted list of UnknownChar's from youngest -> oldest.
+    TreeSet<UnknownChar> unknowns = new TreeSet<UnknownChar>(this.ids
+      .stream()
+      .filter(id -> id.getUnknown() instanceof UnknownChar)
+      .map(id -> (UnknownChar)id.getUnknown())
+      .collect(Collectors.toSet()));
 
-        if (unknown.canInsertQuantifierNodes()) {
-          expansions.add(this.expandWithUnknownQuantifier(unknown));
+    // Replace unknown character classes with more complex expressions.
+    for (UnknownChar unknown : unknowns) {
+      if (unknown.isFrozen()) {
+        continue;
+      }
+
+      // Perform expansion converting unknown char -> union, quantifier, and concat.
+      expansions.add(this.expandWithUnion(unknown));
+      if (unknown.canInsertQuantifierNodes()) {
+        expansions.add(this.expandWithUnknownQuantifier(unknown));
+      }
+      expansions.add(this.expandWithConcat(unknown));
+
+      // Freeze any unfrozen unknown character classes younger than the current unknown.
+      TreeSet<UnknownChar> toFreeze = new TreeSet<UnknownChar>(Collections.reverseOrder());
+      for (UnknownChar freezable : unknowns) {
+        if (freezable.getAge() >= unknown.getAge()) {
+          break;
+        } else if (freezable.isFrozen() == false && freezable.getAge() < unknown.getAge()) {
+          toFreeze.add(freezable);
         }
-
-        expansions.add(this.expandWithConcat(unknown));
+      }
+      if (toFreeze.size() > 0) {
+        expansions.add(expandWithFrozenUnknown(toFreeze));
       }
     }
 
@@ -180,6 +204,21 @@ public class Enumerant implements Comparable<Enumerant> {
 
     // Build components into new enumerant.
     return new Enumerant(root, ids, cost, Expansion.Concat);
+  }
+
+  private Enumerant expandWithFrozenUnknown (Collection<UnknownChar> unknowns) {
+    RegexNode root = this.tree;
+    Set<UnknownId> ids = new HashSet<>(this.ids);
+    for (UnknownChar unknown : unknowns) {
+      UnknownChar frozenUnknown = new UnknownChar(unknown.getHistory());
+      frozenUnknown.freeze();
+      root = Grafter.graft(root, unknown.getId(), frozenUnknown);
+
+      ids.remove(unknown.getId());
+      ids.add(frozenUnknown.getId());
+    }
+
+    return new Enumerant(root, ids, this.getCost(), this.getLatestExpansion());
   }
 
   public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {

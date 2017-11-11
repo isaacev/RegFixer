@@ -33,6 +33,7 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
   private UnknownId id;
   private int age;
   private List<Expansion> history;
+  private boolean frozen = false;
 
   private UnknownChar () {
     this(new LinkedList<>());
@@ -89,6 +90,14 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
     return true;
   }
 
+  public void freeze () {
+    this.frozen = true;
+  }
+
+  public boolean isFrozen () {
+    return this.frozen;
+  }
+
   public int descendants () {
     return 0;
   }
@@ -100,7 +109,11 @@ public class UnknownChar implements Unknown, RegexNode, Comparable<UnknownChar> 
 
   public String toString () {
     if (UnknownChar.fill == null) {
-      return "■";
+      if (this.frozen) {
+        return "▓";
+      } else {
+        return "■";
+      }
     }
 
     switch (UnknownChar.fill) {
