@@ -320,7 +320,7 @@ public class Automaton extends automata.Automaton {
 
   public static Automaton concatenate (List<Automaton> automata) throws TimeoutException {
     if (automata.size() == 0) {
-      return empty();
+      return getEmptyStringSFA();
     }
 
     Automaton unknown = null;
@@ -458,6 +458,21 @@ public class Automaton extends automata.Automaton {
     }
   }
 
+  public static Automaton getEmptyStringSFA() throws TimeoutException {
+    SFA<CharPred, Character> aut = new SFA<CharPred, Character>();
+    aut.states = new HashSet<Integer>();
+    aut.states.add(0);
+    aut.finalStates = new HashSet<Integer>();
+    aut.finalStates.add(0);
+    aut.initialState = 0;
+    aut.isDeterministic = true;
+    aut.isEmpty = false;
+    aut.isEpsilonFree = true;
+    aut.maxStateId = 0;
+    //aut.addTransition(new SFAInputMove<A, B>(0, 0, ba.True()), ba, true);
+    return new Automaton(aut);
+  }
+
   private static Automaton repetitionWithUnknownBoundsToAutomaton (RepetitionNode node) throws TimeoutException {
     Automaton sub = nodeToAutomaton(node.getChild());
     UnknownId unknown = ((UnknownBounds)node.getBounds()).getId();
@@ -494,23 +509,23 @@ public class Automaton extends automata.Automaton {
       return concatenate(min, star);
     } else if (node.getBounds().getMin() < node.getBounds().getMax()) {
       // min to max
-      Automaton union = min;
-      Automaton unknown = min;
+      Automaton ithsfa = min;
+      Automaton uptoith = min;
 
-      for (int i = node.getBounds().getMin(); i < node.getBounds().getMax(); i++) {
-        union = concatenate(union, sub);
-        unknown = union(unknown, union);
+      for (int i = node.getBounds().getMin() + 1; i <= node.getBounds().getMax(); i++) {
+        ithsfa = concatenate(ithsfa, sub);
+        uptoith = union(uptoith, ithsfa);
       }
 
-      return unknown;
+      return uptoith;
     } else {
-      // just min
+      // just min becaue min = max
       return min;
     }
   }
 
   private static Automaton optionalToAutomaton (OptionalNode node) throws TimeoutException {
-    return union(nodeToAutomaton(node.getChild()), empty());
+    return union(nodeToAutomaton(node.getChild()), getEmptyStringSFA());
   }
 
   private static Automaton starToAutomaton (StarNode node) throws TimeoutException {
