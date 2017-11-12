@@ -89,17 +89,17 @@ public class SFA<P, S> extends Automaton<P, S> {
 	// Automata properties
 	// ------------------------------------------------------
 
-	private Integer initialState;
-	private Collection<Integer> states;
-	private Collection<Integer> finalStates;
+	public Integer initialState;
+	public Collection<Integer> states;
+	public Collection<Integer> finalStates;
 
-	protected Map<Integer, Collection<SFAInputMove<P, S>>> inputMovesFrom;
-	protected Map<Integer, Collection<SFAInputMove<P, S>>> inputMovesTo;
-	protected Map<Integer, Collection<SFAEpsilon<P, S>>> epsilonFrom;
-	protected Map<Integer, Collection<SFAEpsilon<P, S>>> epsilonTo;
+	public Map<Integer, Collection<SFAInputMove<P, S>>> inputMovesFrom;
+	public Map<Integer, Collection<SFAInputMove<P, S>>> inputMovesTo;
+	public Map<Integer, Collection<SFAEpsilon<P, S>>> epsilonFrom;
+	public Map<Integer, Collection<SFAEpsilon<P, S>>> epsilonTo;
 
-	private Integer maxStateId;
-	private Integer transitionCount;
+	public Integer maxStateId;
+	public Integer transitionCount;
 
 	/**
 	 * @return the maximum state id
@@ -127,7 +127,7 @@ public class SFA<P, S> extends Automaton<P, S> {
 	// ------------------------------------------------------
 
 	// Initializes all the fields of the automaton
-	private SFA() {
+	public SFA() {
 		super();
 		finalStates = new HashSet<Integer>();
 		states = new HashSet<Integer>();

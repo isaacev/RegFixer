@@ -31,10 +31,10 @@ public abstract class Automaton<P, S> {
 	// Automata properties
 	// ------------------------------------------------------
 
-	protected boolean isEmpty;
-	protected boolean isDeterministic;
-	protected boolean isEpsilonFree;
-	protected boolean isTotal;
+	public boolean isEmpty;
+	public boolean isDeterministic;
+	public boolean isEpsilonFree;
+	public boolean isTotal;
 
 	public Automaton() {
 		isEmpty = false;
