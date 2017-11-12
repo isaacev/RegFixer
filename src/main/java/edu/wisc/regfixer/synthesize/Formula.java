@@ -283,8 +283,8 @@ public class Formula {
       IntExpr minVar = unknownToMinVar.get(entry.getKey());
       IntExpr maxVar = unknownToMaxVar.get(entry.getKey());
       BoolExpr part = this.ctx.mkOr(
-        this.ctx.mkNot(this.ctx.mkEq(minVar, minCountVal)),
-        this.ctx.mkNot(this.ctx.mkEq(maxVar, maxCountVal)));
+        this.ctx.mkGt(minVar, minCountVal),
+        this.ctx.mkLt(maxVar, maxCountVal));
 
       if (whole == null) {
         whole = part;
