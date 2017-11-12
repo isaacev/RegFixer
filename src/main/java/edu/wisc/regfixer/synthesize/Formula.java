@@ -471,7 +471,7 @@ public class Formula {
   }
 
   public void solve () throws SynthesisFailure {
-    if (this.diag.getBool("print-var-map")) {
+    if (this.diag.getBool("debug-vars")) {
       String header = String.format("\nVAR MAP for %d", this.diag.output().count());
       this.diag.output().printBlock(header);
       for (BoolExpr var : this.varToTree.keySet()) {
@@ -482,7 +482,7 @@ public class Formula {
       this.diag.output().printBreak();
     }
 
-    if (this.diag.getBool("print-class-tree")) {
+    if (this.diag.getBool("debug-classes")) {
       String header = String.format("\nCLASS MAP for %d", this.diag.output().count());
       this.diag.output().printBlock(header);
       this.diag.output().printBlock(this.tree);
@@ -492,7 +492,7 @@ public class Formula {
       this.diag.output().printBreak();
     }
 
-    if (this.diag.getBool("print-formula")) {
+    if (this.diag.getBool("debug-formula")) {
       String header = String.format("\nFORMULA for %d", this.diag.output().count());
       this.diag.output().printBlock(header);
       this.diag.output().printBlock(this.opt.toString());
@@ -508,7 +508,7 @@ public class Formula {
       // Use the SAT solver to attempt to resolve the variables and their constraints.
       this.model = this.opt.getModel();
 
-      if (this.diag.getBool("print-model")) {
+      if (this.diag.getBool("debug-model")) {
         String header = String.format("\nMODEL for %d", this.diag.output().count());
         this.diag.output().printBlock(header);
         this.diag.output().printBlock(this.model.toString());

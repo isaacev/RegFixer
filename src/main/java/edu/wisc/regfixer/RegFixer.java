@@ -2,6 +2,7 @@ package edu.wisc.regfixer;
 
 import java.util.concurrent.TimeoutException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -66,18 +67,32 @@ public class RegFixer {
     return RegFixer.fix(job, 1000, diag);
   }
 
-  public static Result fix (Job job, int loopLimit) throws TimeoutException {
-    return RegFixer.fix(job, loopLimit, new Diagnostic());
+  public static Result fix (Job job, int loopCutoff) throws TimeoutException {
+    return RegFixer.fix(job, loopCutoff, new Diagnostic());
   }
 
-  public static Result fix (Job job, int loopLimit, Diagnostic diag) throws TimeoutException {
-    int    templates          = 0;
-    int    cost               = 0;
-    Map<String, Integer> solutions = new HashMap<>();
-    int    failedDotTest      = 0;
-    int    failedDotStarTest  = 0;
-    int    failedEmptySetTest = 0;
+  public static Result fix (Job job, int loopCutoff, Diagnostic diag) throws TimeoutException {
+    diag.timing().startTiming("whole");
 
+    // Keep track of all solutions found. Each solution is mapped to its
+    // fitness score which is a count of how many single character classes are
+    // included in its synthesized character classes.
+    Map<String, Integer> solutions = new HashMap<>();
+
+    // Statistics tracked during the enumeration search. Timing statistics are
+    // tracked from within the Diagnostic object.
+    int templatesTotal           = 0;
+    int templatesToFirstSolution = 0;
+    int testDotStarTotal         = 0;
+    int testDotStarRejections    = 0;
+    int testEmptySetTotal        = 0;
+    int testEmptySetRejections   = 0;
+    int testDotTotal             = 0;
+    int testDotRejections        = 0;
+
+    // Print the report header which describes the initial inputs to the
+    // search algorithm including the initial regular expression, any explicit
+    // positive examples and any inferred negative examples.
     diag.output().printSectionHeader("Given the regular expression:");
     diag.output().printIndent(job.getTree().toString());
 
@@ -98,84 +113,88 @@ public class RegFixer {
 
     Enumerants enumerants = new Enumerants(job.getTree(), job.getCorpus());
     Enumerant enumerant = null;
-    int COST_CUTOFF = Integer.MAX_VALUE;
+
+    // Once the first solution is found, the algorithm can be configured to
+    // keep searching in order to find a better solution. In this case, the
+    // alrogithm will only keep searching as long as there are more templates
+    // that have a cost equal-to or less-than the cost of the first solution.
+    // This variable tracks the maximum cost allowed to search. Before a
+    // solution is found, the cutoff is huge to allow any template. After the
+    // first solution is found the cutoff is set to the cost of the first
+    // solution.
+    int costCutoff = Integer.MAX_VALUE;
 
     int i = 0;
     while ((enumerant = enumerants.poll()) != null) {
-      if (enumerant.getCost() > COST_CUTOFF) {
+      // Stop the loop if the cost of the current template is greater than
+      // cutoff or if the number of templates searched is greater than the
+      // loop cutoff.
+      if (enumerant.getCost() > costCutoff) {
+        break;
+      } else if (templatesTotal++ >= loopCutoff) {
+        templatesTotal--;
+
+        if (solutions.size() == 0) {
+          throw new TimeoutException("enumeration loop limit reached");
+        } else {
+          break;
+        }
+      }
+
+      // Print some information about the current template.
+      diag.output().printPartialRow(enumerant.getCost(), enumerant.toString());
+
+      Synthesis synthesis = null;
+      Expansion expansion = enumerant.getLatestExpansion();
+
+      boolean passesTests = true;
+
+      switch (expansion) {
+      case Concat:
+        if (diag.getBool("test-all") || diag.getBool("test-dot")) {
+          passesTests = job.getCorpus().passesDotTest(enumerant);
+
+          // Increment appropriate counters.
+          testDotTotal++;
+          if (passesTests == false) {
+            testEmptySetRejections++;
+          }
+        }
+        break;
+      case Star:
+      case Optional:
+        if (diag.getBool("test-all") || diag.getBool("test-emptyset")) {
+          passesTests = job.getCorpus().passesEmptySetTest(enumerant);
+
+          // Increment appropriate counters.
+          testEmptySetTotal++;
+          if (passesTests == false) {
+            testEmptySetRejections++;
+          }
+        }
         break;
       }
 
-      templates++;
-      if (i++ >= loopLimit) {
-        throw new TimeoutException("enumeration loop limit reached");
-      }
-
-      Synthesis synthesis = null;
-      diag.output().printPartialRow(enumerant.getCost(), enumerant.toString());
-      Expansion expansion = enumerant.getLatestExpansion();
-
-      if (expansion == Expansion.Concat) {
-        if (job.getCorpus().passesDotTest(enumerant)) {
-          try {
-            synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
-          } catch (SynthesisFailure ex) {
-            diag.output().finishRow(ex.getMessage());
-            continue;
-          }
-        } else {
-          failedDotTest++;
-          diag.output().finishRow("failed dot test");
-        }
-      } else if (expansion == Expansion.Star) {
-        if (job.getCorpus().passesEmptySetTest(enumerant)) {
-          try {
-            synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
-          } catch (SynthesisFailure ex) {
-            diag.output().finishRow(ex.getMessage());
-            continue;
-          }
-        } else {
-          failedEmptySetTest++;
-          diag.output().finishRow("failed empty set test");
-        }
-      } else if (expansion == Expansion.Plus) {
+      if (passesTests) {
         try {
           synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
         } catch (SynthesisFailure ex) {
           diag.output().finishRow(ex.getMessage());
           continue;
         }
-      } else if (expansion == Expansion.Optional) {
-        if (job.getCorpus().passesEmptySetTest(enumerant)) {
-          try {
-            synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
-          } catch (SynthesisFailure ex) {
-            diag.output().finishRow(ex.getMessage());
-            continue;
-          }
-        } else {
-          failedEmptySetTest++;
-          diag.output().finishRow("failed empty set test");
-        }
-      } else if (expansion == Expansion.Repeat) {
-        try {
-          synthesis = RegFixer.synthesisLoop(job, enumerant, diag);
-        } catch (SynthesisFailure ex) {
-          diag.output().finishRow(ex.getMessage());
-          continue;
-        }
-      } else {
-        throw new RuntimeException("unknown expansion type");
       }
 
       if (synthesis != null) {
+        if (solutions.size() == 0) {
+          templatesToFirstSolution = templatesTotal;
+        }
+
         String sol = synthesis.toString();
         int fit = synthesis.getFitness();
         solutions.put(sol, fit);
 
         diag.output().finishRow(sol);
-        COST_CUTOFF = enumerant.getCost();
+        costCutoff = enumerant.getCost();
       }
     }
 
@@ -183,7 +202,7 @@ public class RegFixer {
       String solution = null;
       diag.output().printSectionHeader("Finds the following solutions (and the corresponding fitness):");
       for (Map.Entry<String, Integer> entry : solutions.entrySet()) {
-        diag.output().printIndent(String.format("%4d %s", entry.getValue(), entry.getKey()));
+        diag.output().printIndent(String.format("%-4d %s", entry.getValue(), entry.getKey()));
 
         if (solution == null) {
           solution = entry.getKey();
@@ -197,12 +216,38 @@ public class RegFixer {
       // diag.output().printSectionHeader("With a specificity of:");
       // diag.output().printIndent(Integer.toString(synthesis.getFitness()));
       diag.output().printSectionHeader("Computed in:");
+      diag.output().printIndent(String.format("%dms", Math.round(diag.timing().getTiming("whole") / 1e6)));
       diag.output().printSectionHeader("All done");
-      return new Result(templates, cost, solution, failedDotTest, failedDotStarTest, failedEmptySetTest);
+
+      Result result = new Result(
+        templatesTotal,
+        costCutoff,
+        solution,
+        testDotTotal,
+        testDotStarTotal,
+        testEmptySetTotal);
+
+      if (diag.getBool("output-csv")) {
+        diag.output().println(result.toString());
+      } else if (diag.getBool("output-solution") || diag.getBool("output-none") == false) {
+        diag.output().println(solution);
+      }
+
+      return result;
     } else {
       diag.output().printSectionHeader("Unable to compute a repair");
       diag.output().printSectionHeader("All done");
-      return new Result(templates, failedDotTest, failedDotStarTest, failedEmptySetTest);
+      Result result = new Result(
+        templatesTotal,
+        testDotTotal,
+        testDotStarTotal,
+        testEmptySetTotal);
+
+      if (diag.getBool("output-csv")) {
+        diag.output().println(result.toString());
+      }
+
+      return result;
     }
   }
 

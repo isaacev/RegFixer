@@ -14,18 +14,99 @@ import java.util.List;
 import java.util.Map;
 
 import com.beust.jcommander.DynamicParameter;
+import com.beust.jcommander.IValueValidator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.diagnostic.NullOutputStream;
 import edu.wisc.regfixer.diagnostic.Registry;
 import edu.wisc.regfixer.diagnostic.ReportStream;
+import edu.wisc.regfixer.diagnostic.Timing;
 import edu.wisc.regfixer.enumerate.Benchmark;
 import edu.wisc.regfixer.enumerate.Job;
 import edu.wisc.regfixer.util.Ansi;
 
 public class CLI {
+  public static class TimingChannelValidator implements IValueValidator<List<String>> {
+    public void validate(String name, List<String> channels) throws ParameterException {
+      for (String channel : channels) {
+        switch (channel) {
+          case "testing":
+          case "tracing":
+          case "solving":
+            break;
+          default:
+            String fmt = "Parameter 'timing' given unknown debugging channel '%s'";
+            throw new ParameterException(String.format(fmt, channel));
+        }
+      }
+    }
+  }
+
+  public static class DebugChannelValidator implements IValueValidator<List<String>> {
+    public void validate(String name, List<String> channels) throws ParameterException {
+      for (String channel : channels) {
+        switch (channel) {
+          case "none":
+          case "vars":
+          case "classes":
+          case "formula":
+          case "model":
+            break;
+          default:
+            String fmt = "Parameter 'debug' given unknown debugging channel '%s'";
+            throw new ParameterException(String.format(fmt, channel));
+        }
+      }
+    }
+  }
+
+  public static class OutputChannelValidator implements IValueValidator<List<String>> {
+    public void validate(String name, List<String> channels) throws ParameterException {
+      for (String channel : channels) {
+        switch (channel) {
+          case "none":
+          case "csv":
+          case "solution":
+            break;
+          default:
+            String fmt = "Parameter 'output' given unknown output channel '%s'";
+            throw new ParameterException(String.format(fmt, channel));
+        }
+      }
+    }
+  }
+
+  public static class TestValidator implements IValueValidator<List<String>> {
+    public void validate(String name, List<String> tests) throws ParameterException {
+      for (String test : tests) {
+        switch (test) {
+          case "none":
+          case "all":
+          case "dot":
+          case "dotstar":
+          case "emptyset":
+            break;
+          default:
+            String fmt = "Parameter 'tests' given unknown test name '%s'";
+            throw new ParameterException(String.format(fmt, test));
+        }
+      }
+    }
+  }
+
+  public static class LimitValidator implements IValueValidator<Integer> {
+    public void validate(String name, Integer limit) throws ParameterException {
+      if (limit == null) {
+        throw new ParameterException("Parameter 'limit' cannot be null");
+      } else if (limit <= 0) {
+        throw new ParameterException("Parameter 'limit' must be greater than 0");
+      }
+    }
+  }
+
   private static class ArgsRoot {
     @Parameter(names={"--help", "-h"})
     private boolean help = false;
@@ -57,29 +138,29 @@ public class CLI {
 
   @Parameters(separators="=")
   private static class ArgsFix {
-    @Parameter(names="--quiet")
-    private boolean quiet = false;
+    @Parameter(names="--limit",
+               validateValueWith=LimitValidator.class)
+    private int limit = 1000;
 
-    @Parameter(names="--limit")
-    private Integer limit = null;
+    @Parameter(names="--timing",
+               validateValueWith=TimingChannelValidator.class)
+    private List<String> timingChannels = new ArrayList<>();
 
-    @Parameter(names="--print-class-tree")
-    private boolean printClassTree = false;
+    @Parameter(names="--debug",
+               validateValueWith=DebugChannelValidator.class)
+    private List<String> debugChannels = new ArrayList<>();
 
-    @Parameter(names="--print-formula")
-    private boolean printFormula = false;
+    @Parameter(names="--output",
+               validateValueWith=OutputChannelValidator.class)
+    private List<String> outputChannels = new ArrayList<>();
 
-    @Parameter(names="--print-model")
-    private boolean printModel = false;
+    @Parameter(names="--tests",
+               validateValueWith=TestValidator.class)
+    private List<String> tests = new ArrayList<>();
 
-    @Parameter(names="--csv")
-    private boolean csv = false;
-
-    @DynamicParameter(names = "-X", description = "Configuration flags")
-    private Map<String, String> configParams = new HashMap<>();
-
-    @Parameter
-    private List<String> files = new ArrayList<>();
+    @Parameter(names="--file",
+               required=true)
+    private String file = null;
   }
 
   public static void main (String[] argv) {
@@ -238,31 +319,29 @@ public class CLI {
   }
 
   private static int handleFix (ArgsFix args) {
-    if (args.files.size() > 1) {
-      System.err.println("too many arguments");
-      return 1;
-    } else if (args.files.size() == 0) {
-      System.err.println("no file given");
-      return 1;
-    }
-
     Job job = null;
 
-    // If the --quiet flag is set, send any report output to a null output
-    // stream which discards the data. If the --quiet flag is NOT set any
-    // output will be sent to STDOUT.
-    ReportStream out = new ReportStream(args.quiet
+    boolean noDebug  = args.debugChannels.contains("none");
+    ReportStream out = new ReportStream(noDebug
       ? new NullOutputStream()
       : System.out);
 
     // Create a registry of diagnostic-related command-line flags.
     Registry reg = new Registry();
-    reg.setBool("print-class-tree", args.printClassTree);
-    reg.setBool("print-formula", args.printFormula);
-    reg.setBool("print-model", args.printModel);
 
-    for (String name : args.configParams.keySet()) {
-      reg.setStr(name, args.configParams.get(name));
+    // Add debugging channels.
+    for (String channel : args.debugChannels) {
+      reg.setBool("debug-" + channel, true);
+    }
+
+    // Add output channels.
+    for (String channel : args.outputChannels) {
+      reg.setBool("output-" + channel, true);
+    }
+
+    // Add test flags.
+    for (String test : args.tests) {
+      reg.setBool("test-" + test, true);
     }
 
     // Create a diagnostic object to manage diagnostic flags and any debugging
@@ -271,38 +350,18 @@ public class CLI {
     Diagnostic diag = new Diagnostic(out, reg, tim);
 
     try {
-      job = Benchmark.readFromFile(args.files.get(0));
+      job = Benchmark.readFromFile(args.file);
     } catch (IOException ex) {
       System.err.println("unable to read file");
       return 1;
     }
 
-    if (args.limit == null || args.limit <= 1) {
-      args.limit = 1000;
-    }
-
     try {
       RegFixer.Result result = RegFixer.fix(job, args.limit, diag);
-
-      if (args.csv) {
-        System.out.println(result.toString());
-        return 0;
-      }
-
-      if (result.hasSolution == false) {
-        return 1;
-      } else if (args.quiet && result.hasSolution) {
-        System.out.println(result.solution);
-        return 0;
-      }
+      return result.hasSolution ? 0 : 1;
     } catch (TimeoutException ex) {
-      if (args.quiet == false) {
-        System.out.println("TIMEOUT EXCEPTION");
-      }
-
+      System.out.println("TIMEOUT EXCEPTION");
       return 1;
     }
-
-    return 0;
   }
 }
