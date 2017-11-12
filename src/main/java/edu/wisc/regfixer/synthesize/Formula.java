@@ -568,7 +568,7 @@ public class Formula {
     }
 
     if (solutions.size() == 0) {
-      return new CharClassSetNode();
+      return new CharClassSetNode(new CharRangeNode('∅'));
     } if (solutions.size() == 1) {
       CharClass only = solutions.iterator().next();
       if (only instanceof CharRangeNode) {
