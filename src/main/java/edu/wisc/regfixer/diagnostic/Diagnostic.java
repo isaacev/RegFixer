@@ -21,6 +21,10 @@ public class Diagnostic {
     return this.out;
   }
 
+  public Registry registry () {
+    return this.reg;
+  }
+
   public boolean getBool (String name) {
     return this.reg.getBool(name);
   }
