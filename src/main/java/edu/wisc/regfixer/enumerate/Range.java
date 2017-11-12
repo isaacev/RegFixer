@@ -81,7 +81,7 @@ public class Range implements Comparable<Range> {
 
   @Override
   public int compareTo (Range other) {
-    if (this.leftIndex != this.leftIndex) {
+    if (this.leftIndex != other.leftIndex) {
       return Integer.compare(this.leftIndex, other.leftIndex);
     } else {
       return Integer.compare(this.rightIndex, other.rightIndex);
