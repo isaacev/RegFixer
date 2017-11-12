@@ -36,7 +36,7 @@ test_password_TO.txt: [a-zA-Z0-9@*#]{8,15} : new spec = starting with [a-zA-Z]
 
 test_UKnino_TO.txt: [A-CEGHJ-PR-TW-Z]{1}[A-CEGHJ-NPR-TW-Z]{1}[0-9]{6}[A-DFM]{0,1} : the second letter many not be Z
 
-test_MC_true.txt: ([51|52|53|54|55]{2})([0-9]{14}) -> 5[125]([0-9]){14} : shoud start with 51 52 53 54 or 55. false positive 15x 25x 35x 45x
+test_MC_true.txt: ([51|52|53|54|55]{2})([0-9]{14}) -> 5[125]([0-9]){14} : should start with 51 52 53 54 or 55. false positive 15x 25x 35x 45x
 
 
 
