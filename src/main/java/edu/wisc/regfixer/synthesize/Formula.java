@@ -568,7 +568,7 @@ public class Formula {
     }
 
     if (solutions.size() == 0) {
-      throw new SynthesisFailure("SAT produced no solutions for " + id.toString());
+      return new CharClassSetNode();
     } if (solutions.size() == 1) {
       CharClass only = solutions.iterator().next();
       if (only instanceof CharRangeNode) {
