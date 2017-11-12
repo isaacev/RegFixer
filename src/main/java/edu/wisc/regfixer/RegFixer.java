@@ -322,6 +322,8 @@ public class RegFixer {
        * 2) the lower bound of 'o' < the upper bound of 'p'
        */
 
+      boolean matchesAllP = O.containsAll(job.getCorpus().getPositiveRanges());
+
       // Handle condition 'o' == 'p'.
       O.removeAll(job.getCorpus().getPositiveRanges());
 
@@ -332,7 +334,7 @@ public class RegFixer {
         }
       }
 
-      if (O.size() == 0) {
+      if (O.size() == 0 && matchesAllP) {
         return synthesis;
       }
 
