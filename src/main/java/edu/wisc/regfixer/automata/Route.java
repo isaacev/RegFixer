@@ -7,9 +7,9 @@ import edu.wisc.regfixer.enumerate.UnknownId;
 
 public class Route {
   private Map<UnknownId, Set<Character>> spans;
-  private Map<UnknownId, Integer> exits;
+  private Map<UnknownId, Set<Integer>> exits;
 
-  public Route (Map<UnknownId, Set<Character>> spans, Map<UnknownId, Integer> exits) {
+  public Route (Map<UnknownId, Set<Character>> spans, Map<UnknownId, Set<Integer>> exits) {
     this.spans = spans;
     this.exits = exits;
   }
@@ -18,16 +18,8 @@ public class Route {
     return this.spans;
   }
 
-  public Map<UnknownId, Integer> getExits () {
+  public Map<UnknownId, Set<Integer>> getExits () {
     return this.exits;
-  }
-
-  public int countExits (UnknownId id) {
-    if (this.exits.containsKey(id) && this.exits.get(id) != null) {
-      return this.exits.get(id);
-    }
-
-    return 0;
   }
 
   public boolean hasNoSpans () {
@@ -69,8 +61,8 @@ public class Route {
       accum += "exits:";
     }
 
-    for (Map.Entry<UnknownId, Integer> entry : this.exits.entrySet()) {
-      accum += String.format(" %s (%d)", entry.getKey(), entry.getValue());
+    for (Map.Entry<UnknownId, Set<Integer>> entry : this.exits.entrySet()) {
+      accum += String.format(" %s (%s)", entry.getKey(), entry.getValue());
     }
 
     if (this.spans.size() > 0) {

@@ -1,6 +1,7 @@
 package edu.wisc.regfixer.synthesize;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -204,13 +205,18 @@ public class Formula {
   public BoolExpr buildPositiveQuantifierFormula (Route route) {
     BoolExpr whole = null;
 
-    for (Map.Entry<UnknownId, Integer> entry : route.getExits().entrySet()) {
-      IntNum countVal = this.ctx.mkInt(entry.getValue());
+    for (Map.Entry<UnknownId, Set<Integer>> entry : route.getExits().entrySet()) {
+      if (entry.getValue().size() == 0) {
+        continue;
+      }
+
+      IntNum minCountVal = this.ctx.mkInt(Collections.min(entry.getValue()));
+      IntNum maxCountVal = this.ctx.mkInt(Collections.max(entry.getValue()));
       IntExpr minVar = unknownToMinVar.get(entry.getKey());
       IntExpr maxVar = unknownToMaxVar.get(entry.getKey());
       BoolExpr part = this.ctx.mkAnd(
-        this.ctx.mkLe(minVar, countVal),
-        this.ctx.mkGe(maxVar, countVal));
+        this.ctx.mkLe(minVar, minCountVal),
+        this.ctx.mkGe(maxVar, maxCountVal));
 
       if (whole == null) {
         whole = part;
@@ -267,13 +273,18 @@ public class Formula {
   public BoolExpr buildNegativeQuantifierFormula (Route route) {
     BoolExpr whole = null;
 
-    for (Map.Entry<UnknownId, Integer> entry : route.getExits().entrySet()) {
-      IntNum countVal = this.ctx.mkInt(entry.getValue());
+    for (Map.Entry<UnknownId, Set<Integer>> entry : route.getExits().entrySet()) {
+      if (entry.getValue().size() == 0) {
+        continue;
+      }
+
+      IntNum minCountVal = this.ctx.mkInt(Collections.min(entry.getValue()));
+      IntNum maxCountVal = this.ctx.mkInt(Collections.max(entry.getValue()));
       IntExpr minVar = unknownToMinVar.get(entry.getKey());
       IntExpr maxVar = unknownToMaxVar.get(entry.getKey());
       BoolExpr part = this.ctx.mkOr(
-        this.ctx.mkGt(minVar, countVal),
-        this.ctx.mkLt(maxVar, countVal));
+        this.ctx.mkNot(this.ctx.mkEq(minVar, minCountVal)),
+        this.ctx.mkNot(this.ctx.mkEq(maxVar, maxCountVal)));
 
       if (whole == null) {
         whole = part;

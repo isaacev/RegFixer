@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 import automata.Move;
@@ -45,11 +46,13 @@ public class Automaton extends automata.Automaton {
 
   private final SFA<CharPred, Character> sfa;
   public Map<UnknownId, Set<Integer>> unknownToExitStates = new HashMap<>();
+  public Map<UnknownId, Integer> unknownToEntryState = new HashMap<>();
 
   public Automaton (RegexNode tree) throws TimeoutException {
     Automaton aut = nodeToAutomaton(tree);
     this.sfa = aut.sfa;
     this.unknownToExitStates = aut.unknownToExitStates;
+    this.unknownToEntryState = aut.unknownToEntryState;
   }
 
   public Automaton (CharPred predicate) throws TimeoutException {
@@ -144,10 +147,17 @@ public class Automaton extends automata.Automaton {
 
   private Route traceFromState (State endState) {
     Map<UnknownId, Set<Character>> crosses = new HashMap<>();
-    Map<UnknownId, Integer> exits = new HashMap<>();
+    Map<UnknownId, Stack<Integer>> quantTally = new HashMap<>();
+
+    for (UnknownId id : this.unknownToEntryState.keySet()) {
+      quantTally.put(id, new Stack<>());
+      quantTally.get(id).push(null);
+    }
 
     State currState = endState;
+    State prevState = null;
     while (currState != null) {
+      // Compute which characters cross unknown character classes.
       if (currState.getValue() != null && currState.getId() != null) {
         char value = currState.getValue();
         UnknownId id = currState.getId();
@@ -159,15 +169,42 @@ public class Automaton extends automata.Automaton {
         crosses.get(id).add(value);
       }
 
-      for (Map.Entry<UnknownId, Set<Integer>> entry : this.unknownToExitStates.entrySet()) {
-        if (entry.getValue().contains(currState.getStateId())) {
-          UnknownId id = entry.getKey();
-          int old = exits.get(id) != null ? exits.get(id) : 0;
-          exits.put(id, old + 1);
+      for (UnknownId id : this.unknownToEntryState.keySet()) {
+        Integer entryStateId = this.unknownToEntryState.get(id);
+        if (entryStateId == currState.getStateId()) {
+          Integer old = quantTally.get(id).pop();
+
+          if (old == null) {
+            old = 0;
+          }
+
+          quantTally.get(id).push(old + 1);
         }
       }
 
+      for (UnknownId id : this.unknownToExitStates.keySet()) {
+        Set<Integer> exitStateIds = this.unknownToExitStates.get(id);
+        if (exitStateIds.contains(currState.getStateId())) {
+          if (prevState != null && this.unknownToEntryState.get(id) != null) {
+             if (this.unknownToEntryState.get(id) != prevState.getStateId()) {
+               // This exit does NOT loop back to the start of this quantifier
+               // so push a new counter onto the tally stack.
+               quantTally.get(id).push(null);
+             }
+          }
+        }
+      }
+
+      prevState = currState;
       currState = currState.getParent();
+    }
+
+    Map<UnknownId, Set<Integer>> exits = new HashMap<>();
+    for (Map.Entry<UnknownId, Stack<Integer>> entry : quantTally.entrySet()) {
+      // Convert from Stack<Integer> to Set<Integer> and remove any null values.
+      exits.put(entry.getKey(), entry.getValue().stream()
+        .filter(i -> i != null)
+        .collect(Collectors.toSet()));
     }
 
     return new Route(crosses, exits);
@@ -273,6 +310,11 @@ public class Automaton extends automata.Automaton {
       }
     }
 
+    aut.unknownToEntryState.putAll(first.unknownToEntryState);
+    for (Map.Entry<UnknownId, Integer> entry : second.unknownToEntryState.entrySet()) {
+      aut.unknownToEntryState.put(entry.getKey(), entry.getValue() + offset);
+    }
+
     return aut;
   }
 
@@ -308,6 +350,11 @@ public class Automaton extends automata.Automaton {
       }
     }
 
+    // Update entry state ID.
+    for (Map.Entry<UnknownId, Integer> entry : second.unknownToEntryState.entrySet()) {
+      aut.unknownToEntryState.put(entry.getKey(), first.sfa.getMaxStateId() + offset + 1);
+    }
+
     return aut;
   }
 
@@ -316,6 +363,7 @@ public class Automaton extends automata.Automaton {
 
     // Transfer watched states from the child Automaton to the new Automaton
     // without any need to rename states.
+    aut.unknownToEntryState.putAll(only.unknownToEntryState);
     aut.unknownToExitStates.putAll(only.unknownToExitStates);
 
     return aut;
@@ -413,11 +461,13 @@ public class Automaton extends automata.Automaton {
   private static Automaton repetitionWithUnknownBoundsToAutomaton (RepetitionNode node) throws TimeoutException {
     Automaton sub = nodeToAutomaton(node.getChild());
     UnknownId unknown = ((UnknownBounds)node.getBounds()).getId();
-    Set<Integer> exitStates = new HashSet<>(sub.sfa.getFinalStates());
+    Integer entryState = sub.sfa.getInitialState();
 
     Automaton aut = star(sub);
+    Set<Integer> exitStates = new HashSet<>(aut.sfa.getFinalStates());
     aut.unknownToExitStates.put(unknown, exitStates);
     aut.unknownToExitStates.putAll(sub.unknownToExitStates);
+    aut.unknownToEntryState.put(unknown, entryState);
 
     return aut;
   }
