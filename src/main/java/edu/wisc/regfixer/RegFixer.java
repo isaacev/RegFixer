@@ -198,6 +198,8 @@ public class RegFixer {
       }
     }
 
+    diag.timing().stopTimingAndAdd("whole");
+
     if (solutions.size() > 0) {
       String solution = null;
       diag.output().printSectionHeader("Finds the following solutions (and the corresponding fitness):");
