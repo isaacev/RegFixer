@@ -44,12 +44,12 @@ public class Automaton extends automata.Automaton {
   public static final CharPred NotWord = solver.MkNot(StdCharPred.WORD);
 
   private final SFA<CharPred, Character> sfa;
-  public Map<UnknownId, Set<Integer>> unknownToStates = new HashMap<>();
+  public Map<UnknownId, Set<Integer>> unknownToExitStates = new HashMap<>();
 
   public Automaton (RegexNode tree) throws TimeoutException {
     Automaton aut = nodeToAutomaton(tree);
     this.sfa = aut.sfa;
-    this.unknownToStates = aut.unknownToStates;
+    this.unknownToExitStates = aut.unknownToExitStates;
   }
 
   public Automaton (CharPred predicate) throws TimeoutException {
@@ -159,7 +159,7 @@ public class Automaton extends automata.Automaton {
         crosses.get(id).add(value);
       }
 
-      for (Map.Entry<UnknownId, Set<Integer>> entry : this.unknownToStates.entrySet()) {
+      for (Map.Entry<UnknownId, Set<Integer>> entry : this.unknownToExitStates.entrySet()) {
         if (entry.getValue().contains(currState.getStateId())) {
           UnknownId id = entry.getKey();
           int old = exits.get(id) != null ? exits.get(id) : 0;
@@ -265,11 +265,11 @@ public class Automaton extends automata.Automaton {
     // Offset will be added to all watched states of the second Automaton
     // to ensure that the states of the first and second are disjointed.
     int offset = first.sfa.getMaxStateId() + 1;
-    aut.unknownToStates.putAll(first.unknownToStates);
-    for (Map.Entry<UnknownId, Set<Integer>> entry : second.unknownToStates.entrySet()) {
-      aut.unknownToStates.put(entry.getKey(), new HashSet<>());
+    aut.unknownToExitStates.putAll(first.unknownToExitStates);
+    for (Map.Entry<UnknownId, Set<Integer>> entry : second.unknownToExitStates.entrySet()) {
+      aut.unknownToExitStates.put(entry.getKey(), new HashSet<>());
       for (Integer state : entry.getValue()) {
-        aut.unknownToStates.get(entry.getKey()).add(state + offset);
+        aut.unknownToExitStates.get(entry.getKey()).add(state + offset);
       }
     }
 
@@ -300,11 +300,11 @@ public class Automaton extends automata.Automaton {
     // Offset will be added to all watched states of the second Automaton
     // to ensure that the states of the first and second are disjointed.
     int offset = first.sfa.getMaxStateId() + 2;
-    aut.unknownToStates.putAll(first.unknownToStates);
-    for (Map.Entry<UnknownId, Set<Integer>> entry : second.unknownToStates.entrySet()) {
-      aut.unknownToStates.put(entry.getKey(), new HashSet<>());
+    aut.unknownToExitStates.putAll(first.unknownToExitStates);
+    for (Map.Entry<UnknownId, Set<Integer>> entry : second.unknownToExitStates.entrySet()) {
+      aut.unknownToExitStates.put(entry.getKey(), new HashSet<>());
       for (Integer state : entry.getValue()) {
-        aut.unknownToStates.get(entry.getKey()).add(state + offset);
+        aut.unknownToExitStates.get(entry.getKey()).add(state + offset);
       }
     }
 
@@ -316,7 +316,7 @@ public class Automaton extends automata.Automaton {
 
     // Transfer watched states from the child Automaton to the new Automaton
     // without any need to rename states.
-    aut.unknownToStates.putAll(only.unknownToStates);
+    aut.unknownToExitStates.putAll(only.unknownToExitStates);
 
     return aut;
   }
@@ -416,8 +416,8 @@ public class Automaton extends automata.Automaton {
     Set<Integer> exitStates = new HashSet<>(sub.sfa.getFinalStates());
 
     Automaton aut = star(sub);
-    aut.unknownToStates.put(unknown, exitStates);
-    aut.unknownToStates.putAll(sub.unknownToStates);
+    aut.unknownToExitStates.put(unknown, exitStates);
+    aut.unknownToExitStates.putAll(sub.unknownToExitStates);
 
     return aut;
   }
