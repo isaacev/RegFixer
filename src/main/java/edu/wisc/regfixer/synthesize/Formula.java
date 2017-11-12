@@ -102,7 +102,7 @@ public class Formula {
       // Force every minimum bound to be <= corresponding maximum bound.
       this.opt.Assert(this.ctx.mkLe(minVar, maxVar));
       this.opt.Assert(this.ctx.mkGe(minVar, zero));
-      this.opt.Assert(this.ctx.mkGe(maxVar, zero));
+      this.opt.Assert(this.ctx.mkGe(maxVar, one));
 
       // (declare H0_min_cost Int)
       // (declare H0_max_cost Int)
