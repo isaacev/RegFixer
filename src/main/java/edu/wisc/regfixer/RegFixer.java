@@ -219,6 +219,28 @@ public class RegFixer {
       // diag.output().printIndent(Integer.toString(synthesis.getFitness()));
       diag.output().printSectionHeader("Computed in:");
       diag.output().printIndent(String.format("%dms", Math.round(diag.timing().getTiming("whole") / 1e6)));
+
+      if (diag.getBool("debug-stats")) {
+        diag.output().printSectionHeader("Statistics:");
+        diag.output().printIndent("Templates:");
+        diag.output().printIndent(String.format("  Total:      %d", templatesTotal));
+        diag.output().printIndent(String.format("  Before sol: %d", templatesToFirstSolution));
+        diag.output().println();
+        diag.output().printIndent("Tests:");
+        diag.output().printIndent("  Dot Star:");
+        diag.output().printIndent(String.format("    Total:    %d", testDotStarTotal));
+        diag.output().printIndent(String.format("    Rejected: %d", testDotStarRejections));
+        diag.output().printIndent("  Empty Set:");
+        diag.output().printIndent(String.format("    Total:    %d", testEmptySetTotal));
+        diag.output().printIndent(String.format("    Rejected: %d", testEmptySetRejections));
+        diag.output().printIndent("  Dot:");
+        diag.output().printIndent(String.format("    Total:    %d", testDotTotal));
+        diag.output().printIndent(String.format("    Rejected: %d", testDotRejections));
+        diag.output().println();
+        diag.output().printIndent("Timings:");
+        diag.output().printIndent(String.format("  Whole: %d", diag.timing().getTiming("whole")));
+      }
+
       diag.output().printSectionHeader("All done");
 
       Result result = new Result(

@@ -54,6 +54,7 @@ public class CLI {
           case "classes":
           case "formula":
           case "model":
+          case "stats":
             break;
           default:
             String fmt = "Parameter 'debug' given unknown debugging channel '%s'";
