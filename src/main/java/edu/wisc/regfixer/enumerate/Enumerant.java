@@ -201,7 +201,7 @@ public class Enumerant implements Comparable<Enumerant> {
     RegexNode scion = new RepetitionNode(child, bounds);
 
     // Graft scion onto the root regex tree.
-    RegexNode root = Grafter.graft(this.tree, unknown.getId(), scion);
+    RegexNode root = Grafter.graftWithUnknownAncestors(this.tree, unknown.getId(), scion);
 
     // Build set of IDs custom to the new enumerant.
     Set<UnknownId> ids = new HashSet<>();
@@ -209,6 +209,7 @@ public class Enumerant implements Comparable<Enumerant> {
     ids.remove(unknown.getId());
     ids.add(child.getId());
     ids.add(bounds.getId());
+    ids.addAll(Grafter.addedBounds);
 
     // Add cost of the expansion.
     int cost = this.getCost() + Enumerant.REPEAT_COST;

@@ -21,6 +21,8 @@ import edu.wisc.regfixer.parser.UnionNode;
  */
 public class Grafter {
   private static boolean checkForbiddenExpansions = true;
+  private static boolean replaceAncestorQuantifiers = false;
+  public static List<UnknownId> addedBounds = new LinkedList<>();
 
   public static RegexNode silentGraft (RegexNode original, UnknownId id, Object scion) {
     try {
@@ -32,6 +34,14 @@ public class Grafter {
       Grafter.checkForbiddenExpansions = true;
       return null;
     }
+  }
+
+  public static RegexNode graftWithUnknownAncestors (RegexNode original, UnknownId id, Object scion) throws ForbiddenExpansionException {
+    Grafter.replaceAncestorQuantifiers = true;
+    Grafter.addedBounds = new LinkedList<>();
+    RegexNode graftee = graft(original, id, scion);
+    Grafter.replaceAncestorQuantifiers = false;
+    return graftee;
   }
 
   public static RegexNode graft (RegexNode original, UnknownId id, Object scion) throws ForbiddenExpansionException {
@@ -137,6 +147,10 @@ public class Grafter {
 
     if (graftee == node.getChild()) {
       return node;
+    } else if (replaceAncestorQuantifiers) {
+      UnknownBounds bounds = new UnknownBounds(node.getBounds());
+      addedBounds.add(bounds.getId());
+      return new RepetitionNode(graftee, bounds);
     } else {
       return new RepetitionNode(graftee, node.getBounds());
     }
@@ -147,6 +161,10 @@ public class Grafter {
 
     if (graftee == node.getChild()) {
       return node;
+    } else if (replaceAncestorQuantifiers) {
+      UnknownBounds bounds = new UnknownBounds(Bounds.between(0, 1));
+      addedBounds.add(bounds.getId());
+      return new RepetitionNode(graftee, bounds);
     } else {
       return new OptionalNode(graftee);
     }
@@ -157,6 +175,10 @@ public class Grafter {
 
     if (graftee == node.getChild()) {
       return node;
+    } else if (replaceAncestorQuantifiers) {
+      UnknownBounds bounds = new UnknownBounds(Bounds.atLeast(0));
+      addedBounds.add(bounds.getId());
+      return new RepetitionNode(graftee, bounds);
     } else {
       return new StarNode(graftee);
     }
@@ -167,6 +189,10 @@ public class Grafter {
 
     if (graftee == node.getChild()) {
       return node;
+    } else if (replaceAncestorQuantifiers) {
+      UnknownBounds bounds = new UnknownBounds(Bounds.atLeast(1));
+      addedBounds.add(bounds.getId());
+      return new RepetitionNode(graftee, bounds);
     } else {
       return new PlusNode(graftee);
     }
