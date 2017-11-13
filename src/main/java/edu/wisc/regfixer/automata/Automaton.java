@@ -2,6 +2,7 @@ package edu.wisc.regfixer.automata;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -97,21 +98,25 @@ public class Automaton extends automata.Automaton {
   }
 
   public List<State> getNextState (List<State> frontier, Character ch) throws TimeoutException {
+    return getNextState(null, frontier, ch);
+  }
+
+  public List<State> getNextState (Set<Integer> filter, List<State> frontier, Character ch) throws TimeoutException {
     List<State> nextStates = new LinkedList<>();
 
     for (State state : frontier) {
-      nextStates.addAll(getNextState(state, ch));
+      nextStates.addAll(getNextState(filter, state, ch));
     }
 
     return nextStates;
   }
 
-  public List<State> getNextState (State parent, Character ch) throws TimeoutException {
+  public List<State> getNextState (Set<Integer> filter, State parent, Character ch) throws TimeoutException {
     List<State> nextStates = new LinkedList<>();
 
     for (Move<CharPred, Character> move : getMovesFrom(parent.getStateId())) {
       if (move.isEpsilonTransition() == false) {
-        if (move.hasModel(ch, Automaton.solver)) {
+        if (move.hasModel(ch, Automaton.solver) && (filter == null || filter.contains(move.to))) {
           State newState = new State(move.to, parent, ch);
 
           // Check if the predicate relating to the automaton transition is
@@ -235,11 +240,93 @@ public class Automaton extends automata.Automaton {
     return isFinalConfiguration(frontier);
   }
 
+  private Set<Integer> getReverseEpsClosure (Stack<Set<Integer>> layers, Integer frontier) {
+    return getReverseEpsClosure(layers, new HashSet<>(frontier));
+  }
+
+  private Set<Integer> getReverseEpsClosure (Stack<Set<Integer>> layers, Set<Integer> frontier) {
+    Set<Integer> reached = new HashSet<>(frontier);
+    Set<Integer> seen    = new HashSet<>(frontier);
+    Set<Integer> toVisit = new HashSet<>(frontier);
+
+    while (toVisit.size() > 0) {
+      Integer curr = toVisit.iterator().next();
+      toVisit.remove(curr);
+      // layers.peek().add(curr);
+
+      for (Move<CharPred, Character> move : getMovesTo(curr)) {
+        if (move.isEpsilonTransition()) {
+          Integer prev = move.from;
+          reached.add(prev);
+
+          if (false == seen.contains(prev)) {
+            toVisit.add(prev);
+            seen.add(prev);
+          }
+        }
+      }
+    }
+
+    return reached;
+  }
+
+  public Set<Integer> getPrevState (Stack<Set<Integer>> layers, Set<Integer> frontier, Character ch) throws TimeoutException {
+    Set<Integer> prevStates = new HashSet<>();
+
+    for (Integer stateId : frontier) {
+      prevStates.addAll(getPrevState(layers, stateId, ch));
+    }
+
+    return prevStates;
+  }
+
+  public Set<Integer> getPrevState (Stack<Set<Integer>> layers, Integer child, Character ch) throws TimeoutException {
+    Set<Integer> prevStates = new HashSet<>();
+
+    for (Move<CharPred, Character> move : getMovesTo(child)) {
+      if (move.isEpsilonTransition() == false) {
+        if (move.hasModel(ch, Automaton.solver)) {
+          prevStates.add(move.from);
+          layers.peek().add(move.to);
+        }
+      }
+    }
+
+    return prevStates;
+  }
+
+  private List<Set<Integer>> getStateFilter (String source) throws TimeoutException {
+    Stack<Set<Integer>> layers = new Stack<>();
+    // layers.push(new HashSet<>());
+    Set<Integer> frontier = getReverseEpsClosure(layers, new HashSet<>(getFinalStates()));
+
+    for (int i = source.length()-1; i >= 0; i--) {
+      layers.push(new HashSet<>());
+      frontier = getPrevState(layers, frontier, source.charAt(i));
+      // layers.push(new HashSet<>());
+      frontier = getReverseEpsClosure(layers, frontier);
+
+      if (frontier.isEmpty()) {
+        return new Stack<>();
+      }
+    }
+
+    List<Set<Integer>> layerList = new LinkedList<>(layers);
+    Collections.reverse(layerList);
+    return layerList;
+  }
+
   public Set<Route> trace (String source) throws TimeoutException {
+    List<Set<Integer>> layers = getStateFilter(source);
     List<State> frontier = getEpsClosure(new State(getInitialState()));
 
     for (int i = 0; i < source.length(); i++) {
-      frontier = getNextState(frontier, source.charAt(i));
+      if (layers.size() <= i) {
+        return new HashSet<>();
+      }
+
+      Set<Integer> filter = layers.get(i);
+      frontier = getNextState(filter, frontier, source.charAt(i));
       frontier = getEpsClosure(frontier);
 
       if (frontier.isEmpty()) {
@@ -489,11 +576,11 @@ public class Automaton extends automata.Automaton {
 
   private static Automaton repetitionWithKnownBoundsToAutomaton (RepetitionNode node) throws TimeoutException {
     if (node.getBounds().hasMax() && node.getBounds().getMax() == 0) {
-      return empty();
+      return getEmptyStringSFA();
     }
 
     Automaton sub = nodeToAutomaton(node.getChild());
-    Automaton min = empty();
+    Automaton min = getEmptyStringSFA();
 
     for (int i = 0; i < node.getBounds().getMin(); i++) {
       if (i == 0) {
