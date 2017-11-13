@@ -50,8 +50,10 @@ public class Enumerants {
     this.queue = new PriorityQueue<>();
 
     for (Enumerant expansion : Slicer.slice(this.original)) {
-      this.history.add(expansion.toString());
-      this.queue.add(expansion);
+      if (this.corpus.passesDotStarTest(expansion)) {
+        this.history.add(expansion.toString());
+        this.queue.add(expansion);
+      }
     }
   }
 
