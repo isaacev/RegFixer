@@ -357,9 +357,21 @@ public class CLI {
       return 1;
     }
 
+    if (reg.getBool("output-csv")) {
+      diag.output().print("solution,");
+      diag.output().print("templatesTotal,");
+      diag.output().print("templatesToFirstSolution,");
+      diag.output().print("testDotStarTotal,");
+      diag.output().print("testDotStarRejections,");
+      diag.output().print("testEmptySetTotal,");
+      diag.output().print("testEmptySetRejections,");
+      diag.output().print("testDotTotal,testDotRejections");
+      diag.output().println();
+    }
+
     try {
-      RegFixer.Result result = RegFixer.fix(job, args.limit, diag);
-      return result.hasSolution ? 0 : 1;
+      String result = RegFixer.fix(job, args.limit, diag);
+      return result != null ? 0 : 1;
     } catch (TimeoutException ex) {
       System.out.println("TIMEOUT EXCEPTION");
       return 1;

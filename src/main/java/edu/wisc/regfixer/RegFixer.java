@@ -19,76 +19,25 @@ import edu.wisc.regfixer.synthesize.Synthesis;
 import edu.wisc.regfixer.synthesize.SynthesisFailure;
 
 public class RegFixer {
-  public static class Result {
-    public final int     templates;
-    public final boolean hasSolution;
-    public final int     cost;
-    public final String  solution;
-    public final int     failedDotTest;
-    public final int     failedDotStarTest;
-    public final int     failedEmptySetTest;
-
-    public Result (int templates, int cost, String solution, int failedDotTest, int failedDotStarTest, int failedEmptySetTest) {
-      this.templates          = templates;
-      this.hasSolution        = true;
-      this.cost               = cost;
-      this.solution           = solution;
-      this.failedDotTest      = failedDotTest;
-      this.failedDotStarTest  = failedDotStarTest;
-      this.failedEmptySetTest = failedEmptySetTest;
-    }
-
-    public Result (int templates, int failedDotTest, int failedDotStarTest, int failedEmptySetTest) {
-      this.templates          = templates;
-      this.hasSolution        = false;
-      this.cost               = 0;
-      this.solution           = null;
-      this.failedDotTest      = failedDotTest;
-      this.failedDotStarTest  = failedDotStarTest;
-      this.failedEmptySetTest = failedEmptySetTest;
-    }
-
-    public String toString () {
-      return String.format("%d,%s,\"%s\",%d,%d,%d",
-        this.templates,
-        (this.hasSolution) ? Integer.toString(this.cost) : "",
-        (this.hasSolution) ? this.solution : "",
-        this.failedDotTest,
-        this.failedDotStarTest,
-        this.failedEmptySetTest);
-    }
-  }
-
-  public static Result fix (Job job) throws TimeoutException {
+  public static String fix (Job job) throws TimeoutException {
     return RegFixer.fix(job, new Diagnostic());
   }
 
-  public static Result fix (Job job, Diagnostic diag) throws TimeoutException {
+  public static String fix (Job job, Diagnostic diag) throws TimeoutException {
     return RegFixer.fix(job, 1000, diag);
   }
 
-  public static Result fix (Job job, int loopCutoff) throws TimeoutException {
+  public static String fix (Job job, int loopCutoff) throws TimeoutException {
     return RegFixer.fix(job, loopCutoff, new Diagnostic());
   }
 
-  public static Result fix (Job job, int loopCutoff, Diagnostic diag) throws TimeoutException {
+  public static String fix (Job job, int loopCutoff, Diagnostic diag) throws TimeoutException {
     diag.timing().startTiming("whole");
 
     // Keep track of all solutions found. Each solution is mapped to its
     // fitness score which is a count of how many single character classes are
     // included in its synthesized character classes.
     Map<String, Integer> solutions = new HashMap<>();
-
-    // Statistics tracked during the enumeration search. Timing statistics are
-    // tracked from within the Diagnostic object.
-    int templatesTotal           = 0;
-    int templatesToFirstSolution = 0;
-    int testDotStarTotal         = 0;
-    int testDotStarRejections    = 0;
-    int testEmptySetTotal        = 0;
-    int testEmptySetRejections   = 0;
-    int testDotTotal             = 0;
-    int testDotRejections        = 0;
 
     // Print the report header which describes the initial inputs to the
     // search algorithm including the initial regular expression, any explicit
@@ -114,6 +63,10 @@ public class RegFixer {
     Enumerants enumerants = new Enumerants(job.getTree(), job.getCorpus());
     Enumerant enumerant = null;
 
+    if (job.getCorpus().getMatches(job.getTree()).equals(job.getCorpus().getPositiveRanges())) {
+      System.exit(0);
+    }
+
     // Once the first solution is found, the algorithm can be configured to
     // keep searching in order to find a better solution. In this case, the
     // alrogithm will only keep searching as long as there are more templates
@@ -131,8 +84,8 @@ public class RegFixer {
       // loop cutoff.
       if (enumerant.getCost() > costCutoff) {
         break;
-      } else if (templatesTotal++ >= loopCutoff) {
-        templatesTotal--;
+      } else if (diag.registry().bumpInt("templatesTotal") >= loopCutoff) {
+        diag.registry().setInt("templatesTotal", diag.getInt("templatesTotal") - 1);
 
         if (solutions.size() == 0) {
           throw new TimeoutException("enumeration loop limit reached");
@@ -155,9 +108,9 @@ public class RegFixer {
           passesTests = job.getCorpus().passesDotTest(enumerant);
 
           // Increment appropriate counters.
-          testDotTotal++;
+          diag.registry().bumpInt("testDotTotal");
           if (passesTests == false) {
-            testEmptySetRejections++;
+            diag.registry().bumpInt("testEmptySetRejections");
           }
         }
         break;
@@ -167,9 +120,9 @@ public class RegFixer {
           passesTests = job.getCorpus().passesEmptySetTest(enumerant);
 
           // Increment appropriate counters.
-          testEmptySetTotal++;
+          diag.registry().bumpInt("testEmptySetTotal");
           if (passesTests == false) {
-            testEmptySetRejections++;
+            diag.registry().bumpInt("testEmptySetRejections");
           }
         }
         break;
@@ -186,7 +139,7 @@ public class RegFixer {
 
       if (synthesis != null) {
         if (solutions.size() == 0) {
-          templatesToFirstSolution = templatesTotal;
+          diag.registry().setInt("templatesToFirstSolution", diag.getInt("templatesTotal"));
         }
 
         String sol = synthesis.toString();
@@ -223,19 +176,19 @@ public class RegFixer {
       if (diag.getBool("debug-stats")) {
         diag.output().printSectionHeader("Statistics:");
         diag.output().printIndent("Templates:");
-        diag.output().printIndent(String.format("  Total:      %d", templatesTotal));
-        diag.output().printIndent(String.format("  Before sol: %d", templatesToFirstSolution));
+        diag.output().printIndent(String.format("  Total:      %d", diag.getInt("templatesTotal")));
+        diag.output().printIndent(String.format("  Before sol: %d", diag.getInt("templatesToFirstSolution")));
         diag.output().println();
         diag.output().printIndent("Tests:");
         diag.output().printIndent("  Dot Star:");
-        diag.output().printIndent(String.format("    Total:    %d", testDotStarTotal));
-        diag.output().printIndent(String.format("    Rejected: %d", testDotStarRejections));
+        diag.output().printIndent(String.format("    Total:    %d", diag.getInt("testDotStarTotal")));
+        diag.output().printIndent(String.format("    Rejected: %d", diag.getInt("testDotStarRejections")));
         diag.output().printIndent("  Empty Set:");
-        diag.output().printIndent(String.format("    Total:    %d", testEmptySetTotal));
-        diag.output().printIndent(String.format("    Rejected: %d", testEmptySetRejections));
+        diag.output().printIndent(String.format("    Total:    %d", diag.getInt("testEmptySetTotal")));
+        diag.output().printIndent(String.format("    Rejected: %d", diag.getInt("testEmptySetRejections")));
         diag.output().printIndent("  Dot:");
-        diag.output().printIndent(String.format("    Total:    %d", testDotTotal));
-        diag.output().printIndent(String.format("    Rejected: %d", testDotRejections));
+        diag.output().printIndent(String.format("    Total:    %d", diag.getInt("testDotTotal")));
+        diag.output().printIndent(String.format("    Rejected: %d", diag.getInt("testDotRejections")));
         diag.output().println();
         diag.output().printIndent("Timings:");
         diag.output().printIndent(String.format("  Whole: %d", diag.timing().getTiming("whole")));
@@ -243,40 +196,42 @@ public class RegFixer {
 
       diag.output().printSectionHeader("All done");
 
-      Result result = new Result(
-        templatesTotal,
-        costCutoff,
-        solution,
-        testDotTotal,
-        testDotStarTotal,
-        testEmptySetTotal);
-
       if (diag.getBool("output-csv")) {
-        diag.output().println(result.toString());
-      } else if (diag.getBool("output-solution") || diag.getBool("output-none") == false) {
+        diag.output().printf("\"%s\",", solution);
+        diag.output().printf("%d,",  diag.getInt("templatesTotal"));
+        diag.output().printf("%d,",  diag.getInt("templatesToFirstSolution"));
+        diag.output().printf("%d,",  diag.getInt("testDotStarTotal"));
+        diag.output().printf("%d,",  diag.getInt("testDotStarRejections"));
+        diag.output().printf("%d,",  diag.getInt("testEmptySetTotal"));
+        diag.output().printf("%d,",  diag.getInt("testEmptySetRejections"));
+        diag.output().printf("%d,",  diag.getInt("testDotTotal"));
+        diag.output().printf("%d\n", diag.getInt("testDotRejections"));
+      } else if (diag.getBool("output-solution")) {
         diag.output().println(solution);
       }
 
-      return result;
+      return solution;
     } else {
-      diag.output().printSectionHeader("Unable to compute a repair");
-      diag.output().printSectionHeader("All done");
-      Result result = new Result(
-        templatesTotal,
-        testDotTotal,
-        testDotStarTotal,
-        testEmptySetTotal);
-
       if (diag.getBool("output-csv")) {
-        diag.output().println(result.toString());
+        diag.output().printf(",");
+        diag.output().printf("%d,",  diag.getInt("templatesTotal"));
+        diag.output().printf("%d,",  diag.getInt("templatesToFirstSolution"));
+        diag.output().printf("%d,",  diag.getInt("testDotStarTotal"));
+        diag.output().printf("%d,",  diag.getInt("testDotStarRejections"));
+        diag.output().printf("%d,",  diag.getInt("testEmptySetTotal"));
+        diag.output().printf("%d,",  diag.getInt("testEmptySetRejections"));
+        diag.output().printf("%d,",  diag.getInt("testDotTotal"));
+        diag.output().printf("%d\n", diag.getInt("testDotRejections"));
       }
 
-      return result;
+      return null;
     }
   }
 
   private static Synthesis synthesisLoop (Job job, Enumerant enumerant, Diagnostic diag) throws SynthesisFailure {
+    diag.registry().bumpInt("testDotTotal");
     if (job.getCorpus().passesDotTest(enumerant) == false) {
+      diag.registry().bumpInt("testEmptySetRejections");
       throw new SynthesisFailure("failed dot test");
     }
 
