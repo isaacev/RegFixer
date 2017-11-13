@@ -18,8 +18,9 @@ public class Registry {
     this.bools.put(name, val);
   }
 
-  public void setInt (String name, int val) {
+  public int setInt (String name, int val) {
     this.ints.put(name, val);
+    return val;
   }
 
   public void setStr (String name, String val) {
