@@ -5,10 +5,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.TreeSet;
 
+import edu.wisc.regfixer.parser.RegexNode;
 import edu.wisc.regfixer.synthesize.Synthesis;
 
 public class Corpus {
@@ -93,6 +95,11 @@ public class Corpus {
 
   public Set<Range> getMatches (Synthesis synthesis) {
     return getMatchingRanges(synthesis.toPattern(), this.corpus);
+  }
+
+  public Set<Range> getMatches (RegexNode tree) {
+    Pattern p = Pattern.compile(tree.toString());
+    return getMatchingRanges(p, this.corpus);
   }
 
   public Set<Range> getBadMatches (Synthesis synthesis) {
