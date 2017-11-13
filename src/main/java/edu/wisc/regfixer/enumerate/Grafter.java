@@ -145,7 +145,7 @@ public class Grafter {
   private static RegexNode graftOptional (OptionalNode node, UnknownId id, Object scion) throws ForbiddenExpansionException {
     RegexNode graftee = graftNode(node.getChild(), id, scion);
 
-    if (graftee == node) {
+    if (graftee == node.getChild()) {
       return node;
     } else {
       return new OptionalNode(graftee);
@@ -155,7 +155,7 @@ public class Grafter {
   private static RegexNode graftStar (StarNode node, UnknownId id, Object scion) throws ForbiddenExpansionException {
     RegexNode graftee = graftNode(node.getChild(), id, scion);
 
-    if (graftee == node) {
+    if (graftee == node.getChild()) {
       return node;
     } else {
       return new StarNode(graftee);
@@ -165,7 +165,7 @@ public class Grafter {
   private static RegexNode graftPlus (PlusNode node, UnknownId id, Object scion) throws ForbiddenExpansionException {
     RegexNode graftee = graftNode(node.getChild(), id, scion);
 
-    if (graftee == node) {
+    if (graftee == node.getChild()) {
       return node;
     } else {
       return new PlusNode(graftee);
