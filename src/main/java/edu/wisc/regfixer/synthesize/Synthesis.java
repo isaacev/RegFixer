@@ -11,6 +11,7 @@ import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Grafter;
 import edu.wisc.regfixer.enumerate.Unknown;
+import edu.wisc.regfixer.enumerate.UnknownBounds;
 import edu.wisc.regfixer.enumerate.UnknownChar;
 import edu.wisc.regfixer.enumerate.UnknownId;
 import edu.wisc.regfixer.parser.Bounds;
@@ -35,8 +36,16 @@ public class Synthesis {
     Map<UnknownId, CharClass> charSolutions = formula.getCharSolutions();
     Map<UnknownId, Bounds> boundsSolutions = formula.getBoundsSolutions();
 
-    if ((charSolutions.size() + boundsSolutions.size()) < enumerant.getIds().size()) {
-      throw new SynthesisFailure("no solution for some unknowns");
+    for (UnknownId id : enumerant.getIds()) {
+      if (charSolutions.containsKey(id) || boundsSolutions.containsKey(id)) {
+        continue;
+      }
+
+      if (id.getUnknown() instanceof UnknownChar) {
+        charSolutions.put(id, new CharClassSetNode(new CharRangeNode('∅')));
+      } else if (id.getUnknown() instanceof UnknownBounds) {
+        boundsSolutions.put(id, Bounds.exactly(0));
+      }
     }
 
     RegexNode whole = enumerant.getTree();
@@ -75,15 +84,22 @@ public class Synthesis {
   }
 
   public Pattern toPattern (boolean withAnchors) {
+    UnknownBounds.setFill(Bounds.exactly(0));
+
+    Pattern p = this.toPattern();
     if (withAnchors) {
-      return Pattern.compile(String.format("^%s$", this.tree));
+      p = Pattern.compile(String.format("^%s$", this.tree));
     }
 
-    return this.toPattern();
+    UnknownBounds.clearFill();
+    return p;
   }
 
   public Pattern toPattern () {
-    return Pattern.compile(this.tree.toString());
+    UnknownBounds.setFill(Bounds.exactly(0));
+    Pattern p = Pattern.compile(this.tree.toString());
+    UnknownBounds.clearFill();
+    return p;
   }
 
   @Override
