@@ -55,6 +55,10 @@ public class Registry {
     }
   }
 
+  public int bumpInt (String name) {
+    return this.setInt(name, this.getInt(name) + 1);
+  }
+
   public String getStr (String name) {
     return this.getStr(name, "");
   }
