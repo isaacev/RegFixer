@@ -229,12 +229,6 @@ public class RegFixer {
   }
 
   private static Synthesis synthesisLoop (Job job, Enumerant enumerant, Diagnostic diag) throws SynthesisFailure {
-    diag.registry().bumpInt("testDotTotal");
-    if (job.getCorpus().passesDotTest(enumerant) == false) {
-      diag.registry().bumpInt("testEmptySetRejections");
-      throw new SynthesisFailure("failed dot test");
-    }
-
     Set<Range> P = job.getCorpus().getPositiveRanges();
     Set<Range> N = job.getCorpus().getNegativeRanges();
     Synthesis synthesis = null;
