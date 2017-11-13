@@ -34,7 +34,7 @@ public class Enumerants {
     }
 
     switch (enumerant.getLatestExpansion()) {
-      case Union:
+      case SyntheticUnion:
       case Freeze:
         // In these expansion cases, the template is garunteed to not produce a
         // better solution than its parent (but is kept in the queue for

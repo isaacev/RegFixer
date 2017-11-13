@@ -169,8 +169,8 @@ public class Enumerant implements Comparable<Enumerant> {
 
   private Enumerant expandWithUnion (UnknownChar unknown) throws ForbiddenExpansionException {
     // Create both unknown chars to be added to the regex tree.
-    UnknownChar un1 = new UnknownChar(unknown.getHistory(), Expansion.Union);
-    UnknownChar un2 = new UnknownChar(unknown.getHistory(), Expansion.Union);
+    UnknownChar un1 = new UnknownChar(unknown.getHistory(), Expansion.SyntheticUnion);
+    UnknownChar un2 = new UnknownChar(unknown.getHistory(), Expansion.SyntheticUnion);
 
     // Create union node to added in place of the given 'unknown'.
     RegexNode scion = new UnionNode(un1, un2, true);
@@ -189,7 +189,7 @@ public class Enumerant implements Comparable<Enumerant> {
     int cost = this.getCost() + Enumerant.UNION_COST;
 
     // Build components into new enumerant.
-    return new Enumerant(root, ids, cost, Expansion.Union);
+    return new Enumerant(root, ids, cost, Expansion.SyntheticUnion);
   }
 
   private Enumerant expandWithUnknownQuantifier (UnknownChar unknown) throws ForbiddenExpansionException {
