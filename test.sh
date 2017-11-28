@@ -1,13 +1,15 @@
 #!/bin/bash
 
-# time ls ../regfixer-data/output/*.txt | xargs ./test.sh
+# time ls ../regfixer-data/output/*.txt | head -n 10 | xargs ./test.sh
 
-echo "name,duration,templates,cost,solution,dot_rate,dotstar_rate,emptyset_rate"
+var=1
+echo "name,size,solution,timeTotal,timeToFirstSol,templatesToFirstSol,templatesTotal,costOfFirstSol,timeSATSolver,timeDotTest,timeDotStarTest,timeEmptySetTest,totalDotTests,totalDotStarTests,totalEmptySetTests,totalDotTestsRejects,totalDotStarTestsRejects,totalEmptySetTestsRejects,maximumRoutes,totalPositiveExamples,lengthOfPositiveExamples,lengthOfCorpus"
 for filename in "$@"
 do
-  printf "$filename,"
-  gtimeout 10 java -jar target/regfixer.jar fix --quiet --csv --limit 5000 "$filename"
+  (>&2 echo "$var -- $filename")
+  ((var++))
+  gtimeout 1m java -jar target/regfixer.jar fix --output csv --debug none --file "$filename"
   if [ $? -eq 124 ]; then
-    echo "timeout"
+    (>&1 echo "\"$filename\",,,timeout")
   fi
 done
