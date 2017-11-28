@@ -5,17 +5,20 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
+import edu.wisc.regfixer.diagnostic.Diagnostic;
 import edu.wisc.regfixer.parser.RegexNode;
 
 public class Enumerants {
   private final RegexNode original;
   private final Corpus corpus;
+  private final Diagnostic diag;
   private Set<String> history;
   private Queue<Enumerant> queue;
 
-  public Enumerants (RegexNode original, Corpus corpus) {
+  public Enumerants (RegexNode original, Corpus corpus, Diagnostic diag) {
     this.original = original;
     this.corpus = corpus;
+    this.diag = diag;
     this.init();
   }
 
@@ -50,9 +53,17 @@ public class Enumerants {
     this.queue = new PriorityQueue<>();
 
     for (Enumerant expansion : Slicer.slice(this.original)) {
-      if (this.corpus.passesDotStarTest(expansion)) {
+      this.diag.registry().bumpInt("totalDotStarTests");
+      
+      this.diag.timing().startTiming("timeDotStarTest");
+      boolean passesDotStarTest = this.corpus.passesDotStarTest(expansion);
+      this.diag.timing().stopTimingAndAdd("timeDotStarTest");
+
+      if (passesDotStarTest) {
         this.history.add(expansion.toString());
         this.queue.add(expansion);
+      } else {
+        this.diag.registry().bumpInt("totalDotStarTestsRejects");
       }
     }
   }

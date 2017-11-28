@@ -70,6 +70,7 @@ public class CLI {
         switch (channel) {
           case "none":
           case "csv":
+          case "header":
           case "solution":
             break;
           default:
@@ -361,22 +362,39 @@ public class CLI {
       return 1;
     }
 
-    if (reg.getBool("output-csv")) {
-      diag.output().print("solution,");
-      diag.output().print("templatesTotal,");
-      diag.output().print("templatesToFirstSolution,");
-      diag.output().print("testDotStarTotal,");
-      diag.output().print("testDotStarRejections,");
-      diag.output().print("testEmptySetTotal,");
-      diag.output().print("testEmptySetRejections,");
-      diag.output().print("testDotTotal,testDotRejections");
-      diag.output().println();
+    if (reg.getBool("output-header")) {
+      System.out.print("name,");                         // name of benchmark file
+      System.out.print("size,");                         // number of nodes in original regular expression
+      System.out.print("solution,");                     // first computed expression (empty if no solution found)
+      System.out.print("timeTotal,");                    // time between when enumeration started and when it ended (milliseconds)
+      System.out.print("timeToFirstSol,");               // time between when enumeration started and the first solution (milliseconds)
+      System.out.print("templatesToFirstSol,");          // number of templates explored before first solution
+      System.out.print("templatesTotal,");               // number of templates explored in total
+      System.out.print("costOfFirstSol,");               // expansion cost of first solution
+      // System.out.print("sizeOfSearchSpace,");            // TODO
+      // System.out.print("timeTotalNoOptimizations,");     // time for whole enumeration with no optimizations
+      System.out.print("timeSATSolver,");                // time spent building & solving SAT formulae
+      System.out.print("timeDotTest,");                  // time spent testing examples against the dot test
+      System.out.print("timeDotStarTest,");              // time spent testing examples against the dot-star test
+      System.out.print("timeEmptySetTest,");             // time spent testing examples against the empty-set test
+      System.out.print("totalDotTests,");                // number of times the dot test was applied
+      System.out.print("totalDotStarTests,");            // number of times the dot-star test was applied
+      System.out.print("totalEmptySetTests,");           // number of times the empty-set test was applied
+      System.out.print("totalDotTestsRejects,");         // number of times the dot test rejected a template
+      System.out.print("totalDotStarTestsRejects,");     // number of times the dot-star test rejected a template
+      System.out.print("totalEmptySetTestsRejects,");    // number of times the empty-set test rejected a template
+      System.out.print("maximumRoutes,");                // maximum number of routes ever fed to the SAT solver from any template
+      System.out.print("totalPositiveExamples,");        // number of given positive examples
+      System.out.print("lengthOfPositiveExamples,");     // number of bytes in all positive examples
+      System.out.print("lengthOfCorpus");                // number of bytes in the corpus
+      System.out.println();
     }
 
     try {
       String result = RegFixer.fix(job, args.limit, diag);
       return result != null ? 0 : 1;
     } catch (TimeoutException ex) {
+      System.out.println(ex.toString());
       System.out.println("TIMEOUT EXCEPTION");
       return 1;
     }

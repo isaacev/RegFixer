@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import edu.wisc.regfixer.diagnostic.Diagnostic;
+import edu.wisc.regfixer.diagnostic.Timing;
 import edu.wisc.regfixer.enumerate.Enumerant;
 import edu.wisc.regfixer.enumerate.Enumerants;
 import edu.wisc.regfixer.enumerate.Expansion;
@@ -33,11 +34,13 @@ public class RegFixer {
   }
 
   public static String fix (Job job, int loopCutoff, Diagnostic diag) throws TimeoutException {
-    diag.timing().startTiming("whole");
+    diag.timing().startTiming("timeTotal");
+    diag.timing().startTiming("timeToFirstSol");
 
     // Keep track of all solutions found. Each solution is mapped to its
     // fitness score which is a count of how many single character classes are
     // included in its synthesized character classes.
+    String solution = null;
     Map<String, Integer> solutions = new HashMap<>();
 
     // Print the report header which describes the initial inputs to the
@@ -61,7 +64,8 @@ public class RegFixer {
     diag.output().printSectionHeader("Search through possible transformations:");
     diag.output().printHeader();
 
-    Enumerants enumerants = new Enumerants(job.getTree(), job.getCorpus());
+    diag.registry().setInt("size", job.getTree().descendants());
+    Enumerants enumerants = new Enumerants(job.getTree(), job.getCorpus(), diag);
     Enumerant enumerant = null;
 
     if (job.getCorpus().getMatches(job.getTree()).equals(job.getCorpus().getPositiveRanges())) {
@@ -106,19 +110,23 @@ public class RegFixer {
       switch (expansion) {
       case Concat:
         if (diag.getBool("test-all") || diag.getBool("test-dot")) {
+          diag.timing().startTiming("timeDotTest");
           passesTests = job.getCorpus().passesDotTest(enumerant);
+          diag.timing().stopTimingAndAdd("timeDotTest");
 
           // Increment appropriate counters.
-          diag.registry().bumpInt("testDotTotal");
+          diag.registry().bumpInt("totalDotTests");
           if (passesTests == false) {
-            diag.registry().bumpInt("testEmptySetRejections");
+            diag.registry().bumpInt("totalDotTestsRejects");
           }
         }
         break;
       case Star:
       case Optional:
         if (diag.getBool("test-all") || diag.getBool("test-emptyset")) {
+          diag.timing().startTiming("timeEmptySetTest");
           passesTests = job.getCorpus().passesEmptySetTest(enumerant);
+          diag.timing().stopTimingAndAdd("timeEmptySetTest");
 
           // Increment appropriate counters.
           diag.registry().bumpInt("testEmptySetTotal");
@@ -140,7 +148,9 @@ public class RegFixer {
 
       if (synthesis != null) {
         if (solutions.size() == 0) {
-          diag.registry().setInt("templatesToFirstSolution", diag.getInt("templatesTotal"));
+          diag.timing().stopTimingAndAdd("timeToFirstSol");
+          diag.registry().setInt("templatesToFirstSol", diag.getInt("templatesTotal"));
+          diag.registry().setInt("costOfFirstSol", enumerant.getCost());
         }
 
         String sol = synthesis.toString();
@@ -152,10 +162,9 @@ public class RegFixer {
       }
     }
 
-    diag.timing().stopTimingAndAdd("whole");
+    diag.timing().stopTimingAndAdd("timeTotal");
 
     if (solutions.size() > 0) {
-      String solution = null;
       diag.output().printSectionHeader("Finds the following solutions (and the corresponding fitness):");
       for (Map.Entry<String, Integer> entry : solutions.entrySet()) {
         diag.output().printIndent(String.format("%-4d %s", entry.getValue(), entry.getKey()));
@@ -172,7 +181,7 @@ public class RegFixer {
       // diag.output().printSectionHeader("With a specificity of:");
       // diag.output().printIndent(Integer.toString(synthesis.getFitness()));
       diag.output().printSectionHeader("Computed in:");
-      diag.output().printIndent(String.format("%dms", Math.round(diag.timing().getTiming("whole") / 1e6)));
+      diag.output().printIndent(String.format("%dms", Math.round(diag.timing().getTiming("timeTotal") / 1e6)));
 
       if (diag.getBool("debug-stats")) {
         diag.output().printSectionHeader("Statistics:");
@@ -192,41 +201,43 @@ public class RegFixer {
         diag.output().printIndent(String.format("    Rejected: %d", diag.getInt("testDotRejections")));
         diag.output().println();
         diag.output().printIndent("Timings:");
-        diag.output().printIndent(String.format("  Whole: %d", diag.timing().getTiming("whole")));
+        diag.output().printIndent(String.format("  Whole: %d", diag.timing().getTiming("timeTotal")));
       }
 
       diag.output().printSectionHeader("All done");
-
-      if (diag.getBool("output-csv")) {
-        diag.output().printf("\"%s\",", solution);
-        diag.output().printf("%d,",  diag.getInt("templatesTotal"));
-        diag.output().printf("%d,",  diag.getInt("templatesToFirstSolution"));
-        diag.output().printf("%d,",  diag.getInt("testDotStarTotal"));
-        diag.output().printf("%d,",  diag.getInt("testDotStarRejections"));
-        diag.output().printf("%d,",  diag.getInt("testEmptySetTotal"));
-        diag.output().printf("%d,",  diag.getInt("testEmptySetRejections"));
-        diag.output().printf("%d,",  diag.getInt("testDotTotal"));
-        diag.output().printf("%d\n", diag.getInt("testDotRejections"));
-      } else if (diag.getBool("output-solution")) {
-        diag.output().println(solution);
-      }
-
-      return solution;
-    } else {
-      if (diag.getBool("output-csv")) {
-        diag.output().printf(",");
-        diag.output().printf("%d,",  diag.getInt("templatesTotal"));
-        diag.output().printf("%d,",  diag.getInt("templatesToFirstSolution"));
-        diag.output().printf("%d,",  diag.getInt("testDotStarTotal"));
-        diag.output().printf("%d,",  diag.getInt("testDotStarRejections"));
-        diag.output().printf("%d,",  diag.getInt("testEmptySetTotal"));
-        diag.output().printf("%d,",  diag.getInt("testEmptySetRejections"));
-        diag.output().printf("%d,",  diag.getInt("testDotTotal"));
-        diag.output().printf("%d\n", diag.getInt("testDotRejections"));
-      }
-
-      return null;
     }
+
+    if (diag.getBool("output-csv")) {
+      System.out.printf("\"%s\",", job.getName());
+      System.out.printf("%d,",     diag.registry().getInt("size", 0));
+      System.out.printf("\"%s\",", (solution == null) ? "" : solution);
+      System.out.printf("%dms,",   diag.timing().getTiming("timeTotal", Timing.Format.MilliSec));
+      System.out.printf("%dms,",   diag.timing().getTiming("timeToFirstSol", Timing.Format.MilliSec));
+      System.out.printf("%d,",     diag.registry().getInt("templatesToFirstSol", 0));
+      System.out.printf("%d,",     diag.registry().getInt("templatesTotal", 0));
+      System.out.printf("%d,",     diag.registry().getInt("costOfFirstSol", 0));
+      // sizeOfSearchSpace
+      // timeTotalNoOptimizations
+      System.out.printf("%dms,",   diag.timing().getTiming("timeSATSolver", Timing.Format.MilliSec));
+      System.out.printf("%dms,",   diag.timing().getTiming("timeDotTest", Timing.Format.MilliSec));
+      System.out.printf("%dms,",   diag.timing().getTiming("timeDotStarTest", Timing.Format.MilliSec));
+      System.out.printf("%dms,",   diag.timing().getTiming("timeEmptySetTest", Timing.Format.MilliSec));
+      System.out.printf("%d,",     diag.registry().getInt("totalDotTests", 0));
+      System.out.printf("%d,",     diag.registry().getInt("totalDotStarTests", 0));
+      System.out.printf("%d,",     diag.registry().getInt("totalEmptySetTests", 0));
+      System.out.printf("%d,",     diag.registry().getInt("totalDotTestsRejects", 0));
+      System.out.printf("%d,",     diag.registry().getInt("totalDotStarTestsRejects", 0));
+      System.out.printf("%d,",     diag.registry().getInt("totalEmptySetTestsRejects", 0));
+      System.out.printf("%d,",     diag.registry().getInt("maximumRoutes", 0));
+      System.out.printf("%d,",     job.getCorpus().getPositiveRanges().size());
+      System.out.printf("%d,",     job.getCorpus().getTotalCharsInPositiveExamples());
+      System.out.printf("%d",      job.getCorpus().getCorpusLength());
+      System.out.println();
+    } else if (solution != null && diag.getBool("output-solution")) {
+      System.out.println(solution);
+    }
+
+    return solution;
   }
 
   private static Synthesis synthesisLoop (Job job, Enumerant enumerant, Diagnostic diag) throws SynthesisFailure {

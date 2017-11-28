@@ -288,6 +288,11 @@ public class Enumerant implements Comparable<Enumerant> {
       throw new SynthesisFailure(String.format(fmt, this.tree));
     }
 
+    int totalRuns = positiveRuns.size() + negativeRuns.size();
+    if (diag.getInt("maximumRoutes") < totalRuns) {
+      diag.registry().setInt("maximumRoutes", totalRuns);
+    }
+
     return new Synthesis(this, positiveRuns, negativeRuns, diag);
   }
 
