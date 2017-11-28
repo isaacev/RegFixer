@@ -84,7 +84,7 @@ public class RegFixer {
       // loop cutoff.
       if (enumerant.getCost() > costCutoff) {
         break;
-      } else if (diag.registry().bumpInt("templatesTotal") >= loopCutoff) {
+      } else if (loopCutoff > -1 && diag.registry().bumpInt("templatesTotal") >= loopCutoff) {
         diag.registry().setInt("templatesTotal", diag.getInt("templatesTotal") - 1);
 
         if (solutions.size() == 0) {

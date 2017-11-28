@@ -141,7 +141,7 @@ public class CLI {
   private static class ArgsFix {
     @Parameter(names="--limit",
                validateValueWith=LimitValidator.class)
-    private int limit = 1000;
+    private Integer limit = null;
 
     @Parameter(names="--timing",
                validateValueWith=TimingChannelValidator.class)
@@ -312,7 +312,7 @@ public class CLI {
     }
 
     if (args.limit == null || args.limit < 1) {
-      args.limit = 1000;
+      args.limit = -1;
     }
 
     Server.start(args.port, args.limit, args.debug);
@@ -321,6 +321,10 @@ public class CLI {
 
   private static int handleFix (ArgsFix args) {
     Job job = null;
+
+    if (args.limit == null || args.limit < 1) {
+      args.limit = -1;
+    }
 
     boolean noDebug  = args.debugChannels.contains("none");
     ReportStream out = new ReportStream(noDebug
