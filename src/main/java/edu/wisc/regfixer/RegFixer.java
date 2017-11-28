@@ -2,6 +2,7 @@ package edu.wisc.regfixer;
 
 import java.util.concurrent.TimeoutException;
 import java.util.HashMap;
+import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -229,8 +230,8 @@ public class RegFixer {
   }
 
   private static Synthesis synthesisLoop (Job job, Enumerant enumerant, Diagnostic diag) throws SynthesisFailure {
-    Set<Range> P = job.getCorpus().getPositiveRanges();
-    Set<Range> N = job.getCorpus().getNegativeRanges();
+    Set<Range> P = new TreeSet<>(job.getCorpus().getPositiveRanges());
+    Set<Range> N = new TreeSet<>(job.getCorpus().getNegativeRanges());
     Synthesis synthesis = null;
 
     /**
