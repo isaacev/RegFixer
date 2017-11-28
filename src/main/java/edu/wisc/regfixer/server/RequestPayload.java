@@ -32,6 +32,6 @@ public class RequestPayload {
   }
 
   public Job toJob () throws Exception {
-    return new Job(this.regex, this.corpus, this.ranges);
+    return new Job("<API>", this.regex, this.corpus, this.ranges);
   }
 }
