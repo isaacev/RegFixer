@@ -7,10 +7,13 @@ import edu.wisc.regfixer.parser.RegexNode;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class Job {
+  private final String name;
   private final RegexNode tree;
   private final Corpus corpus;
 
-  public Job (String regex, String corpus, Set<Range> positives) {
+  public Job (String name, String regex, String corpus, Set<Range> positives) {
+    this.name = name;
+
     try {
       this.tree = edu.wisc.regfixer.parser.Main.parse(regex);
     } catch (Exception ex) {
@@ -23,9 +26,14 @@ public class Job {
     this.corpus = new Corpus(corpus, positives, negatives);
   }
 
-  public Job (RegexNode tree, Corpus corpus) {
+  public Job (String name, RegexNode tree, Corpus corpus) {
+    this.name = name;
     this.tree = tree;
     this.corpus = corpus;
+  }
+
+  public String getName () {
+    return this.name;
   }
 
   public RegexNode getTree () {
