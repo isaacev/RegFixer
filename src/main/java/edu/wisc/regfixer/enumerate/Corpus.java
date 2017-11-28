@@ -38,6 +38,18 @@ public class Corpus {
     return this.corpus;
   }
 
+  public int getCorpusLength () {
+    return this.corpus.length();
+  }
+
+  public int getTotalCharsInPositiveExamples () {
+    int total = 0;
+    for (Range p : this.positiveRanges) {
+      total += p.length();
+    }
+    return total;
+  }
+
   public String getSubstring (Range range) {
     return this.corpus.substring(range.getLeftIndex(), range.getRightIndex());
   }
