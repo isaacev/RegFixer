@@ -32,4 +32,19 @@ public class Timing {
 
     return 0;
   }
+
+  public static enum Format { Sec, MilliSec, NanoSec }
+
+  public long getTiming (String name, Format format) {
+    long time = this.getTiming(name);
+
+    switch (format) {
+      case Sec:
+        return Math.round(time / 1e9);
+      case MilliSec:
+        return Math.round(time / 1e6);
+      default:
+        return time;
+    }
+  }
 }
