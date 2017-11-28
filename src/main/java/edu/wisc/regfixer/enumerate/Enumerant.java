@@ -34,6 +34,7 @@ public class Enumerant implements Comparable<Enumerant> {
   public final static int PLUS_COST     = 2;
   public final static int CONCAT_COST   = 1;
   public final static int REPEAT_COST   = 1;
+  public final static int FREEZE_COST   = 0;
 
   private final RegexNode tree;
   private final Set<UnknownId> ids;
@@ -111,31 +112,26 @@ public class Enumerant implements Comparable<Enumerant> {
       .map(id -> (UnknownChar)id.getUnknown())
       .collect(Collectors.toSet()));
 
-    // Replace unknown character classes with more complex expressions.
+    // 1. Identify oldest unfrozen unknown
+    // 2. Apply all valid expansions to that unknown and push those templates to the stack
+    // 3. Freeze that unknown and push that template to the stack
+    UnknownChar oldest = null;
     for (UnknownChar unknown : unknowns) {
-      if (unknown.isFrozen()) {
-        continue;
+      if (oldest == null) {
+        oldest = unknown;
+      } else if (unknown.isFrozen() == false && unknown.getAge() > oldest.getAge()) {
+        oldest = unknown;
       }
+    }
 
+    if (oldest != null) {
       // Perform expansion converting unknown char -> union, quantifier, and concat.
-      this.addExpansion(expansions, unknown, this::expandWithUnion);
-      if (unknown.canInsertQuantifierNodes()) {
-        this.addExpansion(expansions, unknown, this::expandWithUnknownQuantifier);
+      this.addExpansion(expansions, oldest, this::expandWithUnion);
+      if (oldest.canInsertQuantifierNodes()) {
+        this.addExpansion(expansions, oldest, this::expandWithUnknownQuantifier);
       }
-      this.addExpansion(expansions, unknown, this::expandWithConcat);
-
-      // Freeze any unfrozen unknown character classes younger than the current unknown.
-      TreeSet<UnknownChar> toFreeze = new TreeSet<UnknownChar>(Collections.reverseOrder());
-      for (UnknownChar freezable : unknowns) {
-        if (freezable.getAge() >= unknown.getAge()) {
-          break;
-        } else if (freezable.isFrozen() == false && freezable.getAge() < unknown.getAge()) {
-          toFreeze.add(freezable);
-        }
-      }
-      if (toFreeze.size() > 0) {
-        this.addExpansion(expansions, toFreeze, this::expandWithFrozenUnknown);
-      }
+      this.addExpansion(expansions, oldest, this::expandWithConcat);
+      this.addExpansion(expansions, oldest, this::expandWithFrozen);
     }
 
     return expansions;
@@ -241,6 +237,27 @@ public class Enumerant implements Comparable<Enumerant> {
 
     // Build components into new enumerant.
     return new Enumerant(root, ids, cost, Expansion.Concat);
+  }
+
+  private Enumerant expandWithFrozen (UnknownChar unknown) throws ForbiddenExpansionException {
+    // Create frozen unknown to added in place of the given 'unknown'.
+    UnknownChar frozen = new UnknownChar(unknown.getHistory(), Expansion.Freeze);
+    frozen.freeze();
+
+    // Graft scion onto the root regex tree.
+    RegexNode root = Grafter.graft(this.tree, unknown.getId(), frozen);
+
+    // Build set of IDs custom to the new enumerant.
+    Set<UnknownId> ids = new HashSet<>();
+    ids.addAll(this.getIds());
+    ids.remove(unknown.getId());
+    ids.add(frozen.getId());
+
+    // Add cost of expansion.
+    int cost = this.getCost() + Enumerant.FREEZE_COST;
+
+    // Build components into new enumerant.
+    return new Enumerant(root, ids, cost, Expansion.Freeze);
   }
 
   private Enumerant expandWithFrozenUnknown (Collection<UnknownChar> unknowns) throws ForbiddenExpansionException {
