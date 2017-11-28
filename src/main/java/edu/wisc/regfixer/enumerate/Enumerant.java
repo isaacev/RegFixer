@@ -260,21 +260,6 @@ public class Enumerant implements Comparable<Enumerant> {
     return new Enumerant(root, ids, cost, Expansion.Freeze);
   }
 
-  private Enumerant expandWithFrozenUnknown (Collection<UnknownChar> unknowns) throws ForbiddenExpansionException {
-    RegexNode root = this.tree;
-    Set<UnknownId> ids = new HashSet<>(this.ids);
-    for (UnknownChar unknown : unknowns) {
-      UnknownChar frozenUnknown = new UnknownChar(unknown.getHistory());
-      frozenUnknown.freeze();
-      root = Grafter.graft(root, unknown.getId(), frozenUnknown);
-
-      ids.remove(unknown.getId());
-      ids.add(frozenUnknown.getId());
-    }
-
-    return new Enumerant(root, ids, this.getCost(), Expansion.Freeze);
-  }
-
   public Synthesis synthesize (Set<String> p, Set<String> n) throws SynthesisFailure {
     return this.synthesize(p, n, new Diagnostic());
   }
