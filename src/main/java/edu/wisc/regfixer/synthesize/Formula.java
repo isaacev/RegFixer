@@ -132,7 +132,7 @@ public class Formula {
 
     if (quantCosts.size() > 0) {
       IntExpr[] costArray = quantCosts.toArray(new IntExpr[quantCosts.size()]);
-      this.opt.MkMinimize(this.ctx.mkAdd(costArray));
+      // this.opt.MkMinimize(this.ctx.mkAdd(costArray));
     }
 
     // Build the formula and encode meta-class formulae
@@ -146,7 +146,7 @@ public class Formula {
 
     if (charCosts.size() > 0) {
       ArithExpr[] costArray = charCosts.toArray(new ArithExpr[charCosts.size()]);
-      this.opt.MkMaximize(this.ctx.mkAdd(costArray));
+      // this.opt.MkMaximize(this.ctx.mkAdd(costArray));
     }
   }
 
