@@ -26,6 +26,19 @@ public class Job {
     this.corpus = new Corpus(corpus, positives, negatives);
   }
 
+  public Job (String name, String regex, String corpus, Set<Range> positives, Set<Range> negatives) {
+    this.name = name;
+
+    try {
+      this.tree = edu.wisc.regfixer.parser.Main.parse(regex);
+    } catch (Exception ex) {
+      // FIXME
+      throw new RuntimeException("malformed regular expression");
+    }
+
+    this.corpus = new Corpus(corpus, positives, negatives);
+  }
+
   public Job (String name, RegexNode tree, Corpus corpus) {
     this.name = name;
     this.tree = tree;
