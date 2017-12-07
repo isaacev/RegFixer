@@ -308,11 +308,17 @@ public class RegFixer {
         }
 
         for (Range p : P) {
+          // If starts in middle of p exit
           boolean cond1 = o.getLeftIndex() > p.getLeftIndex();
           boolean cond2 = o.getLeftIndex() < p.getRightIndex();
           if (cond1 && cond2) {
             continue outerLoop;
           }
+
+          // if same start as p but shorter exit
+          boolean cond3 = o.getLeftIndex() == p.getLeftIndex();
+          if(cond3 && o.length()<p.length())
+            continue outerLoop;
         }
 
         pendingN.add(o);
