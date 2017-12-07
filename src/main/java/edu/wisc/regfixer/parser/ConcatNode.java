@@ -26,7 +26,11 @@ public class ConcatNode implements RegexNode {
     String out = "";
 
     for (RegexNode child : this.children) {
-      out += child.toString();
+      if (child instanceof ConcatNode) {
+        out += "(" + child.toString() + ")";
+      } else {
+        out += child.toString();
+      }
     }
 
     return out;
