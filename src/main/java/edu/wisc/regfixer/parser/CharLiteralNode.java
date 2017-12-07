@@ -34,6 +34,8 @@ public class CharLiteralNode implements ConcreteCharClass {
   public String toString () {
     if (this.ch == '-') {
       return "\\-";
+    } else if (this.ch == '$') {
+      return "\\$";
     }
 
     return String.format("%c", this.ch);
