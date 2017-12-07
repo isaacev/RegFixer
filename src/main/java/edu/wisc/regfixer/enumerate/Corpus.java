@@ -19,11 +19,17 @@ public class Corpus {
   private final Set<Range> negativeRanges;
   private final Set<String> positiveExamples;
   private final Set<String> negativeExamples;
+  private final boolean hasAllNegative;
 
   public Corpus (String corpus, Set<Range> positives, Set<Range> negatives) {
+    this(corpus, positives, negatives, false);
+  }
+
+  public Corpus (String corpus, Set<Range> positives, Set<Range> negatives, boolean hasAllNegative) {
     this.corpus = corpus;
     this.positiveRanges = new TreeSet<Range>(positives);
     this.negativeRanges = new TreeSet<Range>(negatives);
+    this.hasAllNegative = hasAllNegative;
 
     this.positiveExamples = this.positiveRanges.stream()
       .map(r -> this.getSubstring(r))
@@ -74,6 +80,10 @@ public class Corpus {
 
   public Set<String> getNegativeExamples () {
     return this.negativeExamples;
+  }
+
+  public boolean hasAllNegativeExamples () {
+    return this.hasAllNegative;
   }
 
   public boolean passesDotTest (Enumerant enumerant) {

@@ -36,7 +36,7 @@ public class Job {
       throw new RuntimeException("malformed regular expression");
     }
 
-    this.corpus = new Corpus(corpus, positives, negatives);
+    this.corpus = new Corpus(corpus, positives, negatives, true);
   }
 
   public Job (String name, RegexNode tree, Corpus corpus) {

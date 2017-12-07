@@ -241,6 +241,13 @@ public class RegFixer {
   }
 
   private static Synthesis synthesisLoop (Job job, Enumerant enumerant, Diagnostic diag) throws SynthesisFailure {
+    if (job.getCorpus().hasAllNegativeExamples()) {
+      return enumerant.synthesize(
+        job.getCorpus().getPositiveExamples(),
+        job.getCorpus().getNegativeExamples(),
+        diag);
+    }
+
     Set<Range> P = new TreeSet<>(job.getCorpus().getPositiveRanges());
     Set<Range> N = new TreeSet<>(job.getCorpus().getNegativeRanges());
     Synthesis synthesis = null;
