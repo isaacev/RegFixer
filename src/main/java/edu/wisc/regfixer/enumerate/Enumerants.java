@@ -67,9 +67,4 @@ public class Enumerants {
       }
     }
   }
-
-  public void restart (Set<Range> negatives) {
-    this.corpus.addNegativeMatches(negatives);
-    this.init();
-  }
 }
