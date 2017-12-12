@@ -9,10 +9,8 @@ import java.util.Set;
 
 public class Benchmark {
   public final static String boundary = "---";
-  public final static String posBoundary = "+++";
 
   public static Job readFromFile (String filename) throws IOException {
-    boolean explicitNegativeExamples = false;
     String regex = "";
     Set<Range> selectedRanges = new HashSet<Range>();
     Set<Range> negativeRanges = new HashSet<Range>();
@@ -36,9 +34,7 @@ public class Benchmark {
 
       line = sc.nextLine();
       lineNum++;
-      if (line.equals(posBoundary)) {
-        explicitNegativeExamples = true;
-      } else if (!line.equals(boundary)) {
+      if (!line.equals(boundary)) {
         String fmt = "Expected boundary on line %d of '%s'";
         throw new IOException(String.format(fmt, lineNum, filename));
       }
@@ -61,35 +57,12 @@ public class Benchmark {
       }
     }
 
-    if (explicitNegativeExamples) {
-      while (sc.hasNextLine()) {
-        String line = sc.nextLine();
-        lineNum++;
-
-        if (line.equals(boundary)) {
-          // Break loop since boundary was encountered.
-          break;
-        } else {
-          try {
-            negativeRanges.add(new Range(line));
-          } catch (BadRangeException ex) {
-            String fmt = "Expected index pair or boundary on line %d of '%s'";
-            throw new IOException(String.format(fmt, lineNum, filename));
-          }
-        }
-      }
-    }
-
     while (sc.hasNextLine()) {
       corpus += sc.nextLine() + (sc.hasNextLine() ? "\n" : "");
       lineNum++;
     }
 
-    if (explicitNegativeExamples) {
-      return new Job(filename, regex, corpus, selectedRanges, negativeRanges);
-    }
-
-    return new Job(filename, regex, corpus, selectedRanges);
+    return new JobImplicit(filename, regex, corpus, selectedRanges);
   }
 
   public static void saveToFile (Job job, String filename) throws IOException {
