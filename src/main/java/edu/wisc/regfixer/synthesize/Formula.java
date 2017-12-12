@@ -534,10 +534,31 @@ public class Formula {
     }
 
     Map<UnknownId, CharClass> solutions = new HashMap<>();
+    boolean someSolutions = false;
     for (UnknownId id : this.unknownChars) {
+      if (hasSomeSolutions(id)) {
+        someSolutions = true;
+      }
+
       solutions.put(id, getCharSolution(id));
     }
+
+    if (someSolutions == false) {
+      throw new SynthesisFailure("model produced no solutions for any unknown");
+    }
+
     return solutions;
+  }
+
+  private boolean hasSomeSolutions (UnknownId id) {
+    for (BoolExpr var : this.unknownToVars.get(id)) {
+      MetaClassTree tree = this.varToTree.get(var);
+      if (this.model.evaluate(var, false).isTrue()) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private CharClass getCharSolution (UnknownId id) throws SynthesisFailure {
